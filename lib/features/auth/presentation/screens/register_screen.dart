@@ -8,6 +8,7 @@ import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../router/routes.dart';
 import '../../data/dtos/register_request_dto.dart';
+import '../../data/repositories/auth_repository.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/auth_state.dart';
 
@@ -114,7 +115,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   label: 'Email Address',
                   hint: 'john@example.com',
                   keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.email_outline),
+                  prefixIcon: const Icon(Icons.email_outlined),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
                       return 'Please enter your email';

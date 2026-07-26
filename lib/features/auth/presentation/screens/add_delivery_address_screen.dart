@@ -142,7 +142,7 @@ class _AddDeliveryAddressScreenState extends ConsumerState<AddDeliveryAddressScr
                   controller: _streetController,
                   label: 'Street / House / Apartment',
                   hint: 'House 42, Road 11, Block D, Banani',
-                  prefixIcon: const Icon(Icons.location_on_outline),
+                  prefixIcon: const Icon(Icons.location_on_outlined),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
                       return 'Please enter your street address';
@@ -195,7 +195,7 @@ class _AddDeliveryAddressScreenState extends ConsumerState<AddDeliveryAddressScr
                   children: [
                     Switch.adaptive(
                       value: _isDefault,
-                      activeColor: AppColors.primary,
+                      activeTrackColor: AppColors.primary,
                       onChanged: (val) {
                         setState(() {
                           _isDefault = val;
