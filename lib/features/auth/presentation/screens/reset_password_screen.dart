@@ -7,6 +7,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../router/routes.dart';
+import '../../data/repositories/auth_repository.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/pin_code_input.dart';
 
