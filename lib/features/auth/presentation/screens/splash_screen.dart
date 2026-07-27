@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_shadows.dart';
@@ -7,18 +8,29 @@ import '../../../../core/theme/app_typography.dart';
 
 /// Splash / Bootstrap screen per `Login-Registration-Plan.md` §2.1 and Step 3.
 /// Static UI only — token-check logic (Step 15) is added later.
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 2500), () {
+      if (!mounted) return;
+      context.go('/login');
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Splash always renders on the warm cream light background
-    // regardless of system theme — first impression moment.
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       body: Stack(
         children: [
-          // Subtle warm gold radial wash from top — §2 spec "top ~40% gradient"
           Positioned(
             top: 0,
             left: 0,
@@ -30,7 +42,7 @@ class SplashScreen extends StatelessWidget {
                   center: Alignment(0, -0.5),
                   radius: 1.0,
                   colors: [
-                    Color(0x14CEA359), // primary ~8%
+                    Color(0x14CEA359),
                     Colors.transparent,
                   ],
                 ),
@@ -38,7 +50,6 @@ class SplashScreen extends StatelessWidget {
             ),
           ),
 
-          // Diamond corner detail — §7.3
           Positioned(
             top: MediaQuery.of(context).padding.top + 20,
             right: 28,
@@ -57,12 +68,10 @@ class SplashScreen extends StatelessWidget {
             ),
           ),
 
-          // Centre content — logo + wordmark
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Logo mark: gold circle with a subtle card shadow
                 Container(
                   width: 84,
                   height: 84,
@@ -82,7 +91,6 @@ class SplashScreen extends StatelessWidget {
 
                 const SizedBox(height: 28),
 
-                // FONDO wordmark — Fraunces 32/700, §3 headline-lg
                 Text(
                   'FONDO',
                   style: AppTypography.headlineLarge().copyWith(
@@ -93,7 +101,6 @@ class SplashScreen extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                // Gold divider — §7.5
                 Container(
                   width: 48,
                   height: 1,
@@ -110,7 +117,6 @@ class SplashScreen extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                // Tagline — Inter 12 muted
                 Text(
                   'Healthy, scheduled & customizable',
                   style: AppTypography.small(isDark: false).copyWith(
@@ -121,7 +127,6 @@ class SplashScreen extends StatelessWidget {
 
                 const SizedBox(height: 52),
 
-                // Loading indicator — thin gold ring
                 const SizedBox(
                   width: 24,
                   height: 24,
@@ -136,7 +141,6 @@ class SplashScreen extends StatelessWidget {
             ),
           ),
 
-          // Bottom brand pill badge — §7.9 label convention
           Positioned(
             bottom: 36 + MediaQuery.of(context).padding.bottom,
             left: 0,
