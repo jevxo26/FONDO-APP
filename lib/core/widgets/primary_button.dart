@@ -3,7 +3,8 @@ import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_typography.dart';
 
-class PrimaryButton extends StatelessWidget {
+/// Primary CTA Button matching `DESIGN.md` §7.4 & `Login-Registration-Plan.md` §3
+class PrimaryButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
@@ -11,6 +12,7 @@ class PrimaryButton extends StatelessWidget {
   final Color? backgroundColor;
   final Color? textColor;
   final Widget? icon;
+  final double height;
 
   const PrimaryButton({
     super.key,
@@ -21,48 +23,71 @@ class PrimaryButton extends StatelessWidget {
     this.backgroundColor,
     this.textColor,
     this.icon,
+    this.height = 52.0,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final effectiveBg = backgroundColor ?? AppColors.primary;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  State<PrimaryButton> createState() => _PrimaryButtonState();
+}
 
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isEnabled ? effectiveBg : AppColors.textMutedLight,
-          foregroundColor: textColor ?? Colors.white,
-          shape: const RoundedRectangleBorder(borderRadius: AppRadii.md),
-          elevation: 0,
-        ),
-        onPressed: (isEnabled && !isLoading) ? onPressed : null,
-        child: isLoading
-            ? const SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null) ...[
-                    icon!,
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    text,
-                    style: AppTypography.buttonText(isDark: isDark).copyWith(
-                      color: textColor ?? Colors.white,
+class _PrimaryButtonState extends State<PrimaryButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveBg = widget.backgroundColor ?? AppColors.primary;
+    final effectiveFg = widget.textColor ?? AppColors.primaryForeground;
+    final isClickable = widget.isEnabled && !widget.isLoading && widget.onPressed != null;
+
+    return AnimatedScale(
+      scale: _isPressed ? 0.98 : 1.0,
+      duration: const Duration(milliseconds: 150),
+      curve: const Cubic(0.32, 0.72, 0, 1),
+      child: SizedBox(
+        width: double.infinity,
+        height: widget.height,
+        child: GestureDetector(
+          onTapDown: isClickable ? (_) => setState(() => _isPressed = true) : null,
+          onTapUp: isClickable ? (_) => setState(() => _isPressed = false) : null,
+          onTapCancel: isClickable ? () => setState(() => _isPressed = false) : null,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isClickable ? effectiveBg : effectiveBg.withOpacity(0.5),
+              foregroundColor: effectiveFg,
+              disabledBackgroundColor: effectiveBg.withOpacity(0.4),
+              disabledForegroundColor: effectiveFg.withOpacity(0.5),
+              elevation: 0,
+              shape: const RoundedRectangleBorder(borderRadius: AppRadii.radius2xl),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+            ),
+            onPressed: isClickable ? widget.onPressed : null,
+            child: widget.isLoading
+                ? SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(effectiveFg),
                     ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (widget.icon != null) ...[
+                        widget.icon!,
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        widget.text,
+                        style: AppTypography.buttonText().copyWith(
+                          color: effectiveFg,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+          ),
+        ),
       ),
     );
   }
