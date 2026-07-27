@@ -1,28 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/auth_scaffold.dart';
+import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
-import '../../data/dtos/login_request_dto.dart';
-import '../controllers/auth_controller.dart';
-import '../controllers/auth_state.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
+/// Login screen — static UI per `Login-Registration-Plan.md` §2.2, Step 3.
+/// No API calls; dummy validators only. Real controller wired in Step 12.
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identityController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+
+  // UI-only state — no API call
+  String? _fieldError;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -31,138 +35,157 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  void _handleLogin() {
+    setState(() => _fieldError = null);
     if (!_formKey.currentState!.validate()) return;
-
-    final dto = LoginRequestDto(
-      identity: _identityController.text.trim(),
-      password: _passwordController.text,
-    );
-
-    final success = await ref.read(authControllerProvider.notifier).login(dto);
-
-    if (!mounted) return;
-
-    if (!success) {
-      final errorMsg = ref.read(authControllerProvider).errorMessage ?? 'Login failed';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMsg),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
+    // Step 12 will replace this stub with the real controller call.
+    setState(() => _isLoading = true);
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) setState(() => _isLoading = false);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
-    final isLoading = authState.status == AuthStatus.authenticating;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
-                Text(
-                  'Welcome Back 👋',
-                  style: AppTypography.displayHeadline(isDark: isDark),
+    return AuthScaffold(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 40),
+
+            // Logo mark — small, centred
+            Center(
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Sign in to order your favorite meals',
-                  style: AppTypography.bodyMedium(isDark: isDark),
+                child: const Icon(
+                  Icons.restaurant_menu_rounded,
+                  size: 22,
+                  color: AppColors.primaryForeground,
                 ),
-                const SizedBox(height: 36),
-                CustomTextField(
-                  controller: _identityController,
-                  label: 'Email or Phone Number',
-                  hint: 'enter email or +880 phone',
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.person_outline),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter your email or phone number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                CustomTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  hint: '••••••••',
-                  obscureText: _obscurePassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (val.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => context.push(AppRoutes.forgotPassword),
-                    child: Text(
-                      'Forgot Password?',
-                      style: AppTypography.bodyMedium(isDark: isDark).copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 28),
-                PrimaryButton(
-                  text: 'Sign In',
-                  isLoading: isLoading,
-                  onPressed: _handleLogin,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Don't have an account? ",
-                      style: AppTypography.bodyMedium(isDark: isDark),
-                    ),
-                    GestureDetector(
-                      onTap: () => context.push(AppRoutes.register),
-                      child: Text(
-                        'Register',
-                        style: AppTypography.bodyMedium(isDark: isDark).copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
+
+            const SizedBox(height: 28),
+
+            // Headline — Fraunces 32/700
+            Text(
+              'Welcome back',
+              style: AppTypography.headlineLarge(isDark: isDark),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Subtext — Inter 14, muted
+            Text(
+              'Log in to continue your meal plan',
+              style: AppTypography.bodyMedium(isDark: isDark),
+            ),
+
+            const SizedBox(height: 32),
+
+            // API error banner — sits above fields, hidden until set
+            InlineErrorBanner(
+              message: _fieldError,
+              onDismiss: () => setState(() => _fieldError = null),
+            ),
+
+            // Email or Phone (smart detect — no separate toggle)
+            AppTextField(
+              controller: _identityController,
+              label: 'Email or Phone',
+              hint: 'name@domain.com or +8801…',
+              keyboardType: TextInputType.emailAddress,
+              prefixIcon: Icon(
+                Icons.person_outline_rounded,
+                size: 20,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight,
+              ),
+              validator: (val) {
+                if (val == null || val.trim().isEmpty) {
+                  return 'Enter your email or phone number';
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // Password with show/hide toggle built into AppTextField
+            AppTextField(
+              controller: _passwordController,
+              label: 'Password',
+              hint: '••••••••',
+              isPassword: true,
+              textInputAction: TextInputAction.done,
+              prefixIcon: Icon(
+                Icons.lock_outline_rounded,
+                size: 20,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight,
+              ),
+              validator: (val) {
+                if (val == null || val.isEmpty) return 'Enter your password';
+                if (val.length < 6)
+                  return 'Password must be at least 6 characters';
+                return null;
+              },
+              onSubmitted: (_) => _handleLogin(),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Forgot password — right-aligned gold link
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextLinkButton(
+                text: 'Forgot password?',
+                onPressed: () => context.push(AppRoutes.forgotPassword),
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // Primary CTA — gold, radius-2xl, spring press
+            PrimaryButton(
+              text: 'Log in',
+              isLoading: _isLoading,
+              onPressed: _handleLogin,
+            ),
+
+            const SizedBox(height: 28),
+
+            // Secondary link row
+            Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    'New to FONDO? ',
+                    style: AppTypography.bodyMedium(isDark: isDark),
+                  ),
+                  TextLinkButton(
+                    text: 'Create account',
+                    onPressed: () => context.push(AppRoutes.register),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );
