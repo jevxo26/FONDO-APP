@@ -73,16 +73,6 @@ class _OtpInputRowState extends State<OtpInputRow> {
     }
   }
 
-  void _onKeyEvent(int index, KeyEvent event) {
-    if (event is KeyDownEvent &&
-        event.logicalKey == LogicalKeyboardKey.backspace &&
-        _controllers[index].text.isEmpty &&
-        index > 0) {
-      _controllers[index - 1].clear();
-      _focusNodes[index - 1].requestFocus();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -94,52 +84,48 @@ class _OtpInputRowState extends State<OtpInputRow> {
         (index) => SizedBox(
           width: 46,
           height: 56,
-          child: KeyboardListener(
-            focusNode: FocusNode(),
-            onKeyEvent: (event) => _onKeyEvent(index, event),
-            child: TextField(
-              controller: _controllers[index],
-              focusNode: _focusNodes[index],
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              maxLength: 1,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: AppTypography.headlineMedium(isDark: isDark).copyWith(
-                color: widget.hasError
-                    ? AppColors.destructive
-                    : (isDark ? AppColors.foregroundDark : AppColors.foregroundLight),
-              ),
-              decoration: InputDecoration(
-                counterText: '',
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                filled: true,
-                fillColor: isDark ? AppColors.cardDark : AppColors.cardLight,
-                border: OutlineInputBorder(
-                  borderRadius: AppRadii.lg,
-                  borderSide: BorderSide(
-                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                    width: 1,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: AppRadii.lg,
-                  borderSide: BorderSide(
-                    color: widget.hasError
-                        ? AppColors.destructive
-                        : (isDark ? AppColors.borderDark : AppColors.borderLight),
-                    width: widget.hasError ? 1.5 : 1,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: AppRadii.lg,
-                  borderSide: BorderSide(
-                    color: widget.hasError ? AppColors.destructive : AppColors.ring,
-                    width: 2,
-                  ),
-                ),
-              ),
-              onChanged: (val) => _onFieldChanged(index, val),
+          child: TextField(
+            controller: _controllers[index],
+            focusNode: _focusNodes[index],
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            maxLength: 1,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            style: AppTypography.headlineMedium(isDark: isDark).copyWith(
+              color: widget.hasError
+                  ? AppColors.destructive
+                  : (isDark ? AppColors.foregroundDark : AppColors.foregroundLight),
             ),
+            decoration: InputDecoration(
+              counterText: '',
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              filled: true,
+              fillColor: isDark ? AppColors.cardDark : AppColors.cardLight,
+              border: OutlineInputBorder(
+                borderRadius: AppRadii.lg,
+                borderSide: BorderSide(
+                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                  width: 1,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: AppRadii.lg,
+                borderSide: BorderSide(
+                  color: widget.hasError
+                      ? AppColors.destructive
+                      : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                  width: widget.hasError ? 1.5 : 1,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: AppRadii.lg,
+                borderSide: BorderSide(
+                  color: widget.hasError ? AppColors.destructive : AppColors.ring,
+                  width: 2,
+                ),
+              ),
+            ),
+            onChanged: (val) => _onFieldChanged(index, val),
           ),
         ),
       ),

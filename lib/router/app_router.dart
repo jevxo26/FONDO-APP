@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/auth/presentation/controllers/auth_state.dart';
-import '../features/auth/presentation/screens/add_delivery_address_screen.dart';
+import '../features/address/presentation/screens/add_delivery_address_screen.dart';
 import '../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/otp_verify_screen.dart';
