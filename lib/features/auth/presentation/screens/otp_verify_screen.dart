@@ -1,33 +1,28 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
 import '../../../../core/widgets/otp_input_row.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
-import '../../data/dtos/otp_verify_dto.dart';
-import '../../data/repositories/auth_repository.dart';
-import '../controllers/auth_controller.dart';
-import '../controllers/auth_state.dart';
 
 /// OTP Verify screen — static UI per `Login-Registration-Plan.md` §2.4.
-class OtpVerifyScreen extends ConsumerStatefulWidget {
+/// No API calls; dummy behavior only. Real controller wired in Step 14.
+class OtpVerifyScreen extends StatefulWidget {
   final String phone;
 
   const OtpVerifyScreen({super.key, required this.phone});
 
   @override
-  ConsumerState<OtpVerifyScreen> createState() => _OtpVerifyScreenState();
+  State<OtpVerifyScreen> createState() => _OtpVerifyScreenState();
 }
 
-class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
+class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
   String _code = '';
   int _secondsRemaining = 60;
   Timer? _timer;
-  bool _hasError = false;
 
   bool get _isCodeComplete => _code.length == 6;
 
@@ -62,53 +57,27 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
 
   bool get _isEmail => widget.phone.contains('@');
 
-  Future<void> _handleVerify() async {
+  void _handleVerify() {
     if (!_isCodeComplete) return;
-
-    setState(() => _hasError = false);
-
-    final dto = OtpVerifyDto(phone: widget.phone, code: _code);
-    final success = await ref
-        .read(authControllerProvider.notifier)
-        .verifyOtpAndAutoLogin(dto);
-
-    if (!mounted) return;
-
-    if (!success) {
-      setState(() => _hasError = true);
-      final errorMsg =
-          ref.read(authControllerProvider).errorMessage ?? 'Verification failed';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg), backgroundColor: AppColors.error),
-      );
-    }
+    // Step 14 will replace this stub with the real controller call.
+    setState(() {});
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      // Navigate to add address on simulated success
+      context.go('/add-address');
+    });
   }
 
-  Future<void> _handleResend() async {
+  void _handleResend() {
     if (_secondsRemaining > 0) return;
-
-    try {
-      await ref.read(authRepositoryProvider).sendOtp(widget.phone);
-      _startTimer();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('New verification code sent!')),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to resend code: $e'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
+    _startTimer();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('New verification code sent!')),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
-    final isLoading = authState.status == AuthStatus.authenticating;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AuthScaffold(
@@ -118,7 +87,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
         children: [
           const SizedBox(height: 40),
 
-          // §2.4: Headline — dynamic "Verify your number" / "Verify your email"
+          // §2.4: Headline — dynamic
           Text(
             _isEmail ? 'Verify your email' : 'Verify your number',
             style: AppTypography.headlineLarge(isDark: isDark),
@@ -138,13 +107,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
           // §2.4: "6 individual OTP boxes, auto-advance, gold border on active box"
           OtpInputRow(
             length: 6,
-            hasError: _hasError,
-            onChanged: (val) {
-              setState(() {
-                _code = val;
-                _hasError = false;
-              });
-            },
+            onChanged: (val) => setState(() => _code = val),
             onCompleted: (val) {
               _code = val;
               _handleVerify();
@@ -156,7 +119,6 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
           // §2.4: "Verify (disabled until 6 digits entered)"
           PrimaryButton(
             text: 'Verify',
-            isLoading: isLoading,
             isEnabled: _isCodeComplete,
             onPressed: _handleVerify,
           ),

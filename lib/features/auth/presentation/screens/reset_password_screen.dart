@@ -1,35 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
-import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/otp_input_row.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../router/routes.dart';
-import '../../data/repositories/auth_repository.dart';
 
 /// Reset Password screen — static UI per `Login-Registration-Plan.md` §2.5.
-class ResetPasswordScreen extends ConsumerStatefulWidget {
+/// No API calls; dummy behavior only. Real controller wired in Step 16.
+class ResetPasswordScreen extends StatefulWidget {
   final String? target;
 
   const ResetPasswordScreen({super.key, this.target});
 
   @override
-  ConsumerState<ResetPasswordScreen> createState() =>
-      _ResetPasswordScreenState();
+  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String _code = '';
   bool _isLoading = false;
-  String? _fieldError;
 
   bool get _isCodeComplete => _code.length == 6;
 
@@ -40,45 +36,22 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     super.dispose();
   }
 
-  Future<void> _handleResetPassword() async {
-    setState(() => _fieldError = null);
+  void _handleResetPassword() {
     if (!_formKey.currentState!.validate()) return;
-
-    if (!_isCodeComplete) {
-      setState(() => _fieldError = 'Enter all 6 digits of the reset code');
-      return;
-    }
-
+    if (!_isCodeComplete) return;
+    // Step 16 will replace this stub with the real repository call.
     setState(() => _isLoading = true);
-
-    try {
-      final success = await ref.read(authRepositoryProvider).resetPassword(
-            code: _code,
-            newPassword: _passwordController.text,
-            identity: widget.target,
-          );
-
+    Future.delayed(const Duration(milliseconds: 600), () {
       if (!mounted) return;
       setState(() => _isLoading = false);
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Password reset successfully! Please log in.'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        context.go(AppRoutes.login);
-      } else {
-        setState(() => _fieldError = 'Password reset failed');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _fieldError = e.toString().replaceAll('Exception: ', '').replaceAll('AppException: ', '');
-      });
-    }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password reset successfully! Please log in.'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+      context.go(AppRoutes.login);
+    });
   }
 
   @override
@@ -110,13 +83,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
             const SizedBox(height: 32),
 
-            // Error banner
-            InlineErrorBanner(
-              message: _fieldError,
-              onDismiss: () => setState(() => _fieldError = null),
-            ),
-
-            // §2.5: "token (usually deep-linked, but include a manual paste field as fallback)"
+            // §2.5: "token field"
             Text(
               'Reset code',
               style: AppTypography.labelConvention(isDark: isDark),
@@ -124,12 +91,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             const SizedBox(height: 10),
             OtpInputRow(
               length: 6,
-              onChanged: (val) {
-                setState(() {
-                  _code = val;
-                  _fieldError = null;
-                });
-              },
+              onChanged: (val) => setState(() => _code = val),
               onCompleted: (val) => _code = val,
             ),
 
@@ -148,9 +110,12 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                     ? AppColors.mutedForegroundDark
                     : AppColors.mutedForegroundLight,
               ),
+              onChanged: (_) => setState(() {}),
               validator: (val) {
                 if (val == null || val.isEmpty) return 'Enter a new password';
-                if (val.length < 6) return 'Password must be at least 6 characters';
+                if (val.length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
                 return null;
               },
             ),
@@ -181,7 +146,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
             const SizedBox(height: 28),
 
-            // §2.5: "Reset password" CTA → success → back to Login
+            // §2.5: "Reset password" CTA
             PrimaryButton(
               text: 'Reset password',
               isLoading: _isLoading,

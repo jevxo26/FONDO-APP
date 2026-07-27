@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -9,20 +8,18 @@ import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
-import '../../../../models/address_model.dart';
-import '../../../auth/presentation/controllers/auth_controller.dart';
 
 /// Add Delivery Address screen — static UI per `Login-Registration-Plan.md` §2.6.
-class AddDeliveryAddressScreen extends ConsumerStatefulWidget {
+/// No API calls; dummy behavior only. Real controller wired in Step 17.
+class AddDeliveryAddressScreen extends StatefulWidget {
   const AddDeliveryAddressScreen({super.key});
 
   @override
-  ConsumerState<AddDeliveryAddressScreen> createState() =>
+  State<AddDeliveryAddressScreen> createState() =>
       _AddDeliveryAddressScreenState();
 }
 
-class _AddDeliveryAddressScreenState
-    extends ConsumerState<AddDeliveryAddressScreen> {
+class _AddDeliveryAddressScreenState extends State<AddDeliveryAddressScreen> {
   final _formKey = GlobalKey<FormState>();
   final _receiverNameController = TextEditingController();
   final _receiverPhoneController = TextEditingController();
@@ -50,39 +47,15 @@ class _AddDeliveryAddressScreenState
     super.dispose();
   }
 
-  Future<void> _handleSaveAddress() async {
+  void _handleSaveAddress() {
     if (!_formKey.currentState!.validate()) return;
-
+    // Step 17 will replace this stub with the real controller call.
     setState(() => _isLoading = true);
-
-    final address = AddressModel(
-      id: '',
-      label: _selectedLabel,
-      street: _roadHouseController.text.trim(),
-      city: _areaController.text.trim(),
-      state: '${_districtController.text.trim()}, ${_divisionController.text.trim()}',
-      zipCode: '',
-      country: 'Bangladesh',
-      isDefault: true,
-      deliveryInstructions: _instructionsController.text.trim().isEmpty
-          ? null
-          : _instructionsController.text.trim(),
-    );
-
-    final success =
-        await ref.read(authControllerProvider.notifier).addAddress(address);
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to save delivery address'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      context.go('/home');
+    });
   }
 
   Widget _buildLabelChip(String label, bool isDark) {
@@ -210,7 +183,7 @@ class _AddDeliveryAddressScreenState
 
             const SizedBox(height: 16),
 
-            // Division / District / Area — §2.6
+            // Division — §2.6
             AppTextField(
               controller: _divisionController,
               label: 'Division',
@@ -275,7 +248,7 @@ class _AddDeliveryAddressScreenState
 
             const SizedBox(height: 16),
 
-            // "Add more detail" expander — §2.6: "collapsed under an expander"
+            // "Add more detail" expander — §2.6
             GestureDetector(
               onTap: () => setState(() => _showDetails = !_showDetails),
               child: Row(

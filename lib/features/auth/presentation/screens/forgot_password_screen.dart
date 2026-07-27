@@ -1,32 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
-import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
-import '../../data/repositories/auth_repository.dart';
 
 /// Forgot Password screen — static UI per `Login-Registration-Plan.md` §2.5.
-class ForgotPasswordScreen extends ConsumerStatefulWidget {
+/// No API calls; dummy behavior only. Real controller wired in Step 16.
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() =>
-      _ForgotPasswordScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identityController = TextEditingController();
   bool _isLoading = false;
   bool _sendSuccess = false;
-  String? _fieldError;
 
   @override
   void dispose() {
@@ -34,33 +30,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  Future<void> _handleSendResetCode() async {
-    setState(() {
-      _fieldError = null;
-    });
+  void _handleSendResetCode() {
     if (!_formKey.currentState!.validate()) return;
-
+    // Step 16 will replace this stub with the real repository call.
     setState(() => _isLoading = true);
-
-    final identity = _identityController.text.trim();
-    try {
-      final success = await ref.read(authRepositoryProvider).forgotPassword(identity);
+    Future.delayed(const Duration(milliseconds: 600), () {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _sendSuccess = success;
+        _sendSuccess = true;
       });
-
-      if (!success) {
-        setState(() => _fieldError = 'Failed to request reset code');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _fieldError = e.toString().replaceAll('Exception: ', '').replaceAll('AppException: ', '');
-      });
-    }
+    });
   }
 
   @override
@@ -71,7 +51,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       showBackButton: true,
       child: Form(
         key: _formKey,
-        child: _sendSuccess ? _buildSuccessState(isDark) : _buildFormState(isDark),
+        child:
+            _sendSuccess ? _buildSuccessState(isDark) : _buildFormState(isDark),
       ),
     );
   }
@@ -125,7 +106,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           text: 'Reset password',
           onPressed: () {
             final target = _identityController.text.trim();
-            context.push('${AppRoutes.resetPassword}?target=${Uri.encodeComponent(target)}');
+            context.push(
+              '${AppRoutes.resetPassword}?target=${Uri.encodeComponent(target)}',
+            );
           },
         ),
 
@@ -163,12 +146,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         ),
 
         const SizedBox(height: 32),
-
-        // Error banner
-        InlineErrorBanner(
-          message: _fieldError,
-          onDismiss: () => setState(() => _fieldError = null),
-        ),
 
         // §2.5: "single email field"
         AppTextField(

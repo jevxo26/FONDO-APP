@@ -1,36 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
-import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
-import '../../data/dtos/register_request_dto.dart';
-import '../../data/repositories/auth_repository.dart';
-import '../controllers/auth_controller.dart';
-import '../controllers/auth_state.dart';
 
 /// Register screen — static UI per `Login-Registration-Plan.md` §2.3.
-class RegisterScreen extends ConsumerStatefulWidget {
+/// No API calls; dummy validators only. Real controller wired in Step 13.
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  String? _fieldError;
+
+  // UI-only state — no API call
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -42,42 +39,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
-  Future<void> _handleRegister() async {
-    setState(() => _fieldError = null);
+  void _handleRegister() {
     if (!_formKey.currentState!.validate()) return;
-
-    final phone = _phoneController.text.trim();
-    final name =
-        '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}'
-            .trim();
-
-    final dto = RegisterRequestDto(
-      name: name,
-      email: _emailController.text.trim(),
-      phone: phone,
-      password: _passwordController.text,
-    );
-
-    final success =
-        await ref.read(authControllerProvider.notifier).register(dto);
-
-    if (!mounted) return;
-
-    if (success) {
-      await ref.read(authRepositoryProvider).sendOtp(phone);
+    // Step 13 will replace this stub with the real controller call.
+    setState(() => _isLoading = true);
+    Future.delayed(const Duration(milliseconds: 600), () {
       if (!mounted) return;
+      setState(() => _isLoading = false);
+      // Navigate to OTP verify on simulated success
+      final phone = _phoneController.text.trim();
       context.push('${AppRoutes.otpVerify}?phone=${Uri.encodeComponent(phone)}');
-    } else {
-      final errorMsg =
-          ref.read(authControllerProvider).errorMessage ?? 'Registration failed';
-      setState(() => _fieldError = errorMsg);
-    }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
-    final isLoading = authState.status == AuthStatus.authenticating;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AuthScaffold(
@@ -104,12 +80,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ),
 
             const SizedBox(height: 32),
-
-            // API error banner
-            InlineErrorBanner(
-              message: _fieldError,
-              onDismiss: () => setState(() => _fieldError = null),
-            ),
 
             // §2.3: "First name, Last name (two-up row)"
             Row(
@@ -229,7 +199,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               onSubmitted: (_) => _handleRegister(),
               validator: (val) {
                 if (val == null || val.isEmpty) return 'Enter a password';
-                if (val.length < 6) return 'Password must be at least 6 characters';
+                if (val.length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
                 return null;
               },
             ),
@@ -246,7 +218,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             // §2.3: CTA "Create account"
             PrimaryButton(
               text: 'Create account',
-              isLoading: isLoading,
+              isLoading: _isLoading,
               onPressed: _handleRegister,
             ),
 
@@ -303,11 +275,15 @@ class _PasswordStrengthHint extends StatelessWidget {
     return Row(
       children: [
         Icon(
-          hasMinLength ? Icons.check_circle_outline_rounded : Icons.circle_outlined,
+          hasMinLength
+              ? Icons.check_circle_outline_rounded
+              : Icons.circle_outlined,
           size: 14,
           color: hasMinLength
               ? AppColors.success
-              : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight),
+              : (isDark
+                  ? AppColors.mutedForegroundDark
+                  : AppColors.mutedForegroundLight),
         ),
         const SizedBox(width: 6),
         Text(
@@ -315,7 +291,9 @@ class _PasswordStrengthHint extends StatelessWidget {
           style: AppTypography.small(isDark: isDark).copyWith(
             color: hasMinLength
                 ? AppColors.success
-                : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight),
+                : (isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight),
           ),
         ),
       ],
