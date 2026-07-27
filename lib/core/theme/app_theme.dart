@@ -3,6 +3,7 @@ import 'app_colors.dart';
 import 'app_radii.dart';
 import 'app_typography.dart';
 
+/// App ThemeData configuration derived strictly from `docs/DESIGN.md`
 class AppTheme {
   AppTheme._();
 
@@ -14,54 +15,58 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.backgroundLight,
       colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
-        secondary: AppColors.primaryLight,
-        surface: AppColors.surfaceLight,
-        error: AppColors.error,
-        onPrimary: Colors.white,
-        onSurface: AppColors.textPrimaryLight,
+        onPrimary: AppColors.primaryForeground,
+        secondary: AppColors.secondaryLight,
+        onSecondary: AppColors.secondaryForegroundLight,
+        surface: AppColors.cardLight,
+        onSurface: AppColors.cardForegroundLight,
+        error: AppColors.destructive,
+        onError: Colors.white,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.backgroundLight,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: IconThemeData(color: AppColors.textPrimaryLight),
+        iconTheme: const IconThemeData(color: AppColors.foregroundLight),
         centerTitle: true,
+        titleTextStyle: AppTypography.headlineMedium(isDark: false),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.primaryForeground,
           minimumSize: const Size.fromHeight(52),
-          shape: const RoundedRectangleBorder(borderRadius: AppRadii.md),
+          shape: const RoundedRectangleBorder(borderRadius: AppRadii.radius2xl),
           textStyle: AppTypography.buttonText(),
           elevation: 0,
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.inputFillLight,
+        fillColor: AppColors.cardLight,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
+        border: const OutlineInputBorder(
           borderRadius: AppRadii.lg,
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: AppColors.borderLight, width: 1),
         ),
-        enabledBorder: OutlineInputBorder(
+        enabledBorder: const OutlineInputBorder(
           borderRadius: AppRadii.lg,
-          borderSide: const BorderSide(color: AppColors.borderLight, width: 1),
+          borderSide: BorderSide(color: AppColors.borderLight, width: 1),
         ),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderRadius: AppRadii.lg,
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(color: AppColors.ring, width: 2),
         ),
-        errorBorder: OutlineInputBorder(
+        errorBorder: const OutlineInputBorder(
           borderRadius: AppRadii.lg,
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
+          borderSide: BorderSide(color: AppColors.destructive, width: 1),
         ),
-        focusedErrorBorder: OutlineInputBorder(
+        focusedErrorBorder: const OutlineInputBorder(
           borderRadius: AppRadii.lg,
-          borderSide: const BorderSide(color: AppColors.error, width: 2),
+          borderSide: BorderSide(color: AppColors.destructive, width: 2),
         ),
-        hintStyle: AppTypography.bodyMedium().copyWith(color: AppColors.textMutedLight),
+        labelStyle: AppTypography.labelConvention(isDark: false),
+        hintStyle: AppTypography.bodyMedium(isDark: false),
       ),
     );
   }
@@ -74,54 +79,58 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.backgroundDark,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
-        secondary: AppColors.primaryLight,
-        surface: AppColors.surfaceDark,
-        error: AppColors.error,
-        onPrimary: Colors.white,
-        onSurface: AppColors.textPrimaryDark,
+        onPrimary: AppColors.primaryForeground,
+        secondary: AppColors.secondaryDark,
+        onSecondary: AppColors.secondaryForegroundDark,
+        surface: AppColors.cardDark,
+        onSurface: AppColors.cardForegroundDark,
+        error: AppColors.destructive,
+        onError: Colors.white,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: IconThemeData(color: AppColors.textPrimaryDark),
+        iconTheme: const IconThemeData(color: AppColors.foregroundDark),
         centerTitle: true,
+        titleTextStyle: AppTypography.headlineMedium(isDark: true),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.primaryForeground,
           minimumSize: const Size.fromHeight(52),
-          shape: const RoundedRectangleBorder(borderRadius: AppRadii.md),
+          shape: const RoundedRectangleBorder(borderRadius: AppRadii.radius2xl),
           textStyle: AppTypography.buttonText(isDark: true),
           elevation: 0,
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.inputFillDark,
+        fillColor: AppColors.cardDark,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
+        border: const OutlineInputBorder(
           borderRadius: AppRadii.lg,
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: AppColors.borderDark, width: 1),
         ),
-        enabledBorder: OutlineInputBorder(
+        enabledBorder: const OutlineInputBorder(
           borderRadius: AppRadii.lg,
-          borderSide: const BorderSide(color: AppColors.borderDark, width: 1),
+          borderSide: BorderSide(color: AppColors.borderDark, width: 1),
         ),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderRadius: AppRadii.lg,
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(color: AppColors.ring, width: 2),
         ),
-        errorBorder: OutlineInputBorder(
+        errorBorder: const OutlineInputBorder(
           borderRadius: AppRadii.lg,
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
+          borderSide: BorderSide(color: AppColors.destructive, width: 1),
         ),
-        focusedErrorBorder: OutlineInputBorder(
+        focusedErrorBorder: const OutlineInputBorder(
           borderRadius: AppRadii.lg,
-          borderSide: const BorderSide(color: AppColors.error, width: 2),
+          borderSide: BorderSide(color: AppColors.destructive, width: 2),
         ),
-        hintStyle: AppTypography.bodyMedium(isDark: true).copyWith(color: AppColors.textMutedDark),
+        labelStyle: AppTypography.labelConvention(isDark: true),
+        hintStyle: AppTypography.bodyMedium(isDark: true),
       ),
     );
   }

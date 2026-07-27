@@ -57,7 +57,7 @@ class HomeScreen extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.surfaceDark : AppColors.primarySurface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +88,7 @@ class HomeScreen extends ConsumerWidget {
                       Icon(
                         Icons.restaurant,
                         size: 64,
-                        color: AppColors.primary.withOpacity(0.5),
+                        color: AppColors.primary.withValues(alpha: 0.5),
                       ),
                       const SizedBox(height: 16),
                       Text(
