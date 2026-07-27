@@ -8,7 +8,6 @@ import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../router/routes.dart';
 import '../../data/repositories/auth_repository.dart';
-import '../controllers/auth_controller.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});

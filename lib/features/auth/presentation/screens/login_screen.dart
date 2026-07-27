@@ -137,8 +137,9 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               validator: (val) {
                 if (val == null || val.isEmpty) return 'Enter your password';
-                if (val.length < 6)
+                if (val.length < 6) {
                   return 'Password must be at least 6 characters';
+                }
                 return null;
               },
               onSubmitted: (_) => _handleLogin(),

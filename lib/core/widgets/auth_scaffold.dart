@@ -38,7 +38,7 @@ class AuthScaffold extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppColors.primary.withOpacity(isDark ? 0.08 : 0.05),
+                    AppColors.primary.withValues(alpha: isDark ? 0.08 : 0.05),
                     Colors.transparent,
                   ],
                 ),
@@ -57,7 +57,7 @@ class AuthScaffold extends StatelessWidget {
                 height: 7,
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.35),
+                    color: AppColors.primary.withValues(alpha: 0.35),
                     width: 1,
                   ),
                 ),
@@ -87,7 +87,7 @@ class AuthScaffold extends StatelessWidget {
                           )
                         else
                           const SizedBox(width: 48),
-                        if (headerAction != null) headerAction!,
+                        ?headerAction,
                       ],
                     ),
                   ),

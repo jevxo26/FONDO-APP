@@ -52,10 +52,10 @@ class _PrimaryButtonState extends State<PrimaryButton> {
           onTapCancel: isClickable ? () => setState(() => _isPressed = false) : null,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: isClickable ? effectiveBg : effectiveBg.withOpacity(0.5),
+              backgroundColor: isClickable ? effectiveBg : effectiveBg.withValues(alpha: 0.5),
               foregroundColor: effectiveFg,
-              disabledBackgroundColor: effectiveBg.withOpacity(0.4),
-              disabledForegroundColor: effectiveFg.withOpacity(0.5),
+              disabledBackgroundColor: effectiveBg.withValues(alpha: 0.4),
+              disabledForegroundColor: effectiveFg.withValues(alpha: 0.5),
               elevation: 0,
               shape: const RoundedRectangleBorder(borderRadius: AppRadii.radius2xl),
               padding: const EdgeInsets.symmetric(horizontal: 24),

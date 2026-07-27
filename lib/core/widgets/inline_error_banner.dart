@@ -27,10 +27,10 @@ class InlineErrorBanner extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.destructive.withOpacity(isDark ? 0.15 : 0.08),
+        color: AppColors.destructive.withValues(alpha: isDark ? 0.15 : 0.08),
         borderRadius: AppRadii.lg,
         border: Border.all(
-          color: AppColors.destructive.withOpacity(0.3),
+          color: AppColors.destructive.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
