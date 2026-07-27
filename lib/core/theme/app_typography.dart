@@ -97,4 +97,9 @@ class AppTypography {
         fontWeight: FontWeight.w600,
         color: AppColors.primaryForeground,
       );
+
+  // Legacy Method Aliases for backward compatibility
+  static TextStyle displayHeadline({bool isDark = false}) => headlineLarge(isDark: isDark);
+  static TextStyle titleLarge({bool isDark = false}) => headlineMedium(isDark: isDark);
+  static TextStyle titleMedium({bool isDark = false}) => cardTitle(isDark: isDark);
 }

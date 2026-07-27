@@ -47,6 +47,7 @@ class AppColors {
 
   // Semantic Status Colors
   static const Color destructive = Color(0xFFEF4444);
+  static const Color error = Color(0xFFEF4444); // Legacy alias for destructive
   static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFF59E0B);
 
@@ -64,6 +65,19 @@ class AppColors {
   static const Color sidebarDark = Color(0xFF1A1A1A);
   static const Color sidebarForegroundLight = Color(0xFF16100C);
   static const Color sidebarForegroundDark = Color(0xFFFAF5EB);
+
+  // Legacy Aliases for backward compatibility across existing screens
+  static const Color textPrimaryLight = Color(0xFF16100C);
+  static const Color textPrimaryDark = Color(0xFFFAF5EB);
+  static const Color textSecondaryLight = Color(0xFF635C57);
+  static const Color textSecondaryDark = Color(0xFF9CA3AF);
+  static const Color textMutedLight = Color(0xFF635C57);
+  static const Color textMutedDark = Color(0xFF9CA3AF);
+  static const Color inputFillLight = Color(0xFFFBF5EB);
+  static const Color inputFillDark = Color(0xFF2C2C2C);
+  static const Color surfaceLight = Color(0xFFFFFFFF);
+  static const Color surfaceDark = Color(0xFF2C2C2C);
+  static const Color primarySurface = Color(0x1ACEA359);
 
   // Gold Gradients & Warm Accents (§7.1, §7.5)
   static const Gradient warmGoldGradient = LinearGradient(
