@@ -7,6 +7,7 @@ import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
+import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
@@ -28,7 +29,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // UI-only state — no API call
+  String? _apiError;
   bool _isLoading = false;
 
   @override
@@ -43,6 +44,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _handleRegister() {
     if (!_formKey.currentState!.validate()) return;
+    setState(() => _apiError = null);
     // Step 13 will replace this stub with the real controller call.
     setState(() => _isLoading = true);
     Future.delayed(const Duration(milliseconds: 600), () {
@@ -81,7 +83,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               style: AppTypography.bodyMedium(isDark: isDark),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+
+            InlineErrorBanner(
+              message: _apiError,
+              onDismiss: () => setState(() => _apiError = null),
+            ),
+
+            const SizedBox(height: 8),
 
             // §2.3: "First name, Last name (two-up row)"
             Row(

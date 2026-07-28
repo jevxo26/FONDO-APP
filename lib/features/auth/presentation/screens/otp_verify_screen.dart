@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,9 +6,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
+import '../../../../core/widgets/countdown_link.dart';
 import '../../../../core/widgets/otp_input_row.dart';
 import '../../../../core/widgets/primary_button.dart';
-import '../../../../core/widgets/text_link_button.dart';
 
 /// OTP Verify screen — static UI per `Login-Registration-Plan.md` §2.4.
 /// No API calls; dummy behavior only. Real controller wired in Step 14.
@@ -24,35 +23,10 @@ class OtpVerifyScreen extends StatefulWidget {
 
 class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
   final _otpKey = GlobalKey<OtpInputRowState>();
+  final _countdownKey = GlobalKey<CountdownLinkState>();
   String _code = '';
-  int _secondsRemaining = 60;
-  Timer? _timer;
 
   bool get _isCodeComplete => _code.length == 6;
-
-  @override
-  void initState() {
-    super.initState();
-    _startTimer();
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _startTimer() {
-    _secondsRemaining = 60;
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_secondsRemaining > 0) {
-        setState(() => _secondsRemaining--);
-      } else {
-        _timer?.cancel();
-      }
-    });
-  }
 
   String _maskPhone(String phone) {
     if (phone.length <= 4) return phone;
@@ -63,18 +37,14 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
 
   void _handleVerify() {
     if (!_isCodeComplete) return;
-    // Step 14 will replace this stub with the real controller call.
-    setState(() {});
     Future.delayed(const Duration(milliseconds: 600), () {
       if (!mounted) return;
-      // Navigate to add address on simulated success
       context.go('/add-address');
     });
   }
 
   void _handleResend() {
-    if (_secondsRemaining > 0) return;
-    _startTimer();
+    _countdownKey.currentState?.startCooldown();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('New verification code sent!')),
     );
@@ -131,25 +101,9 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
           const SizedBox(height: 28),
 
           // §2.4: "Resend code — disabled with countdown"
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (_secondsRemaining > 0)
-                Text(
-                  'Resend in ${(_secondsRemaining ~/ 60)}:${(_secondsRemaining % 60).toString().padLeft(2, '0')}',
-                  style: AppTypography.bodyMedium(isDark: isDark),
-                )
-              else ...[
-                Text(
-                  "Didn't receive code? ",
-                  style: AppTypography.bodyMedium(isDark: isDark),
-                ),
-                TextLinkButton(
-                  text: 'Resend',
-                  onPressed: _handleResend,
-                ),
-              ],
-            ],
+          CountdownLink(
+            key: _countdownKey,
+            onResend: _handleResend,
           ),
 
           const SizedBox(height: 28),

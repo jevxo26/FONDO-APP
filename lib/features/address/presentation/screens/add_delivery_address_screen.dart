@@ -7,6 +7,7 @@ import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
+import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
 
@@ -32,6 +33,7 @@ class _AddDeliveryAddressScreenState extends State<AddDeliveryAddressScreen> {
   final _instructionsController = TextEditingController();
 
   String _selectedLabel = 'Home';
+  String? _apiError;
   bool _isLoading = false;
   bool _showDetails = false;
 
@@ -50,6 +52,7 @@ class _AddDeliveryAddressScreenState extends State<AddDeliveryAddressScreen> {
 
   void _handleSaveAddress() {
     if (!_formKey.currentState!.validate()) return;
+    setState(() => _apiError = null);
     // Step 17 will replace this stub with the real controller call.
     setState(() => _isLoading = true);
     Future.delayed(const Duration(milliseconds: 600), () {
@@ -119,7 +122,14 @@ class _AddDeliveryAddressScreenState extends State<AddDeliveryAddressScreen> {
               style: AppTypography.bodyMedium(isDark: isDark),
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 16),
+
+            InlineErrorBanner(
+              message: _apiError,
+              onDismiss: () => setState(() => _apiError = null),
+            ),
+
+            const SizedBox(height: 12),
 
             // Address Label — §2.6: "label (Home/Office/Other pills)"
             Text(

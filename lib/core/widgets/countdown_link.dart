@@ -18,16 +18,21 @@ class CountdownLink extends StatefulWidget {
   });
 
   @override
-  State<CountdownLink> createState() => _CountdownLinkState();
+  CountdownLinkState createState() => CountdownLinkState();
 }
 
-class _CountdownLinkState extends State<CountdownLink> {
+class CountdownLinkState extends State<CountdownLink> {
   Timer? _timer;
   late int _remainingSeconds;
 
   @override
   void initState() {
     super.initState();
+    _remainingSeconds = 0;
+  }
+
+  /// Reset and restart the cooldown timer from the parent.
+  void startCooldown() {
     _startTimer();
   }
 

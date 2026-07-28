@@ -7,6 +7,8 @@ import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
+import '../../../../core/widgets/countdown_link.dart';
+import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/otp_input_row.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../router/routes.dart';
@@ -25,12 +27,21 @@ class ResetPasswordScreen extends StatefulWidget {
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _otpKey = GlobalKey<OtpInputRowState>();
+  final _countdownKey = GlobalKey<CountdownLinkState>();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String _code = '';
+  String? _apiError;
   bool _isLoading = false;
 
   bool get _isCodeComplete => _code.length == 6;
+
+  void _handleResend() {
+    _countdownKey.currentState?.startCooldown();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('New reset code sent!')),
+    );
+  }
 
   @override
   void dispose() {
@@ -42,6 +53,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   void _handleResetPassword() {
     if (!_formKey.currentState!.validate()) return;
     if (!_isCodeComplete) return;
+    setState(() => _apiError = null);
     // Step 16 will replace this stub with the real repository call.
     setState(() => _isLoading = true);
     Future.delayed(const Duration(milliseconds: 600), () {
@@ -84,7 +96,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               style: AppTypography.bodyMedium(isDark: isDark),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+
+            InlineErrorBanner(
+              message: _apiError,
+              onDismiss: () => setState(() => _apiError = null),
+            ),
+
+            const SizedBox(height: 8),
 
             // §2.5: "token field"
             Text(
@@ -97,6 +116,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               length: 6,
               onChanged: (val) => setState(() => _code = val),
               onCompleted: (val) => _code = val,
+            ),
+
+            const SizedBox(height: 16),
+
+            CountdownLink(
+              key: _countdownKey,
+              onResend: _handleResend,
             ),
 
             const SizedBox(height: 24),

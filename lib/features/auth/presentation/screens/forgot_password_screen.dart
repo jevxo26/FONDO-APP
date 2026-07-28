@@ -7,6 +7,7 @@ import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
+import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
@@ -23,6 +24,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identityController = TextEditingController();
+  String? _apiError;
   bool _isLoading = false;
   bool _sendSuccess = false;
 
@@ -34,6 +36,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   void _handleSendResetCode() {
     if (!_formKey.currentState!.validate()) return;
+    setState(() => _apiError = null);
     // Step 16 will replace this stub with the real repository call.
     setState(() => _isLoading = true);
     Future.delayed(const Duration(milliseconds: 600), () {
@@ -147,7 +150,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           style: AppTypography.bodyMedium(isDark: isDark),
         ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
+
+        InlineErrorBanner(
+          message: _apiError,
+          onDismiss: () => setState(() => _apiError = null),
+        ),
+
+        const SizedBox(height: 8),
 
         // §2.5: "single email field"
         AppTextField(
