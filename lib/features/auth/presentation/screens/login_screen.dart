@@ -43,7 +43,9 @@ class _LoginScreenState extends State<LoginScreen> {
     // Step 12 will replace this stub with the real controller call.
     setState(() => _isLoading = true);
     Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) setState(() => _isLoading = false);
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      context.go('/home');
     });
   }
 
