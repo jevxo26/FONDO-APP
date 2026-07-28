@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/mock/mock_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../auth/presentation/controllers/auth_controller.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authControllerProvider);
-    final user = authState.user;
-    final primaryAddress = authState.addresses.isNotEmpty ? authState.addresses.first : null;
+  Widget build(BuildContext context) {
+    final user = mockUser;
+    final primaryAddress = mockAddresses.isNotEmpty ? mockAddresses.first : null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -39,9 +38,7 @@ class HomeScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authControllerProvider.notifier).logout();
-            },
+            onPressed: () => context.go('/login'),
           ),
         ],
       ),
@@ -63,7 +60,7 @@ class HomeScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Welcome, ${user?.name ?? "Foodie"}! 👋',
+                      'Welcome, ${user.name}!',
                       style: AppTypography.titleLarge(isDark: isDark),
                     ),
                     const SizedBox(height: 8),

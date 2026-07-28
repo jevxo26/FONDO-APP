@@ -7,6 +7,7 @@ import '../theme/app_typography.dart';
 /// 6-digit OTP Input Row widget per `Login-Registration-Plan.md` §3
 class OtpInputRow extends StatefulWidget {
   final int length;
+  final String? initialValue;
   final ValueChanged<String> onChanged;
   final ValueChanged<String>? onCompleted;
   final bool hasError;
@@ -14,16 +15,17 @@ class OtpInputRow extends StatefulWidget {
   const OtpInputRow({
     super.key,
     this.length = 6,
+    this.initialValue,
     required this.onChanged,
     this.onCompleted,
     this.hasError = false,
   });
 
   @override
-  State<OtpInputRow> createState() => _OtpInputRowState();
+  OtpInputRowState createState() => OtpInputRowState();
 }
 
-class _OtpInputRowState extends State<OtpInputRow> {
+class OtpInputRowState extends State<OtpInputRow> {
   late List<TextEditingController> _controllers;
   late List<FocusNode> _focusNodes;
 
@@ -32,6 +34,43 @@ class _OtpInputRowState extends State<OtpInputRow> {
     super.initState();
     _controllers = List.generate(widget.length, (_) => TextEditingController());
     _focusNodes = List.generate(widget.length, (_) => FocusNode());
+    _applyInitialValue();
+  }
+
+  @override
+  void didUpdateWidget(covariant OtpInputRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialValue != null &&
+        widget.initialValue != oldWidget.initialValue) {
+      _applyInitialValue();
+    }
+  }
+
+  void _applyInitialValue() {
+    if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
+      final digits = widget.initialValue!.replaceAll(RegExp(r'\D'), '');
+      for (int i = 0; i < widget.length; i++) {
+        _controllers[i].text = i < digits.length ? digits[i] : '';
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onChanged(_otpValue);
+        if (_otpValue.length == widget.length && widget.onCompleted != null) {
+          widget.onCompleted!(_otpValue);
+        }
+      });
+    }
+  }
+
+  /// Programmatically set the OTP value from outside (e.g. demo data button).
+  void setValue(String value) {
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    for (int i = 0; i < widget.length; i++) {
+      _controllers[i].text = i < digits.length ? digits[i] : '';
+    }
+    widget.onChanged(_otpValue);
+    if (_otpValue.length == widget.length && widget.onCompleted != null) {
+      widget.onCompleted!(_otpValue);
+    }
   }
 
   @override

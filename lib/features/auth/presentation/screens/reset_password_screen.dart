@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/mock/mock_data.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
@@ -22,6 +24,7 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _otpKey = GlobalKey<OtpInputRowState>();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String _code = '';
@@ -90,6 +93,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
             const SizedBox(height: 10),
             OtpInputRow(
+              key: _otpKey,
               length: 6,
               onChanged: (val) => setState(() => _code = val),
               onCompleted: (val) => _code = val,
@@ -151,6 +155,50 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               text: 'Reset password',
               isLoading: _isLoading,
               onPressed: _handleResetPassword,
+            ),
+
+            const SizedBox(height: 16),
+
+            // Demo data quick-fill
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  _otpKey.currentState?.setValue(mockOtpCode);
+                  setState(() {
+                    _passwordController.text = mockRegisterPassword;
+                    _confirmPasswordController.text = mockRegisterPassword;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: AppRadii.full,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.smart_button_outlined,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Use Demo Data',
+                        style: AppTypography.labelConvention(isDark: isDark)
+                            .copyWith(color: AppColors.primary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ],
         ),

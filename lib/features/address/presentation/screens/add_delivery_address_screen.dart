@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/mock/mock_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -313,6 +314,54 @@ class _AddDeliveryAddressScreenState extends State<AddDeliveryAddressScreen> {
               text: 'Save address',
               isLoading: _isLoading,
               onPressed: _handleSaveAddress,
+            ),
+
+            const SizedBox(height: 16),
+
+            // Demo data quick-fill
+            Center(
+              child: GestureDetector(
+                onTap: () => setState(() {
+                  _selectedLabel = 'Home';
+                  _receiverNameController.text = mockReceiverName;
+                  _receiverPhoneController.text = mockReceiverPhone;
+                  _divisionController.text = mockDivision;
+                  _districtController.text = mockDistrict;
+                  _roadHouseController.text = mockRoadHouse;
+                  _detailController.text = mockAddressDetail;
+                  _instructionsController.text = mockDeliveryInstructions;
+                  _showDetails = true;
+                }),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: AppRadii.full,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.smart_button_outlined,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Use Demo Data',
+                        style: AppTypography.labelConvention(isDark: isDark)
+                            .copyWith(color: AppColors.primary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
 
             const SizedBox(height: 16),

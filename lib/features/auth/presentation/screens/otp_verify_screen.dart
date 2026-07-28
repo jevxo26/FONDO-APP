@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/mock/mock_data.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
 import '../../../../core/widgets/otp_input_row.dart';
@@ -20,6 +23,7 @@ class OtpVerifyScreen extends StatefulWidget {
 }
 
 class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
+  final _otpKey = GlobalKey<OtpInputRowState>();
   String _code = '';
   int _secondsRemaining = 60;
   Timer? _timer;
@@ -106,6 +110,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
 
           // §2.4: "6 individual OTP boxes, auto-advance, gold border on active box"
           OtpInputRow(
+            key: _otpKey,
             length: 6,
             onChanged: (val) => setState(() => _code = val),
             onCompleted: (val) {
@@ -145,6 +150,42 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                 ),
               ],
             ],
+          ),
+
+          const SizedBox(height: 28),
+
+          // Demo data quick-fill
+          GestureDetector(
+            onTap: () => _otpKey.currentState?.setValue(mockOtpCode),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: AppRadii.full,
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.smart_button_outlined,
+                    size: 14,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Use Demo Data',
+                    style: AppTypography.labelConvention(isDark: isDark)
+                        .copyWith(color: AppColors.primary),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
