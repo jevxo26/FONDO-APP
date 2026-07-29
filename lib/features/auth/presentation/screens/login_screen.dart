@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/mock/mock_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -12,22 +10,26 @@ import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
-import '../../data/dtos/login_request_dto.dart';
-import '../controllers/auth_controller.dart';
-import '../controllers/auth_state.dart';
 
-/// Login screen — §2.2. Wired to AuthController.
-class LoginScreen extends ConsumerStatefulWidget {
+/// Login screen — §2.2. Static UI with hardcoded demo credentials.
+/// No API, no controller. test@fondo.com / test123 succeeds.
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identityController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  static const _demoEmail = 'test@fondo.com';
+  static const _demoPassword = 'test123';
+
+  String? _fieldError;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -36,24 +38,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() async {
+  void _handleLogin() {
+    setState(() => _fieldError = null);
     if (!_formKey.currentState!.validate()) return;
-    final dto = LoginRequestDto(
-      identity: _identityController.text.trim(),
-      password: _passwordController.text,
-    );
-    final success = await ref.read(authControllerProvider.notifier).login(dto);
-    if (!mounted) return;
-    if (success) {
-      context.go('/home');
-    }
+
+    setState(() => _isLoading = true);
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      final email = _identityController.text.trim();
+      final password = _passwordController.text;
+
+      if (email == _demoEmail && password == _demoPassword) {
+        context.go('/home');
+      } else {
+        setState(() {
+          _fieldError = 'Invalid email or password. Please try again.';
+        });
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final authState = ref.watch(authControllerProvider);
-    final isLoading = authState.status == AuthStatus.authenticating;
 
     return AuthScaffold(
       child: Form(
@@ -100,8 +109,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
             // API error banner — sits above fields, hidden until set
             InlineErrorBanner(
-              message: authState.errorMessage,
-              onDismiss: () => ref.read(authControllerProvider.notifier).clearError(),
+              message: _fieldError,
+              onDismiss: () => setState(() => _fieldError = null),
             ),
 
             // Email or Phone (smart detect — no separate toggle)
@@ -167,7 +176,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             // Primary CTA — gold, radius-2xl, spring press
             PrimaryButton(
               text: 'Log in',
-              isLoading: isLoading,
+              isLoading: _isLoading,
               onPressed: _handleLogin,
             ),
 
@@ -177,8 +186,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Center(
               child: GestureDetector(
                 onTap: () => setState(() {
-                  _identityController.text = mockLoginEmail;
-                  _passwordController.text = mockLoginPassword;
+                  _identityController.text = _demoEmail;
+                  _passwordController.text = _demoPassword;
                 }),
                 child: Container(
                   padding: const EdgeInsets.symmetric(

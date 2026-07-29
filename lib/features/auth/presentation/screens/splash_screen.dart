@@ -1,26 +1,28 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../controllers/auth_controller.dart';
 
 /// Splash / Bootstrap screen per `Login-Registration-Plan.md` §2.1.
-/// Checks secure storage for token → fades to Login or Home.
-class SplashScreen extends ConsumerStatefulWidget {
+/// Static UI only — centered logo on themed background.
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    ref.read(authControllerProvider.notifier).bootstrap();
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      context.go('/login');
+    });
   }
 
   @override
