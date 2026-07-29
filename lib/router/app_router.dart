@@ -6,7 +6,7 @@ import '../features/auth/presentation/screens/otp_verify_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
-import '../features/home/presentation/screens/home_screen.dart';
+import '../features/home/presentation/screens/main_shell.dart';
 import 'routes.dart';
 
 /// App router — no auth guard. Simple static routing.
@@ -49,7 +49,7 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.home,
-      builder: (context, state) => const HomeScreen(),
+      builder: (context, state) => const MainShell(),
     ),
   ],
 );
