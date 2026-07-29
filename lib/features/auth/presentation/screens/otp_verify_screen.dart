@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/mock/mock_data.dart';
@@ -7,21 +8,24 @@ import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/auth_scaffold.dart';
 import '../../../../core/widgets/countdown_link.dart';
+import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/otp_input_row.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../data/dtos/otp_verify_dto.dart';
+import '../controllers/auth_controller.dart';
+import '../controllers/auth_state.dart';
 
-/// OTP Verify screen — static UI per `Login-Registration-Plan.md` §2.4.
-/// No API calls; dummy behavior only. Real controller wired in Step 14.
-class OtpVerifyScreen extends StatefulWidget {
+/// OTP Verify screen — §2.4. Wired to AuthController.
+class OtpVerifyScreen extends ConsumerStatefulWidget {
   final String phone;
 
   const OtpVerifyScreen({super.key, required this.phone});
 
   @override
-  State<OtpVerifyScreen> createState() => _OtpVerifyScreenState();
+  ConsumerState<OtpVerifyScreen> createState() => _OtpVerifyScreenState();
 }
 
-class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
+class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
   final _otpKey = GlobalKey<OtpInputRowState>();
   final _countdownKey = GlobalKey<CountdownLinkState>();
   String _code = '';
@@ -35,12 +39,14 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
 
   bool get _isEmail => widget.phone.contains('@');
 
-  void _handleVerify() {
+  void _handleVerify() async {
     if (!_isCodeComplete) return;
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (!mounted) return;
+    final dto = OtpVerifyDto(phone: widget.phone, code: _code);
+    final success = await ref.read(authControllerProvider.notifier).verifyOtpAndAutoLogin(dto);
+    if (!mounted) return;
+    if (success) {
       context.go('/add-address');
-    });
+    }
   }
 
   void _handleResend() {
@@ -53,6 +59,8 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final authState = ref.watch(authControllerProvider);
+    final isLoading = authState.status == AuthStatus.authenticating;
 
     return AuthScaffold(
       showBackButton: true,
@@ -76,7 +84,14 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
             style: AppTypography.bodyMedium(isDark: isDark),
           ),
 
-          const SizedBox(height: 36),
+          const SizedBox(height: 16),
+
+          InlineErrorBanner(
+            message: authState.errorMessage,
+            onDismiss: () => ref.read(authControllerProvider.notifier).clearError(),
+          ),
+
+          const SizedBox(height: 12),
 
           // §2.4: "6 individual OTP boxes, auto-advance, gold border on active box"
           OtpInputRow(
@@ -94,7 +109,8 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
           // §2.4: "Verify (disabled until 6 digits entered)"
           PrimaryButton(
             text: 'Verify',
-            isEnabled: _isCodeComplete,
+            isEnabled: _isCodeComplete && !isLoading,
+            isLoading: isLoading,
             onPressed: _handleVerify,
           ),
 

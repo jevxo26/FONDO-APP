@@ -21,6 +21,10 @@ class AuthController extends StateNotifier<AuthState> {
     bootstrap();
   }
 
+  void clearError() {
+    state = state.copyWith(errorMessage: null);
+  }
+
   Future<void> bootstrap() async {
     try {
       state = state.copyWith(status: AuthStatus.initial);
@@ -133,6 +137,32 @@ class AuthController extends StateNotifier<AuthState> {
       return true;
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> forgotPassword(String identity) async {
+    try {
+      state = state.copyWith(status: AuthStatus.authenticating, errorMessage: null);
+      return await _authRepository.forgotPassword(identity);
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.unauthenticated,
+        errorMessage: e.toString().replaceAll('Exception: ', '').replaceAll('AppException: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword({required String code, required String newPassword, String? identity}) async {
+    try {
+      state = state.copyWith(status: AuthStatus.authenticating, errorMessage: null);
+      return await _authRepository.resetPassword(code: code, newPassword: newPassword, identity: identity);
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.unauthenticated,
+        errorMessage: e.toString().replaceAll('Exception: ', '').replaceAll('AppException: ', ''),
+      );
       return false;
     }
   }

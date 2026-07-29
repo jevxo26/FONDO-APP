@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/mock/mock_data.dart';
@@ -10,18 +11,20 @@ import '../../../../core/widgets/auth_scaffold.dart';
 import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
+import '../../../../models/address_model.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../auth/presentation/controllers/auth_state.dart';
 
-/// Add Delivery Address screen — static UI per `Login-Registration-Plan.md` §2.6.
-/// No API calls; dummy behavior only. Real controller wired in Step 17.
-class AddDeliveryAddressScreen extends StatefulWidget {
+/// Add Delivery Address screen — §2.6. Wired to AuthController.
+class AddDeliveryAddressScreen extends ConsumerStatefulWidget {
   const AddDeliveryAddressScreen({super.key});
 
   @override
-  State<AddDeliveryAddressScreen> createState() =>
+  ConsumerState<AddDeliveryAddressScreen> createState() =>
       _AddDeliveryAddressScreenState();
 }
 
-class _AddDeliveryAddressScreenState extends State<AddDeliveryAddressScreen> {
+class _AddDeliveryAddressScreenState extends ConsumerState<AddDeliveryAddressScreen> {
   final _formKey = GlobalKey<FormState>();
   final _receiverNameController = TextEditingController();
   final _receiverPhoneController = TextEditingController();
@@ -33,8 +36,6 @@ class _AddDeliveryAddressScreenState extends State<AddDeliveryAddressScreen> {
   final _instructionsController = TextEditingController();
 
   String _selectedLabel = 'Home';
-  String? _apiError;
-  bool _isLoading = false;
   bool _showDetails = false;
 
   @override
@@ -50,16 +51,28 @@ class _AddDeliveryAddressScreenState extends State<AddDeliveryAddressScreen> {
     super.dispose();
   }
 
-  void _handleSaveAddress() {
+  void _handleSaveAddress() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _apiError = null);
-    // Step 17 will replace this stub with the real controller call.
-    setState(() => _isLoading = true);
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+    final address = AddressModel(
+      id: '',
+      label: _selectedLabel,
+      street: _roadHouseController.text.trim(),
+      city: _districtController.text.trim(),
+      state: _divisionController.text.trim(),
+      zipCode: '',
+      country: 'Bangladesh',
+      latitude: 0,
+      longitude: 0,
+      isDefault: true,
+      deliveryInstructions: _instructionsController.text.trim().isEmpty
+          ? null
+          : _instructionsController.text.trim(),
+    );
+    final success = await ref.read(authControllerProvider.notifier).addAddress(address);
+    if (!mounted) return;
+    if (success) {
       context.go('/home');
-    });
+    }
   }
 
   Widget _buildLabelChip(String label, bool isDark) {
@@ -98,6 +111,8 @@ class _AddDeliveryAddressScreenState extends State<AddDeliveryAddressScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final authState = ref.watch(authControllerProvider);
+    final isLoading = authState.status == AuthStatus.authenticating;
 
     return AuthScaffold(
       showBackButton: false,
@@ -125,8 +140,8 @@ class _AddDeliveryAddressScreenState extends State<AddDeliveryAddressScreen> {
             const SizedBox(height: 16),
 
             InlineErrorBanner(
-              message: _apiError,
-              onDismiss: () => setState(() => _apiError = null),
+              message: authState.errorMessage,
+              onDismiss: () => ref.read(authControllerProvider.notifier).clearError(),
             ),
 
             const SizedBox(height: 12),
@@ -322,7 +337,7 @@ class _AddDeliveryAddressScreenState extends State<AddDeliveryAddressScreen> {
             // Primary CTA — §2.6: "Save address"
             PrimaryButton(
               text: 'Save address',
-              isLoading: _isLoading,
+              isLoading: isLoading,
               onPressed: _handleSaveAddress,
             ),
 

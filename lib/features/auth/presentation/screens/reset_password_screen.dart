@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/mock/mock_data.dart';
@@ -12,27 +13,26 @@ import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/otp_input_row.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../router/routes.dart';
+import '../controllers/auth_controller.dart';
+import '../controllers/auth_state.dart';
 
-/// Reset Password screen — static UI per `Login-Registration-Plan.md` §2.5.
-/// No API calls; dummy behavior only. Real controller wired in Step 16.
-class ResetPasswordScreen extends StatefulWidget {
+/// Reset Password screen — §2.5. Wired to AuthController.
+class ResetPasswordScreen extends ConsumerStatefulWidget {
   final String? target;
 
   const ResetPasswordScreen({super.key, this.target});
 
   @override
-  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  ConsumerState<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
+class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _otpKey = GlobalKey<OtpInputRowState>();
   final _countdownKey = GlobalKey<CountdownLinkState>();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String _code = '';
-  String? _apiError;
-  bool _isLoading = false;
 
   bool get _isCodeComplete => _code.length == 6;
 
@@ -50,15 +50,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     super.dispose();
   }
 
-  void _handleResetPassword() {
+  void _handleResetPassword() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_isCodeComplete) return;
-    setState(() => _apiError = null);
-    // Step 16 will replace this stub with the real repository call.
-    setState(() => _isLoading = true);
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+    final success = await ref.read(authControllerProvider.notifier).resetPassword(
+      code: _code,
+      newPassword: _passwordController.text,
+      identity: widget.target,
+    );
+    if (!mounted) return;
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Password reset successfully! Please log in.'),
@@ -66,12 +67,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         ),
       );
       context.go(AppRoutes.login);
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final authState = ref.watch(authControllerProvider);
+    final isLoading = authState.status == AuthStatus.authenticating;
 
     return AuthScaffold(
       showBackButton: true,
@@ -99,8 +102,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             const SizedBox(height: 24),
 
             InlineErrorBanner(
-              message: _apiError,
-              onDismiss: () => setState(() => _apiError = null),
+              message: authState.errorMessage,
+              onDismiss: () => ref.read(authControllerProvider.notifier).clearError(),
             ),
 
             const SizedBox(height: 8),
@@ -179,7 +182,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             // §2.5: "Reset password" CTA
             PrimaryButton(
               text: 'Reset password',
-              isLoading: _isLoading,
+              isLoading: isLoading,
               onPressed: _handleResetPassword,
             ),
 

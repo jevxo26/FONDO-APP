@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/mock/mock_data.dart';
@@ -11,24 +12,22 @@ import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
+import '../../data/dtos/login_request_dto.dart';
+import '../controllers/auth_controller.dart';
+import '../controllers/auth_state.dart';
 
-/// Login screen — static UI per `Login-Registration-Plan.md` §2.2, Step 3.
-/// No API calls; dummy validators only. Real controller wired in Step 12.
-class LoginScreen extends StatefulWidget {
+/// Login screen — §2.2. Wired to AuthController.
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identityController = TextEditingController();
   final _passwordController = TextEditingController();
-
-  // UI-only state — no API call
-  String? _fieldError;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -37,21 +36,24 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
-    setState(() => _fieldError = null);
+  void _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
-    // Step 12 will replace this stub with the real controller call.
-    setState(() => _isLoading = true);
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+    final dto = LoginRequestDto(
+      identity: _identityController.text.trim(),
+      password: _passwordController.text,
+    );
+    final success = await ref.read(authControllerProvider.notifier).login(dto);
+    if (!mounted) return;
+    if (success) {
       context.go('/home');
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final authState = ref.watch(authControllerProvider);
+    final isLoading = authState.status == AuthStatus.authenticating;
 
     return AuthScaffold(
       child: Form(
@@ -98,8 +100,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // API error banner — sits above fields, hidden until set
             InlineErrorBanner(
-              message: _fieldError,
-              onDismiss: () => setState(() => _fieldError = null),
+              message: authState.errorMessage,
+              onDismiss: () => ref.read(authControllerProvider.notifier).clearError(),
             ),
 
             // Email or Phone (smart detect — no separate toggle)
@@ -165,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // Primary CTA — gold, radius-2xl, spring press
             PrimaryButton(
               text: 'Log in',
-              isLoading: _isLoading,
+              isLoading: isLoading,
               onPressed: _handleLogin,
             ),
 

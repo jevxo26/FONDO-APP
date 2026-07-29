@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/mock/mock_data.dart';
@@ -11,26 +12,25 @@ import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
+import '../../data/dtos/register_request_dto.dart';
+import '../controllers/auth_controller.dart';
+import '../controllers/auth_state.dart';
 
-/// Register screen — static UI per `Login-Registration-Plan.md` §2.3.
-/// No API calls; dummy validators only. Real controller wired in Step 13.
-class RegisterScreen extends StatefulWidget {
+/// Register screen — §2.3. Wired to AuthController.
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
-  String? _apiError;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -42,23 +42,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _handleRegister() {
+  void _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _apiError = null);
-    // Step 13 will replace this stub with the real controller call.
-    setState(() => _isLoading = true);
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      // Navigate to OTP verify on simulated success
+    final dto = RegisterRequestDto(
+      name: '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
+      email: _emailController.text.trim(),
+      phone: _phoneController.text.trim(),
+      password: _passwordController.text,
+    );
+    final success = await ref.read(authControllerProvider.notifier).register(dto);
+    if (!mounted) return;
+    if (success) {
       final phone = _phoneController.text.trim();
       context.push('${AppRoutes.otpVerify}?phone=${Uri.encodeComponent(phone)}');
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final authState = ref.watch(authControllerProvider);
+    final isLoading = authState.status == AuthStatus.authenticating;
 
     return AuthScaffold(
       showBackButton: true,
@@ -86,8 +90,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             const SizedBox(height: 24),
 
             InlineErrorBanner(
-              message: _apiError,
-              onDismiss: () => setState(() => _apiError = null),
+              message: authState.errorMessage,
+              onDismiss: () => ref.read(authControllerProvider.notifier).clearError(),
             ),
 
             const SizedBox(height: 8),
@@ -229,7 +233,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             // §2.3: CTA "Create account"
             PrimaryButton(
               text: 'Create account',
-              isLoading: _isLoading,
+              isLoading: isLoading,
               onPressed: _handleRegister,
             ),
 
