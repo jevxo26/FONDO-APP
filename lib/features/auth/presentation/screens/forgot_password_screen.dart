@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/mock/mock_data.dart';
@@ -12,21 +11,21 @@ import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
-import '../controllers/auth_controller.dart';
-import '../controllers/auth_state.dart';
 
-/// Forgot Password screen — §2.5. Wired to AuthController.
-class ForgotPasswordScreen extends ConsumerStatefulWidget {
+/// Forgot Password screen — §2.5. Static UI — always shows success state.
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identityController = TextEditingController();
   bool _sendSuccess = false;
+  String? _fieldError;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -34,20 +33,18 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _handleSendResetCode() async {
+  void _handleSendResetCode() {
+    setState(() => _fieldError = null);
     if (!_formKey.currentState!.validate()) return;
-    final success = await ref.read(authControllerProvider.notifier).forgotPassword(_identityController.text.trim());
-    if (!mounted) return;
-    if (success) {
-      setState(() => _sendSuccess = true);
-    }
+    setState(() {
+      _isLoading = true;
+      _sendSuccess = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final authState = ref.watch(authControllerProvider);
-    final isLoading = authState.status == AuthStatus.authenticating;
 
     return AuthScaffold(
       showBackButton: true,
@@ -55,7 +52,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         key: _formKey,
         child: _sendSuccess
             ? _buildSuccessState(isDark)
-            : _buildFormState(isDark, authState, isLoading),
+            : _buildFormState(isDark),
       ),
     );
   }
@@ -128,7 +125,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   }
 
   /// §2.5: single email field, "Send reset link" CTA
-  Widget _buildFormState(bool isDark, AuthState authState, bool isLoading) {
+  Widget _buildFormState(bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -151,8 +148,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         const SizedBox(height: 24),
 
         InlineErrorBanner(
-          message: authState.errorMessage,
-          onDismiss: () => ref.read(authControllerProvider.notifier).clearError(),
+          message: _fieldError,
+          onDismiss: () => setState(() => _fieldError = null),
         ),
 
         const SizedBox(height: 8),
@@ -184,7 +181,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         // §2.5: "Send reset link" CTA
         PrimaryButton(
           text: 'Send reset code',
-          isLoading: isLoading,
+          isLoading: _isLoading,
           onPressed: _handleSendResetCode,
         ),
 

@@ -78,28 +78,37 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.restaurant,
-                        size: 64,
-                        color: AppColors.primary.withValues(alpha: 0.5),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Food Catalog Landing Handoff',
-                        style: AppTypography.titleMedium(isDark: isDark),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Phase 2 food catalog & categories will build here.',
-                        textAlign: TextAlign.center,
-                        style: AppTypography.bodyMedium(isDark: isDark),
-                      ),
-                    ],
-                  ),
+                child: ListView(
+                  children: [
+                    const SizedBox(height: 8),
+                    _categoryCard(
+                      icon: Icons.breakfast_dining_outlined,
+                      title: 'Breakfast',
+                      subtitle: 'Start your day right',
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 12),
+                    _categoryCard(
+                      icon: Icons.lunch_dining_outlined,
+                      title: 'Lunch',
+                      subtitle: 'Midday fuel, delivered fresh',
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 12),
+                    _categoryCard(
+                      icon: Icons.dinner_dining_outlined,
+                      title: 'Dinner',
+                      subtitle: 'End your day with flavour',
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 12),
+                    _categoryCard(
+                      icon: Icons.shopping_bag_outlined,
+                      title: 'Groceries',
+                      subtitle: 'Fresh ingredients at your door',
+                      isDark: isDark,
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -108,4 +117,59 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _categoryCard({
+  required IconData icon,
+  required String title,
+  required String subtitle,
+  required bool isDark,
+}) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+    decoration: BoxDecoration(
+      color: isDark ? AppColors.cardDark : AppColors.cardLight,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: isDark ? AppColors.borderDark : AppColors.borderLight,
+      ),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 24),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTypography.titleMedium(isDark: isDark),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: AppTypography.small(isDark: isDark),
+              ),
+            ],
+          ),
+        ),
+        Icon(
+          Icons.chevron_right_rounded,
+          color: isDark
+              ? AppColors.mutedForegroundDark
+              : AppColors.mutedForegroundLight,
+        ),
+      ],
+    ),
+  );
 }

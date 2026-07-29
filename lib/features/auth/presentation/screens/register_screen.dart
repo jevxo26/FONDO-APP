@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/mock/mock_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -12,25 +10,27 @@ import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
-import '../../data/dtos/register_request_dto.dart';
-import '../controllers/auth_controller.dart';
-import '../controllers/auth_state.dart';
 
-/// Register screen — §2.3. Wired to AuthController.
-class RegisterScreen extends ConsumerStatefulWidget {
+import '../../../../core/mock/mock_data.dart';
+
+/// Register screen — §2.3. Static UI with hardcoded success behavior.
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  String? _fieldError;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -42,27 +42,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
-  void _handleRegister() async {
+  void _handleRegister() {
+    setState(() => _fieldError = null);
     if (!_formKey.currentState!.validate()) return;
-    final dto = RegisterRequestDto(
-      name: '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
-      email: _emailController.text.trim(),
-      phone: _phoneController.text.trim(),
-      password: _passwordController.text,
-    );
-    final success = await ref.read(authControllerProvider.notifier).register(dto);
-    if (!mounted) return;
-    if (success) {
+
+    setState(() => _isLoading = true);
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
       final phone = _phoneController.text.trim();
       context.push('${AppRoutes.otpVerify}?phone=${Uri.encodeComponent(phone)}');
-    }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final authState = ref.watch(authControllerProvider);
-    final isLoading = authState.status == AuthStatus.authenticating;
 
     return AuthScaffold(
       showBackButton: true,
@@ -90,8 +85,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 24),
 
             InlineErrorBanner(
-              message: authState.errorMessage,
-              onDismiss: () => ref.read(authControllerProvider.notifier).clearError(),
+              message: _fieldError,
+              onDismiss: () => setState(() => _fieldError = null),
             ),
 
             const SizedBox(height: 8),
@@ -233,7 +228,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             // §2.3: CTA "Create account"
             PrimaryButton(
               text: 'Create account',
-              isLoading: isLoading,
+              isLoading: _isLoading,
               onPressed: _handleRegister,
             ),
 
