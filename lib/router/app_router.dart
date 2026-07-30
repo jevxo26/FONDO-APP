@@ -7,6 +7,8 @@ import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/home/presentation/screens/cart_screen.dart';
+import '../features/home/presentation/screens/food_catalog_screen.dart';
+import '../features/home/presentation/screens/food_detail_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/home/presentation/screens/main_shell.dart';
 import '../features/home/presentation/screens/packages_screen.dart';
@@ -59,6 +61,20 @@ final appRouter = GoRouter(
             GoRoute(
               path: AppRoutes.home,
               builder: (context, state) => const HomeScreen(),
+              routes: [
+                GoRoute(
+                  path: 'catalog/:category',
+                  builder: (context, state) => FoodCatalogScreen(
+                    category: state.pathParameters['category']!,
+                  ),
+                ),
+              ],
+            ),
+            GoRoute(
+              path: AppRoutes.foodDetail,
+              builder: (context, state) => FoodDetailScreen(
+                foodId: state.pathParameters['foodId']!,
+              ),
             ),
           ],
         ),
