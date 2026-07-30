@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/cart_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
 class ScaffoldWithBottomNav extends ConsumerWidget {
-  final Widget body;
-  final int currentIndex;
-  final ValueChanged<int> onIndexChange;
+  final StatefulNavigationShell navigationShell;
   final PreferredSizeWidget? appBar;
 
   const ScaffoldWithBottomNav({
     super.key,
-    required this.body,
-    required this.currentIndex,
-    required this.onIndexChange,
+    required this.navigationShell,
     this.appBar,
   });
 
@@ -25,7 +22,7 @@ class ScaffoldWithBottomNav extends ConsumerWidget {
 
     return Scaffold(
       appBar: appBar,
-      body: body,
+      body: navigationShell,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
@@ -36,8 +33,8 @@ class ScaffoldWithBottomNav extends ConsumerWidget {
           ),
         ),
         child: BottomNavigationBar(
-          currentIndex: currentIndex,
-          onTap: onIndexChange,
+          currentIndex: navigationShell.currentIndex,
+          onTap: (i) => navigationShell.goBranch(i),
           type: BottomNavigationBarType.fixed,
           backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
           selectedItemColor: AppColors.primary,

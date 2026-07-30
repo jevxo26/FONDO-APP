@@ -6,10 +6,13 @@ import '../features/auth/presentation/screens/otp_verify_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
+import '../features/home/presentation/screens/cart_screen.dart';
+import '../features/home/presentation/screens/home_screen.dart';
 import '../features/home/presentation/screens/main_shell.dart';
+import '../features/home/presentation/screens/packages_screen.dart';
+import '../features/home/presentation/screens/profile_screen.dart';
 import 'routes.dart';
 
-/// App router — no auth guard. Simple static routing.
 final appRouter = GoRouter(
   initialLocation: AppRoutes.splash,
   routes: [
@@ -47,9 +50,43 @@ final appRouter = GoRouter(
         return ResetPasswordScreen(target: target);
       },
     ),
-    GoRoute(
-      path: AppRoutes.home,
-      builder: (context, state) => const MainShell(),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) =>
+          MainShell(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.home,
+              builder: (context, state) => const HomeScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.packages,
+              builder: (context, state) => const PackagesScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.cart,
+              builder: (context, state) => const CartScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.profile,
+              builder: (context, state) => const ProfileScreen(),
+            ),
+          ],
+        ),
+      ],
     ),
   ],
 );
