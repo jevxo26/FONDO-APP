@@ -11,6 +11,7 @@ import '../features/home/presentation/screens/food_catalog_screen.dart';
 import '../features/home/presentation/screens/food_detail_screen.dart';
 import '../features/home/presentation/screens/address_manager_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
+import '../features/home/presentation/screens/order_history_screen.dart';
 import '../features/home/presentation/screens/subscription_manager_screen.dart';
 import '../features/home/presentation/screens/wallet_screen.dart';
 import '../features/home/presentation/screens/main_shell.dart';
@@ -114,6 +115,10 @@ final appRouter = GoRouter(
                 GoRoute(
                   path: 'subscriptions',
                   builder: (context, state) => const SubscriptionManagerScreen(),
+                ),
+                GoRoute(
+                  path: 'orders',
+                  builder: (context, state) => const OrderHistoryScreen(),
                 ),
               ],
             ),
