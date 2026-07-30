@@ -14,4 +14,8 @@ class AppRoutes {
   static const String packages = '/packages';
   static const String cart = '/cart';
   static const String profile = '/profile';
+  static const String addressManager = '/profile/addresses';
+  static const String wallet = '/profile/wallet';
+  static const String subscriptions = '/profile/subscriptions';
+  static const String orderHistory = '/profile/orders';
 }
