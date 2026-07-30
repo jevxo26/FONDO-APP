@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../models/wallet_transaction.dart';
@@ -121,16 +122,24 @@ class _WalletScreenState extends State<WalletScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return SafeArea(
-      child: Column(
-        children: [
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () => Future.delayed(const Duration(milliseconds: 600)),
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  _BalanceCard(balance: _balance, isDark: isDark),
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('Wallet'),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => Future.delayed(const Duration(milliseconds: 600)),
+                child: ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    _BalanceCard(balance: _balance, isDark: isDark),
                   const SizedBox(height: 20),
                   Row(
                     children: [
@@ -175,6 +184,7 @@ class _WalletScreenState extends State<WalletScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

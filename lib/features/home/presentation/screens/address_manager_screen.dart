@@ -159,14 +159,18 @@ class _AddressManagerScreenState extends State<AddressManagerScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
-            child: Text('Saved Addresses', style: AppTypography.titleLarge(isDark: isDark)),
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text('Saved Addresses'),
+      ),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
             child: Text(
@@ -218,6 +222,7 @@ class _AddressManagerScreenState extends State<AddressManagerScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

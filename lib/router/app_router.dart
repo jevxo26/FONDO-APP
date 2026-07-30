@@ -11,6 +11,7 @@ import '../features/home/presentation/screens/food_catalog_screen.dart';
 import '../features/home/presentation/screens/food_detail_screen.dart';
 import '../features/home/presentation/screens/address_manager_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
+import '../features/home/presentation/screens/subscription_manager_screen.dart';
 import '../features/home/presentation/screens/wallet_screen.dart';
 import '../features/home/presentation/screens/main_shell.dart';
 import '../features/home/presentation/screens/packages_screen.dart';
@@ -109,6 +110,10 @@ final appRouter = GoRouter(
                 GoRoute(
                   path: 'wallet',
                   builder: (context, state) => const WalletScreen(),
+                ),
+                GoRoute(
+                  path: 'subscriptions',
+                  builder: (context, state) => const SubscriptionManagerScreen(),
                 ),
               ],
             ),
