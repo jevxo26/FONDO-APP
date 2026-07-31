@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/mock/mock_data.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../models/customer_tier.dart';
@@ -9,14 +11,15 @@ import '../../../../router/routes.dart';
 
 const _stats = CustomerStats(totalOrders: 127, totalSpent: 45280, memberSince: 'Jan 2024');
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final user = mockUser;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tier = _stats.tier;
+    final themeMode = ref.watch(themeModeProvider);
 
     return SafeArea(
       child: ListView(
@@ -60,6 +63,77 @@ class ProfileScreen extends StatelessWidget {
             subtitle: 'Account & preferences',
             isDark: isDark,
             onTap: () {},
+          ),
+          _ThemeToggleRow(
+            isDark: isDark,
+            value: themeMode == ThemeMode.dark,
+            onChanged: (value) => ref.read(themeModeProvider.notifier).state =
+                value ? ThemeMode.dark : ThemeMode.light,
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: () => context.go('/login'),
+            icon: const Icon(Icons.logout_rounded, size: 20),
+            label: const Text('Log Out'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.destructive,
+              side: const BorderSide(color: AppColors.destructive),
+              minimumSize: const Size(double.infinity, 48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThemeToggleRow extends StatelessWidget {
+  final bool isDark;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _ThemeToggleRow({
+    required this.isDark,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.dark_mode_outlined, color: AppColors.primary, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Dark Mode', style: AppTypography.titleMedium(isDark: isDark)),
+                const SizedBox(height: 2),
+                Text('Toggle between light and dark theme', style: AppTypography.small(isDark: isDark)),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            activeThumbColor: AppColors.primary,
+            onChanged: onChanged,
           ),
         ],
       ),

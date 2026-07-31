@@ -215,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'Use Demo Data',
+                            'Customer Demo',
                             style: AppTypography.labelConvention(isDark: isDark)
                                 .copyWith(color: AppColors.primary),
                           ),

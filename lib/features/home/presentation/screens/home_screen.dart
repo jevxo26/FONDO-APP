@@ -50,13 +50,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     letterSpacing: 1.2,
                   ),
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.logout_rounded,
-                    color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight,
-                  ),
-                  onPressed: () => context.go('/login'),
-                ),
               ],
             ),
             const SizedBox(height: 20),
