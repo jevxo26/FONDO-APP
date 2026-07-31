@@ -184,40 +184,84 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Demo data quick-fill
             Center(
-              child: GestureDetector(
-                onTap: () => setState(() {
-                  _identityController.text = _demoEmail;
-                  _passwordController.text = _demoPassword;
-                }),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.08),
-                    borderRadius: AppRadii.full,
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.25),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                children: [
+                  GestureDetector(
+                    onTap: () => setState(() {
+                      _identityController.text = _demoEmail;
+                      _passwordController.text = _demoPassword;
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.08),
+                        borderRadius: AppRadii.full,
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.smart_button_outlined,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Use Demo Data',
+                            style: AppTypography.labelConvention(isDark: isDark)
+                                .copyWith(color: AppColors.primary),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.smart_button_outlined,
-                        size: 14,
-                        color: AppColors.primary,
+                  GestureDetector(
+                    onTap: () => context.go(AppRoutes.vendor),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Use Demo Data',
-                        style: AppTypography.labelConvention(isDark: isDark)
-                            .copyWith(color: AppColors.primary),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondaryDark.withValues(alpha: 0.1),
+                        borderRadius: AppRadii.full,
+                        border: Border.all(
+                          color: AppColors.secondaryDark.withValues(alpha: 0.3),
+                        ),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.storefront_outlined,
+                            size: 14,
+                            color: isDark
+                                ? AppColors.secondaryLight
+                                : AppColors.secondaryDark,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Vendor Demo',
+                            style: AppTypography.labelConvention(isDark: isDark)
+                                .copyWith(
+                                  color: isDark
+                                      ? AppColors.secondaryLight
+                                      : AppColors.secondaryDark,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
 

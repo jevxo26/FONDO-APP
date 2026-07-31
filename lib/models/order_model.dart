@@ -25,6 +25,7 @@ class OrderModel {
   final DateTime? deliveredAt;
   final String deliveryAddress;
   final String paymentMethod;
+  final String? customerName;
   final String? note;
 
   const OrderModel({
@@ -40,6 +41,7 @@ class OrderModel {
     this.deliveredAt,
     required this.deliveryAddress,
     required this.paymentMethod,
+    this.customerName,
     this.note,
   });
 
