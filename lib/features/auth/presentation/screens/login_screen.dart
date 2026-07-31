@@ -224,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => context.go(AppRoutes.vendor),
+                    onTap: () => context.push(AppRoutes.vendor),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,

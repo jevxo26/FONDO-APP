@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 
 class VendorScaffoldWithBottomNav extends StatelessWidget {
-  final StatefulNavigationShell navigationShell;
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+  final Widget body;
 
   const VendorScaffoldWithBottomNav({
     super.key,
-    required this.navigationShell,
+    required this.currentIndex,
+    required this.onTap,
+    required this.body,
   });
 
   @override
@@ -16,7 +19,7 @@ class VendorScaffoldWithBottomNav extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: navigationShell,
+      body: body,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
@@ -27,8 +30,8 @@ class VendorScaffoldWithBottomNav extends StatelessWidget {
           ),
         ),
         child: BottomNavigationBar(
-          currentIndex: navigationShell.currentIndex,
-          onTap: (i) => navigationShell.goBranch(i),
+          currentIndex: currentIndex,
+          onTap: onTap,
           type: BottomNavigationBarType.fixed,
           backgroundColor:
               isDark ? AppColors.backgroundDark : AppColors.backgroundLight,

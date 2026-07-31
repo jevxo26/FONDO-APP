@@ -15,10 +15,6 @@ import '../features/home/presentation/screens/order_history_screen.dart';
 import '../features/home/presentation/screens/subscription_manager_screen.dart';
 import '../features/home/presentation/screens/wallet_screen.dart';
 import '../features/home/presentation/screens/main_shell.dart';
-import '../features/vendor/presentation/screens/vendor_dashboard_screen.dart';
-import '../features/vendor/presentation/screens/vendor_foods_screen.dart';
-import '../features/vendor/presentation/screens/vendor_orders_screen.dart';
-import '../features/vendor/presentation/screens/vendor_profile_screen.dart';
 import '../features/vendor/presentation/screens/vendor_shell.dart';
 import '../features/home/presentation/screens/packages_screen.dart';
 import '../features/home/presentation/screens/profile_screen.dart';
@@ -60,6 +56,10 @@ final appRouter = GoRouter(
         final target = state.uri.queryParameters['target'];
         return ResetPasswordScreen(target: target);
       },
+    ),
+    GoRoute(
+      path: AppRoutes.vendor,
+      builder: (context, state) => const VendorShell(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
@@ -126,44 +126,6 @@ final appRouter = GoRouter(
                   builder: (context, state) => const OrderHistoryScreen(),
                 ),
               ],
-            ),
-          ],
-        ),
-      ],
-    ),
-    StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) =>
-          VendorShell(navigationShell: navigationShell),
-      branches: [
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.vendor,
-              builder: (context, state) => const VendorDashboardScreen(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.vendorOrders,
-              builder: (context, state) => const VendorOrdersScreen(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.vendorFoods,
-              builder: (context, state) => const VendorFoodsScreen(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.vendorProfile,
-              builder: (context, state) => const VendorProfileScreen(),
             ),
           ],
         ),
