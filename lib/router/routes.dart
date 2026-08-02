@@ -18,5 +18,6 @@ class AppRoutes {
   static const String wallet = '/profile/wallet';
   static const String subscriptions = '/profile/subscriptions';
   static const String orderHistory = '/profile/orders';
+  static const String settings = '/profile/settings';
   static const String vendor = '/vendor';
 }

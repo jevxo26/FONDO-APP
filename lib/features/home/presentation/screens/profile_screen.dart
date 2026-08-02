@@ -62,7 +62,7 @@ class ProfileScreen extends ConsumerWidget {
             title: 'Settings',
             subtitle: 'Account & preferences',
             isDark: isDark,
-            onTap: () {},
+            onTap: () => context.push(AppRoutes.settings),
           ),
           _ThemeToggleRow(
             isDark: isDark,

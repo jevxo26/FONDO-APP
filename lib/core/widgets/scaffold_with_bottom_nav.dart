@@ -34,7 +34,10 @@ class ScaffoldWithBottomNav extends ConsumerWidget {
         ),
         child: BottomNavigationBar(
           currentIndex: navigationShell.currentIndex,
-          onTap: (i) => navigationShell.goBranch(i),
+          onTap: (i) => navigationShell.goBranch(
+            i,
+            initialLocation: i == navigationShell.currentIndex,
+          ),
           type: BottomNavigationBarType.fixed,
           backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
           selectedItemColor: AppColors.primary,
