@@ -37,24 +37,29 @@ class FoodCardSkeleton extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _Line(width: 0.65, isDark: isDark),
-                const SizedBox(height: 10),
-                _Line(width: 0.9, isDark: isDark),
-                const SizedBox(height: 6),
-                _Line(width: 0.45, isDark: isDark),
-                const SizedBox(height: 12),
-                Row(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final w = constraints.maxWidth;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _Line(width: 0.2, isDark: isDark),
-                    const Spacer(),
-                    _Line(width: 0.15, isDark: isDark),
+                    _Line(width: w * 0.65, isDark: isDark),
+                    const SizedBox(height: 10),
+                    _Line(width: w * 0.9, isDark: isDark),
+                    const SizedBox(height: 6),
+                    _Line(width: w * 0.45, isDark: isDark),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        _Line(width: w * 0.2, isDark: isDark),
+                        const Spacer(),
+                        _Line(width: w * 0.15, isDark: isDark),
+                      ],
+                    ),
                   ],
-                ),
-              ],
+                );
+              },
             ),
           ),
         ],
@@ -76,14 +81,12 @@ class _Line extends StatelessWidget {
         : AppColors.mutedLight;
 
     return AppSkeleton(
-      child: FractionallySizedBox(
-        widthFactor: width,
-        child: Container(
-          height: 12,
-          decoration: BoxDecoration(
-            color: skeletonBase,
-            borderRadius: AppRadii.sm,
-          ),
+      child: Container(
+        width: width,
+        height: 12,
+        decoration: BoxDecoration(
+          color: skeletonBase,
+          borderRadius: AppRadii.sm,
         ),
       ),
     );
