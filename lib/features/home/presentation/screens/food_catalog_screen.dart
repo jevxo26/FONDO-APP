@@ -44,7 +44,7 @@ class FoodCatalogScreen extends StatelessWidget {
   }
 }
 
-class _FoodCard extends StatelessWidget {
+class _FoodCard extends StatefulWidget {
   final FoodItem food;
   final bool isDark;
   final VoidCallback onTap;
@@ -56,71 +56,101 @@ class _FoodCard extends StatelessWidget {
   });
 
   @override
+  State<_FoodCard> createState() => _FoodCardState();
+}
+
+class _FoodCardState extends State<_FoodCard> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.cardDark : AppColors.cardLight,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+    return AnimatedScale(
+      scale: _pressed ? 0.96 : 1.0,
+      duration: const Duration(milliseconds: 130),
+      curve: Curves.easeOut,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onTap,
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapUp: (_) => setState(() => _pressed = false),
+          onTapCancel: () => setState(() => _pressed = false),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: widget.isDark ? AppColors.cardDark : AppColors.cardLight,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: widget.isDark
+                    ? AppColors.borderDark
+                    : AppColors.borderLight,
+              ),
             ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.restaurant_outlined,
+                    color: AppColors.primary,
+                    size: 28,
+                  ),
                 ),
-                child: const Icon(Icons.restaurant_outlined, color: AppColors.primary, size: 28),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(food.name, style: AppTypography.titleMedium(isDark: isDark)),
-                    const SizedBox(height: 4),
-                    Text(
-                      food.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.small(isDark: isDark),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Icons.star_rounded, size: 16, color: AppColors.primary),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${food.rating}',
-                          style: AppTypography.small(isDark: isDark).copyWith(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '(${food.ratingCount})',
-                          style: AppTypography.small(isDark: isDark),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '৳${food.price.toStringAsFixed(0)}',
-                          style: AppTypography.price(isDark: isDark),
-                        ),
-                      ],
-                    ),
-                  ],
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.food.name,
+                        style: AppTypography.titleMedium(isDark: widget.isDark),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.food.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.small(isDark: widget.isDark),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.star_rounded,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${widget.food.rating}',
+                            style: AppTypography.small(
+                              isDark: widget.isDark,
+                            ).copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '(${widget.food.ratingCount})',
+                            style: AppTypography.small(isDark: widget.isDark),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '৳${widget.food.price.toStringAsFixed(0)}',
+                            style: AppTypography.price(isDark: widget.isDark),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
