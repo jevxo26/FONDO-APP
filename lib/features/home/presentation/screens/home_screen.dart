@@ -57,9 +57,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.surfaceDark : AppColors.primarySurface,
+                color: isDark
+                    ? AppColors.surfaceDark
+                    : AppColors.primarySurface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +104,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           title: 'Breakfast',
                           subtitle: 'Start your day right',
                           isDark: isDark,
-                          onTap: () => context.push('${AppRoutes.home}/catalog/Breakfast'),
+                          onTap: () => context.push(
+                            '${AppRoutes.home}/catalog/Breakfast',
+                          ),
                         ),
                         const SizedBox(height: 12),
                         _CategoryCard(
@@ -108,7 +114,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           title: 'Lunch',
                           subtitle: 'Midday fuel, delivered fresh',
                           isDark: isDark,
-                          onTap: () => context.push('${AppRoutes.home}/catalog/Lunch'),
+                          onTap: () =>
+                              context.push('${AppRoutes.home}/catalog/Lunch'),
                         ),
                         const SizedBox(height: 12),
                         _CategoryCard(
@@ -116,7 +123,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           title: 'Dinner',
                           subtitle: 'End your day with flavour',
                           isDark: isDark,
-                          onTap: () => context.push('${AppRoutes.home}/catalog/Dinner'),
+                          onTap: () =>
+                              context.push('${AppRoutes.home}/catalog/Dinner'),
                         ),
                         const SizedBox(height: 12),
                         _CategoryCard(
@@ -124,7 +132,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           title: 'Groceries',
                           subtitle: 'Fresh ingredients at your door',
                           isDark: isDark,
-                          onTap: () => context.push('${AppRoutes.home}/catalog/Groceries'),
+                          onTap: () => context.push(
+                            '${AppRoutes.home}/catalog/Groceries',
+                          ),
                         ),
                         if (cartCount > 0) ...[
                           const SizedBox(height: 16),
@@ -132,7 +142,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: Text(
                               '$cartCount item${cartCount == 1 ? '' : 's'} in cart',
                               style: AppTypography.small(isDark: isDark)
-                                  .copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
+                                  .copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ),
                         ],
@@ -146,7 +159,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class _CategoryCard extends StatelessWidget {
+class _CategoryCard extends StatefulWidget {
   final IconData icon;
   final String title;
   final String subtitle;
@@ -162,51 +175,74 @@ class _CategoryCard extends StatelessWidget {
   });
 
   @override
+  State<_CategoryCard> createState() => _CategoryCardState();
+}
+
+class _CategoryCardState extends State<_CategoryCard> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.cardDark : AppColors.cardLight,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+    return AnimatedScale(
+      scale: _pressed ? 0.96 : 1.0,
+      duration: const Duration(milliseconds: 130),
+      curve: Curves.easeOut,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onTap,
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapUp: (_) => setState(() => _pressed = false),
+          onTapCancel: () => setState(() => _pressed = false),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            decoration: BoxDecoration(
+              color: widget.isDark ? AppColors.cardDark : AppColors.cardLight,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: widget.isDark
+                    ? AppColors.borderDark
+                    : AppColors.borderLight,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(widget.icon, color: AppColors.primary, size: 24),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 24),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: AppTypography.titleMedium(isDark: isDark)),
-                    const SizedBox(height: 2),
-                    Text(subtitle, style: AppTypography.small(isDark: isDark)),
-                  ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: AppTypography.titleMedium(isDark: widget.isDark),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.subtitle,
+                        style: AppTypography.small(isDark: widget.isDark),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: isDark
-                    ? AppColors.mutedForegroundDark
-                    : AppColors.mutedForegroundLight,
-              ),
-            ],
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: widget.isDark
+                      ? AppColors.mutedForegroundDark
+                      : AppColors.mutedForegroundLight,
+                ),
+              ],
+            ),
           ),
         ),
       ),
