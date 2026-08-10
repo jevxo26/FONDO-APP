@@ -173,15 +173,19 @@ class _PackagesScreenState extends State<PackagesScreen> {
             children: plan.dietaryOptions.map((option) {
               final selected = _dietaryPreference == option;
               return ChoiceChip(
-                label: Text(option, style: AppTypography.small(isDark: isDark)),
+                label: Text(
+                  option,
+                  style: AppTypography.small(isDark: isDark).copyWith(
+                    color: selected ? AppColors.primaryForeground : null,
+                    fontWeight: selected ? FontWeight.w600 : null,
+                  ),
+                ),
                 selected: selected,
                 selectedColor: AppColors.primary,
+                checkmarkColor: AppColors.primaryForeground,
                 backgroundColor: isDark
                     ? AppColors.surfaceDark
                     : AppColors.mutedLight,
-                labelStyle: TextStyle(
-                  color: selected ? AppColors.primaryForeground : null,
-                ),
                 onSelected: (_) => setState(() => _dietaryPreference = option),
               );
             }).toList(),
