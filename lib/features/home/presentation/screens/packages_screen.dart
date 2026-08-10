@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_skeleton.dart';
 import '../../../../models/meal_plan.dart';
 
 const List<MealPlan> _plans = [
@@ -71,9 +73,18 @@ class PackagesScreen extends StatefulWidget {
 }
 
 class _PackagesScreenState extends State<PackagesScreen> {
+  bool _loading = true;
   String? _selectedPlanId;
   String _dietaryPreference = 'Regular';
   int _weeks = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (mounted) setState(() => _loading = false);
+    });
+  }
 
   MealPlan? get _selectedPlan => _selectedPlanId == null
       ? null
@@ -97,17 +108,24 @@ class _PackagesScreenState extends State<PackagesScreen> {
             style: AppTypography.bodyMedium(isDark: isDark),
           ),
           const SizedBox(height: 24),
-          ..._plans.map(
-            (plan) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _PlanCard(
-                plan: plan,
-                isSelected: _selectedPlanId == plan.id,
-                isDark: isDark,
-                onTap: () => setState(() => _selectedPlanId = plan.id),
+          if (_loading) ...[
+            const _PlanCardSkeleton(),
+            const SizedBox(height: 16),
+            const _PlanCardSkeleton(),
+            const SizedBox(height: 16),
+            const _PlanCardSkeleton(),
+          ] else
+            ..._plans.map(
+              (plan) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _PlanCard(
+                  plan: plan,
+                  isSelected: _selectedPlanId == plan.id,
+                  isDark: isDark,
+                  onTap: () => setState(() => _selectedPlanId = plan.id),
+                ),
               ),
             ),
-          ),
           if (_selectedPlan != null) ...[
             const SizedBox(height: 8),
             _buildCustomization(isDark),
@@ -438,6 +456,113 @@ class _SummaryRow extends StatelessWidget {
         Text(label, style: labelStyle),
         Text(value, style: valueStyle),
       ],
+    );
+  }
+}
+
+class _PlanCardSkeleton extends StatelessWidget {
+  const _PlanCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        ),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: _SkeletonLine(width: w * 0.4)),
+                  _SkeletonBox(width: 76, height: 24, radius: 8),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _SkeletonLine(width: w),
+              const SizedBox(height: 6),
+              _SkeletonLine(width: w * 0.65),
+              const SizedBox(height: 16),
+              _SkeletonLine(width: w * 0.6),
+              const SizedBox(height: 8),
+              _SkeletonLine(width: w * 0.4),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  _SkeletonBox(width: 16, height: 16, radius: 8),
+                  const SizedBox(width: 8),
+                  _SkeletonLine(width: w * 0.5),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _SkeletonLine(width: w * 0.3),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SkeletonLine extends StatelessWidget {
+  final double width;
+
+  const _SkeletonLine({required this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final base = isDark
+        ? AppColors.mutedDark.withValues(alpha: 0.4)
+        : AppColors.mutedLight;
+
+    return AppSkeleton(
+      child: Container(
+        width: width,
+        height: 12,
+        decoration: BoxDecoration(color: base, borderRadius: AppRadii.sm),
+      ),
+    );
+  }
+}
+
+class _SkeletonBox extends StatelessWidget {
+  final double width;
+  final double height;
+  final double radius;
+
+  const _SkeletonBox({
+    required this.width,
+    required this.height,
+    required this.radius,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final base = isDark
+        ? AppColors.mutedDark.withValues(alpha: 0.4)
+        : AppColors.mutedLight;
+
+    return AppSkeleton(
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: base,
+          borderRadius: BorderRadius.circular(radius),
+        ),
+      ),
     );
   }
 }
