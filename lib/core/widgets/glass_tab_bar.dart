@@ -16,7 +16,7 @@ class GlassTabBar extends ConsumerWidget {
   });
 
   static const double _height = 72;
-  static const double _radius = 26;
+  static const double _radius = 36;
   static const Duration _animDuration = Duration(milliseconds: 300);
 
   @override
@@ -54,7 +54,12 @@ class GlassTabBar extends ConsumerWidget {
     final bottomInset = media.padding.bottom;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 0, 16, bottomInset > 0 ? bottomInset + 6 : 14),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        0,
+        16,
+        bottomInset > 0 ? bottomInset + 6 : 14,
+      ),
       child: Container(
         height: _height,
         decoration: BoxDecoration(
@@ -146,7 +151,9 @@ class _GlassBarBody extends StatelessWidget {
                     child: Container(
                       key: const ValueKey('glassTabActivePill'),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: isDark ? 0.20 : 0.12),
+                        color: AppColors.primary.withValues(
+                          alpha: isDark ? 0.20 : 0.12,
+                        ),
                         borderRadius: BorderRadius.circular(22),
                       ),
                     ),
@@ -220,32 +227,46 @@ class _TabButtonState extends State<_TabButton> {
           children: [
             SizedBox(
               height: 28,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  AnimatedOpacity(
-                    opacity: widget.active ? 0 : 1,
-                    duration: GlassTabBar._animDuration,
-                    child: AnimatedScale(
-                      scale: widget.active ? 0.8 : 1,
-                      duration: GlassTabBar._animDuration,
-                      child: Icon(widget.item.icon, size: 23, color: muted),
-                    ),
+              child: Badge(
+                isLabelVisible: widget.item.badgeCount > 0,
+                label: Text(
+                  widget.item.badgeCount > 99
+                      ? '99+'
+                      : '${widget.item.badgeCount}',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: AppColors.primaryForeground,
                   ),
-                  AnimatedOpacity(
-                    opacity: widget.active ? 1 : 0,
-                    duration: GlassTabBar._animDuration,
-                    child: AnimatedScale(
-                      scale: widget.active ? 1 : 0.8,
+                ),
+                backgroundColor: AppColors.primary,
+                smallSize: 18,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    AnimatedOpacity(
+                      opacity: widget.active ? 0 : 1,
                       duration: GlassTabBar._animDuration,
-                      child: Icon(
-                        widget.item.activeIcon,
-                        size: 23,
-                        color: primary,
+                      child: AnimatedScale(
+                        scale: widget.active ? 0.8 : 1,
+                        duration: GlassTabBar._animDuration,
+                        child: Icon(widget.item.icon, size: 23, color: muted),
                       ),
                     ),
-                  ),
-                ],
+                    AnimatedOpacity(
+                      opacity: widget.active ? 1 : 0,
+                      duration: GlassTabBar._animDuration,
+                      child: AnimatedScale(
+                        scale: widget.active ? 1 : 0.8,
+                        duration: GlassTabBar._animDuration,
+                        child: Icon(
+                          widget.item.activeIcon,
+                          size: 23,
+                          color: primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 1),
