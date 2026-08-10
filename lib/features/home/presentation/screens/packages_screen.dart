@@ -7,7 +7,8 @@ const List<MealPlan> _plans = [
   MealPlan(
     id: 'weekly',
     name: 'Weekly Starter',
-    description: 'Perfect for individuals who want freshly cooked meals every day without the hassle of cooking.',
+    description:
+        'Perfect for individuals who want freshly cooked meals every day without the hassle of cooking.',
     pricePerMeal: 120,
     mealsPerWeek: 7,
     minWeeks: 1,
@@ -22,7 +23,8 @@ const List<MealPlan> _plans = [
   MealPlan(
     id: 'monthly',
     name: 'Monthly Premium',
-    description: 'Best value for regular customers. Enjoy two meals daily with priority support and exclusive dishes.',
+    description:
+        'Best value for regular customers. Enjoy two meals daily with priority support and exclusive dishes.',
     pricePerMeal: 100,
     mealsPerWeek: 14,
     minWeeks: 4,
@@ -33,12 +35,20 @@ const List<MealPlan> _plans = [
       'Free delivery',
       'Dedicated support',
     ],
-    dietaryOptions: ['Regular', 'Low Carb', 'High Protein', 'Vegetarian', 'Keto', 'Gluten Free'],
+    dietaryOptions: [
+      'Regular',
+      'Low Carb',
+      'High Protein',
+      'Vegetarian',
+      'Keto',
+      'Gluten Free',
+    ],
   ),
   MealPlan(
     id: 'family',
     name: 'Family Plan',
-    description: 'Designed for families of 3–4. Bulk-prepared meals with variety for everyone at home.',
+    description:
+        'Designed for families of 3–4. Bulk-prepared meals with variety for everyone at home.',
     pricePerMeal: 90,
     mealsPerWeek: 21,
     minWeeks: 2,
@@ -65,8 +75,9 @@ class _PackagesScreenState extends State<PackagesScreen> {
   String _dietaryPreference = 'Regular';
   int _weeks = 1;
 
-  MealPlan? get _selectedPlan =>
-      _selectedPlanId == null ? null : _plans.firstWhere((p) => p.id == _selectedPlanId);
+  MealPlan? get _selectedPlan => _selectedPlanId == null
+      ? null
+      : _plans.firstWhere((p) => p.id == _selectedPlanId);
 
   @override
   Widget build(BuildContext context) {
@@ -76,22 +87,27 @@ class _PackagesScreenState extends State<PackagesScreen> {
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text('Meal Packages', style: AppTypography.titleLarge(isDark: isDark)),
+          Text(
+            'Meal Packages',
+            style: AppTypography.titleLarge(isDark: isDark),
+          ),
           const SizedBox(height: 8),
           Text(
             'Subscribe to a meal plan and enjoy freshly cooked meals delivered to your door.',
             style: AppTypography.bodyMedium(isDark: isDark),
           ),
           const SizedBox(height: 24),
-          ..._plans.map((plan) => Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: _PlanCard(
-              plan: plan,
-              isSelected: _selectedPlanId == plan.id,
-              isDark: isDark,
-              onTap: () => setState(() => _selectedPlanId = plan.id),
+          ..._plans.map(
+            (plan) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _PlanCard(
+                plan: plan,
+                isSelected: _selectedPlanId == plan.id,
+                isDark: isDark,
+                onTap: () => setState(() => _selectedPlanId = plan.id),
+              ),
             ),
-          )),
+          ),
           if (_selectedPlan != null) ...[
             const SizedBox(height: 8),
             _buildCustomization(isDark),
@@ -102,7 +118,9 @@ class _PackagesScreenState extends State<PackagesScreen> {
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Subscribed to ${_selectedPlan!.name} for $_weeks week${_weeks == 1 ? '' : 's'}'),
+                    content: Text(
+                      'Subscribed to ${_selectedPlan!.name} for $_weeks week${_weeks == 1 ? '' : 's'}',
+                    ),
                     behavior: SnackBarBehavior.floating,
                     width: 340,
                   ),
@@ -113,7 +131,10 @@ class _PackagesScreenState extends State<PackagesScreen> {
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.primaryForeground,
               ),
-              child: const Text('Subscribe Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              child: const Text(
+                'Subscribe Now',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
             ),
             const SizedBox(height: 20),
           ],
@@ -129,14 +150,22 @@ class _PackagesScreenState extends State<PackagesScreen> {
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Customize Your Plan', style: AppTypography.label(isDark: isDark)),
+          Text(
+            'Customize Your Plan',
+            style: AppTypography.label(isDark: isDark),
+          ),
           const SizedBox(height: 16),
-          Text('Dietary Preference', style: AppTypography.bodyMedium(isDark: isDark)),
+          Text(
+            'Dietary Preference',
+            style: AppTypography.bodyMedium(isDark: isDark),
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -147,7 +176,9 @@ class _PackagesScreenState extends State<PackagesScreen> {
                 label: Text(option, style: AppTypography.small(isDark: isDark)),
                 selected: selected,
                 selectedColor: AppColors.primary,
-                backgroundColor: isDark ? AppColors.surfaceDark : AppColors.mutedLight,
+                backgroundColor: isDark
+                    ? AppColors.surfaceDark
+                    : AppColors.mutedLight,
                 labelStyle: TextStyle(
                   color: selected ? AppColors.primaryForeground : null,
                 ),
@@ -158,11 +189,18 @@ class _PackagesScreenState extends State<PackagesScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              Text('Duration (weeks)', style: AppTypography.bodyMedium(isDark: isDark)),
+              Text(
+                'Duration (weeks)',
+                style: AppTypography.bodyMedium(isDark: isDark),
+              ),
               const Spacer(),
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.borderDark
+                        : AppColors.borderLight,
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -174,7 +212,10 @@ class _PackagesScreenState extends State<PackagesScreen> {
                           ? () => setState(() => _weeks--)
                           : null,
                       color: AppColors.primary,
-                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
+                      ),
                     ),
                     SizedBox(
                       width: 32,
@@ -190,7 +231,10 @@ class _PackagesScreenState extends State<PackagesScreen> {
                           ? () => setState(() => _weeks++)
                           : null,
                       color: AppColors.primary,
-                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
+                      ),
                     ),
                   ],
                 ),
@@ -216,9 +260,17 @@ class _PackagesScreenState extends State<PackagesScreen> {
         children: [
           _SummaryRow(label: 'Plan', value: plan.name, isDark: isDark),
           const SizedBox(height: 8),
-          _SummaryRow(label: 'Meals/week', value: '${plan.mealsPerWeek}', isDark: isDark),
+          _SummaryRow(
+            label: 'Meals/week',
+            value: '${plan.mealsPerWeek}',
+            isDark: isDark,
+          ),
           const SizedBox(height: 8),
-          _SummaryRow(label: 'Duration', value: '$_weeks week${_weeks == 1 ? '' : 's'}', isDark: isDark),
+          _SummaryRow(
+            label: 'Duration',
+            value: '$_weeks week${_weeks == 1 ? '' : 's'}',
+            isDark: isDark,
+          ),
           const SizedBox(height: 8),
           _SummaryRow(label: 'Diet', value: _dietaryPreference, isDark: isDark),
           const Divider(height: 24),
@@ -234,7 +286,7 @@ class _PackagesScreenState extends State<PackagesScreen> {
   }
 }
 
-class _PlanCard extends StatelessWidget {
+class _PlanCard extends StatefulWidget {
   final MealPlan plan;
   final bool isSelected;
   final bool isDark;
@@ -248,66 +300,106 @@ class _PlanCard extends StatelessWidget {
   });
 
   @override
+  State<_PlanCard> createState() => _PlanCardState();
+}
+
+class _PlanCardState extends State<_PlanCard> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.cardDark : AppColors.cardLight,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected ? AppColors.primary : (isDark ? AppColors.borderDark : AppColors.borderLight),
-              width: isSelected ? 2 : 1,
+    final plan = widget.plan;
+    final isSelected = widget.isSelected;
+    return AnimatedScale(
+      scale: _pressed ? 0.96 : 1.0,
+      duration: const Duration(milliseconds: 130),
+      curve: Curves.easeOut,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onTap,
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapUp: (_) => setState(() => _pressed = false),
+          onTapCancel: () => setState(() => _pressed = false),
+          borderRadius: BorderRadius.circular(16),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: widget.isDark ? AppColors.cardDark : AppColors.cardLight,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.primary
+                    : (widget.isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight),
+                width: isSelected ? 2 : 1,
+              ),
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(plan.name, style: AppTypography.titleMedium(isDark: isDark)),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '৳${plan.pricePerMeal.toStringAsFixed(0)}/meal',
-                      style: AppTypography.label(isDark: isDark).copyWith(
-                        color: AppColors.primary,
-                        fontSize: 12,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        plan.name,
+                        style: AppTypography.titleMedium(isDark: widget.isDark),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(plan.description, style: AppTypography.small(isDark: isDark)),
-              const SizedBox(height: 12),
-              ...plan.features.map((f) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle_rounded, size: 16, color: AppColors.success),
-                    const SizedBox(width: 8),
-                    Text(f, style: AppTypography.small(isDark: isDark)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '৳${plan.pricePerMeal.toStringAsFixed(0)}/meal',
+                        style: AppTypography.label(
+                          isDark: widget.isDark,
+                        ).copyWith(color: AppColors.primary, fontSize: 12),
+                      ),
+                    ),
                   ],
                 ),
-              )),
-              const SizedBox(height: 8),
-              Text(
-                'From ৳${plan.weeklyTotal.toStringAsFixed(0)}/week',
-                style: AppTypography.price(isDark: isDark).copyWith(fontSize: 16),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  plan.description,
+                  style: AppTypography.small(isDark: widget.isDark),
+                ),
+                const SizedBox(height: 12),
+                ...plan.features.map(
+                  (f) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle_rounded,
+                          size: 16,
+                          color: AppColors.success,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          f,
+                          style: AppTypography.small(isDark: widget.isDark),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'From ৳${plan.weeklyTotal.toStringAsFixed(0)}/week',
+                  style: AppTypography.price(
+                    isDark: widget.isDark,
+                  ).copyWith(fontSize: 16),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -330,8 +422,12 @@ class _SummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labelStyle = isTotal ? AppTypography.label(isDark: isDark) : AppTypography.bodyMedium(isDark: isDark);
-    final valueStyle = isTotal ? AppTypography.price(isDark: isDark) : AppTypography.label(isDark: isDark);
+    final labelStyle = isTotal
+        ? AppTypography.label(isDark: isDark)
+        : AppTypography.bodyMedium(isDark: isDark);
+    final valueStyle = isTotal
+        ? AppTypography.price(isDark: isDark)
+        : AppTypography.label(isDark: isDark);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
