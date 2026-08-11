@@ -5,21 +5,41 @@ import '../../../../core/mock/mock_data.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/customer_tier.dart';
 import '../../../../models/user_model.dart';
 import '../../../../router/routes.dart';
 
 const _stats = CustomerStats(totalOrders: 127, totalSpent: 45280, memberSince: 'Jan 2024');
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (mounted) setState(() => _loading = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = mockUser;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tier = _stats.tier;
     final themeMode = ref.watch(themeModeProvider);
+
+    if (_loading) {
+      return const _ProfileSkeleton();
+    }
 
     return SafeArea(
       child: ListView(
@@ -353,5 +373,183 @@ class _MenuItem extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _ProfileSkeleton extends StatelessWidget {
+  const _ProfileSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: const [
+          _ProfileHeaderSkeleton(),
+          SizedBox(height: 20),
+          _StatsRowSkeleton(),
+          SizedBox(height: 24),
+          _MenuItemSkeleton(),
+          _MenuItemSkeleton(),
+          _MenuItemSkeleton(),
+          _MenuItemSkeleton(),
+          _ThemeToggleSkeleton(),
+          SizedBox(height: 16),
+          _LogoutSkeleton(),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileHeaderSkeleton extends StatelessWidget {
+  const _ProfileHeaderSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        SkeletonBox(width: 64, height: 64, radius: 32),
+        SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SkeletonLine(width: 140, height: 20),
+              SizedBox(height: 6),
+              SkeletonLine(width: 180),
+              SizedBox(height: 8),
+              SkeletonLine(width: 110, height: 18),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatsRowSkeleton extends StatelessWidget {
+  const _StatsRowSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: const Row(
+        children: [
+          Expanded(child: _StatSkeleton()),
+          SkeletonBox(width: 1, height: 36, radius: 0),
+          Expanded(child: _StatSkeleton()),
+          SkeletonBox(width: 1, height: 36, radius: 0),
+          Expanded(child: _StatSkeleton()),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatSkeleton extends StatelessWidget {
+  const _StatSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        SkeletonLine(width: 56, height: 18),
+        SizedBox(height: 6),
+        SkeletonLine(width: 36),
+      ],
+    );
+  }
+}
+
+class _MenuItemSkeleton extends StatelessWidget {
+  const _MenuItemSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.cardLight,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            return Row(
+              children: [
+                const SkeletonBox(width: 40, height: 40, radius: 10),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonLine(width: w * 0.4),
+                      const SizedBox(height: 4),
+                      SkeletonLine(width: w * 0.55),
+                    ],
+                  ),
+                ),
+                const SkeletonBox(width: 16, height: 16, radius: 8),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeToggleSkeleton extends StatelessWidget {
+  const _ThemeToggleSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: const Row(
+        children: [
+          SkeletonBox(width: 40, height: 40, radius: 10),
+          SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonLine(width: 100),
+                SizedBox(height: 4),
+                SkeletonLine(width: 160),
+              ],
+            ),
+          ),
+          SkeletonBox(width: 40, height: 24, radius: 12),
+        ],
+      ),
+    );
+  }
+}
+
+class _LogoutSkeleton extends StatelessWidget {
+  const _LogoutSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SkeletonBox(width: double.infinity, height: 48, radius: 12);
   }
 }
