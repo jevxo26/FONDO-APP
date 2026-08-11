@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../../../router/routes.dart';
 
 const _languages = ['English (US)', 'বাংলা', 'हिन्दी'];
@@ -21,6 +22,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _smsNotifications = false;
   bool _emailNotifications = true;
   bool _twoFactorAuth = false;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (mounted) setState(() => _loading = false);
+    });
+  }
 
   void _showSnack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -70,6 +80,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeMode = ref.watch(themeModeProvider);
+
+    if (_loading) {
+      return _buildLoadingState();
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -205,6 +219,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
   }
+
+  Widget _buildLoadingState() {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('Settings'),
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          children: const [
+            SkeletonLine(width: 90, height: 14),
+            SizedBox(height: 8),
+            _SettingsCardSkeleton(),
+            SizedBox(height: 20),
+            SkeletonLine(width: 110, height: 14),
+            SizedBox(height: 8),
+            _SettingsCardSkeleton(),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _SectionLabel extends StatelessWidget {
@@ -313,6 +353,57 @@ class _SettingsTile extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SettingsCardSkeleton extends StatelessWidget {
+  const _SettingsCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < 3; i++) ...[
+            if (i > 0)
+              Divider(
+                height: 1,
+                thickness: 1,
+                indent: 16,
+                endIndent: 16,
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  SkeletonBox(width: 40, height: 40, radius: 10),
+                  SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SkeletonLine(width: 110),
+                        SizedBox(height: 4),
+                        SkeletonLine(width: 170),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  SkeletonBox(width: 40, height: 24, radius: 12),
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
