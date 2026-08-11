@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/mock/mock_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/address_model.dart';
 
 class AddressManagerScreen extends StatefulWidget {
@@ -13,11 +14,15 @@ class AddressManagerScreen extends StatefulWidget {
 
 class _AddressManagerScreenState extends State<AddressManagerScreen> {
   late List<AddressModel> _addresses;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
     _addresses = List.from(mockAddresses);
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (mounted) setState(() => _loading = false);
+    });
   }
 
   void _deleteAddress(String id) {
@@ -159,6 +164,10 @@ class _AddressManagerScreenState extends State<AddressManagerScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    if (_loading) {
+      return _buildLoadingState();
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -223,6 +232,45 @@ class _AddressManagerScreenState extends State<AddressManagerScreen> {
           ),
         ],
       ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text('Saved Addresses'),
+      ),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+              child: SkeletonLine(width: 150),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                children: const [
+                  _AddressCardSkeleton(),
+                  SizedBox(height: 12),
+                  _AddressCardSkeleton(),
+                  SizedBox(height: 12),
+                  _AddressCardSkeleton(),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: SkeletonBox(width: double.infinity, height: 48, radius: 12),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -310,6 +358,50 @@ class _AddressCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _AddressCardSkeleton extends StatelessWidget {
+  const _AddressCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const SkeletonBox(width: 18, height: 18, radius: 6),
+                  const SizedBox(width: 8),
+                  SkeletonLine(width: 80),
+                  const SizedBox(width: 8),
+                  const SkeletonBox(width: 46, height: 18, radius: 6),
+                  const Spacer(),
+                  const SkeletonBox(width: 18, height: 18, radius: 6),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SkeletonLine(width: w * 0.7),
+              const SizedBox(height: 6),
+              SkeletonLine(width: w * 0.5),
+              const SizedBox(height: 6),
+              SkeletonLine(width: w * 0.6),
+            ],
+          );
+        },
       ),
     );
   }
