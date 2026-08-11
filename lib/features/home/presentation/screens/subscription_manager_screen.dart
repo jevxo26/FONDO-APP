@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/meal_plan.dart';
 import '../../../../models/user_subscription.dart';
 
@@ -90,11 +91,15 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
   late List<UserSubscription> _items;
   int? _quickPauseDays;
   DateTimeRange? _customPauseRange;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
     _items = List.from(_subscriptions);
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (mounted) setState(() => _loading = false);
+    });
   }
 
   void _showPauseSheet(String subId) {
@@ -288,6 +293,10 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    if (_loading) {
+      return _buildLoadingState();
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -309,6 +318,28 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
               onCancel: () => _cancelSubscription(sub.id),
             ),
           )).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('My Subscriptions'),
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: const [
+            _SubscriptionCardSkeleton(),
+            SizedBox(height: 16),
+            _SubscriptionCardSkeleton(),
+          ],
         ),
       ),
     );
@@ -512,6 +543,61 @@ class _SubscriptionCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _SubscriptionCardSkeleton extends StatelessWidget {
+  const _SubscriptionCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: SkeletonLine(width: w * 0.5, height: 18)),
+                  const SkeletonBox(width: 56, height: 22, radius: 8),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SkeletonLine(width: w * 0.45),
+              const SizedBox(height: 16),
+              SkeletonBox(width: w, height: 8, radius: 4),
+              const SizedBox(height: 6),
+              SkeletonLine(width: w * 0.6),
+              const SizedBox(height: 4),
+              SkeletonLine(width: w * 0.5),
+              const SizedBox(height: 16),
+              SkeletonLine(width: w * 0.6),
+              const SizedBox(height: 4),
+              SkeletonLine(width: w * 0.4),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: SkeletonBox(width: double.infinity, height: 44, radius: 12),
+                  ),
+                  const SizedBox(width: 12),
+                  const SkeletonBox(width: 90, height: 44, radius: 12),
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
