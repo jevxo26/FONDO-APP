@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/wallet_transaction.dart';
 
 double _balance = 1280.0;
@@ -25,6 +26,16 @@ class WalletScreen extends StatefulWidget {
 }
 
 class _WalletScreenState extends State<WalletScreen> {
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (mounted) setState(() => _loading = false);
+    });
+  }
+
   void _showTopUpModal() {
     final amountCtr = TextEditingController();
     int? quickAmount;
@@ -122,6 +133,10 @@ class _WalletScreenState extends State<WalletScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    if (_loading) {
+      return _buildLoadingState();
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -185,6 +200,48 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
         ],
       ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('Wallet'),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: const [
+                  _BalanceCardSkeleton(),
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(child: SkeletonBox(width: double.infinity, height: 46, radius: 12)),
+                      SizedBox(width: 12),
+                      Expanded(child: SkeletonBox(width: double.infinity, height: 46, radius: 12)),
+                    ],
+                  ),
+                  SizedBox(height: 28),
+                  SkeletonLine(width: 120),
+                  SizedBox(height: 12),
+                  _TransactionSkeleton(),
+                  SizedBox(height: 10),
+                  _TransactionSkeleton(),
+                  SizedBox(height: 10),
+                  _TransactionSkeleton(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -297,6 +354,79 @@ class _TransactionRow extends StatelessWidget {
             style: AppTypography.label(isDark: isDark).copyWith(color: color),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _BalanceCardSkeleton extends StatelessWidget {
+  const _BalanceCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              SkeletonBox(width: 20, height: 20, radius: 6),
+              SizedBox(width: 8),
+              SkeletonLine(width: 110),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const SkeletonLine(width: 140, height: 30),
+          const SizedBox(height: 10),
+          SkeletonLine(width: 90),
+        ],
+      ),
+    );
+  }
+}
+
+class _TransactionSkeleton extends StatelessWidget {
+  const _TransactionSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          return Row(
+            children: [
+              const SkeletonBox(width: 36, height: 36, radius: 10),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonLine(width: w * 0.5),
+                    const SizedBox(height: 4),
+                    SkeletonLine(width: w * 0.3),
+                  ],
+                ),
+              ),
+              SkeletonLine(width: 44),
+            ],
+          );
+        },
       ),
     );
   }
