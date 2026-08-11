@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/cart_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/food_item.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
@@ -14,6 +15,15 @@ class CartScreen extends ConsumerStatefulWidget {
 
 class _CartScreenState extends ConsumerState<CartScreen> {
   final _couponController = TextEditingController();
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (mounted) setState(() => _loading = false);
+    });
+  }
 
   @override
   void dispose() {
@@ -25,6 +35,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (_loading) {
+      return _buildLoadingState();
+    }
 
     if (cart.items.isEmpty) {
       return _buildEmptyState(isDark);
@@ -62,6 +76,32 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
           ),
           _buildCheckoutBar(cart, isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return SafeArea(
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+              children: const [
+                SkeletonLine(width: 140, height: 24),
+                SizedBox(height: 16),
+                _CartItemSkeleton(),
+                SizedBox(height: 12),
+                _CartItemSkeleton(),
+                SizedBox(height: 12),
+                _CartItemSkeleton(),
+                SizedBox(height: 16),
+                _CartPanelSkeleton(),
+              ],
+            ),
+          ),
+          const _CheckoutBarSkeleton(),
         ],
       ),
     );
@@ -404,6 +444,136 @@ class _PriceLine extends StatelessWidget {
           style: amountStyle.copyWith(color: textColor),
         ),
       ],
+    );
+  }
+}
+
+class _CartItemSkeleton extends StatelessWidget {
+  const _CartItemSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const SkeletonBox(width: 44, height: 44, radius: 10),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SkeletonLine(width: w * 0.45),
+                        const SizedBox(height: 6),
+                        SkeletonLine(width: w * 0.65),
+                      ],
+                    ),
+                  ),
+                  const SkeletonBox(width: 20, height: 20, radius: 6),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SkeletonBox(width: 92, height: 32, radius: 8),
+                  SkeletonLine(width: 44),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _CartPanelSkeleton extends StatelessWidget {
+  const _CartPanelSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const SkeletonBox(width: 20, height: 20, radius: 6),
+                  const SizedBox(width: 10),
+                  Expanded(child: SkeletonLine(width: w * 0.5)),
+                  const SkeletonBox(width: 24, height: 24, radius: 6),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SkeletonLine(width: w),
+              const SizedBox(height: 8),
+              SkeletonLine(width: w),
+              const SizedBox(height: 8),
+              SkeletonLine(width: w),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _CheckoutBarSkeleton extends StatelessWidget {
+  const _CheckoutBarSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        border: Border(
+          top: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 0.5),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  SkeletonLine(width: 40),
+                  SizedBox(height: 6),
+                  SkeletonLine(width: 64, height: 18),
+                ],
+              ),
+            ),
+            const SkeletonBox(width: 150, height: 46, radius: 12),
+          ],
+        ),
+      ),
     );
   }
 }
