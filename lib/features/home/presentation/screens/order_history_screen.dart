@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/order_model.dart';
 
 final List<OrderModel> _allOrders = [
@@ -149,6 +150,15 @@ class OrderHistoryScreen extends StatefulWidget {
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   String _filter = 'All';
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (mounted) setState(() => _loading = false);
+    });
+  }
 
   List<OrderModel> get _filteredOrders {
     if (_filter == 'All') return _allOrders;
@@ -161,6 +171,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (_loading) {
+      return _buildLoadingState();
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -196,6 +210,48 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     child: _OrderCard(order: _filteredOrders[index], isDark: isDark),
                   ),
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('Order History'),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+              child: Row(
+                children: const [
+                  SkeletonBox(width: 56, height: 34, radius: 20),
+                  SizedBox(width: 8),
+                  SkeletonBox(width: 84, height: 34, radius: 20),
+                  SizedBox(width: 8),
+                  SkeletonBox(width: 80, height: 34, radius: 20),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                children: const [
+                  _OrderCardSkeleton(),
+                  SizedBox(height: 14),
+                  _OrderCardSkeleton(),
+                  SizedBox(height: 14),
+                  _OrderCardSkeleton(),
+                ],
               ),
             ),
           ],
@@ -318,6 +374,56 @@ class _OrderCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _OrderCardSkeleton extends StatelessWidget {
+  const _OrderCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  SkeletonLine(width: w * 0.4, height: 18),
+                  const Spacer(),
+                  const SkeletonBox(width: 64, height: 22, radius: 12),
+                ],
+              ),
+              const SizedBox(height: 6),
+              SkeletonLine(width: w * 0.3),
+              const SizedBox(height: 10),
+              SkeletonLine(width: w),
+              const SizedBox(height: 4),
+              SkeletonLine(width: w * 0.7),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  SkeletonLine(width: 56, height: 16),
+                  const Spacer(),
+                  SkeletonLine(width: 40),
+                ],
+              ),
+              const SizedBox(height: 14),
+              SkeletonBox(width: w, height: 44, radius: 12),
+            ],
+          );
+        },
       ),
     );
   }
