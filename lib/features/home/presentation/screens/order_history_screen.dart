@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/mock/mock_foods.dart';
+import '../../../../core/providers/cart_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/skeleton.dart';
+import '../../../../models/food_item.dart';
 import '../../../../models/order_model.dart';
+import '../../../../router/routes.dart';
 
 final List<OrderModel> _allOrders = [
   OrderModel(
@@ -141,14 +146,14 @@ String _itemsSummary(List<OrderItem> items) {
   return items.map((e) => e.foodName).join(', ');
 }
 
-class OrderHistoryScreen extends StatefulWidget {
+class OrderHistoryScreen extends ConsumerStatefulWidget {
   const OrderHistoryScreen({super.key});
 
   @override
-  State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
+  ConsumerState<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
 }
 
-class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
+class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   String _filter = 'All';
   bool _loading = true;
 
@@ -166,6 +171,33 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       return _allOrders.where((o) => o.status == OrderStatus.delivered).toList();
     }
     return _allOrders.where((o) => o.status == OrderStatus.cancelled).toList();
+  }
+
+  FoodItem _foodForOrderItem(OrderItem item, OrderModel order) {
+    for (final food in mockFoods) {
+      if (food.name == item.foodName) return food;
+    }
+    return FoodItem(
+      id: 'repeat_${order.id}_${item.foodName}',
+      name: item.foodName,
+      description: 'Reordered from ${order.orderNumber}',
+      price: item.price,
+      category: 'Repeat Order',
+    );
+  }
+
+  void _repeatOrder(OrderModel order) {
+    final cart = ref.read(cartProvider.notifier);
+    for (final item in order.items) {
+      cart.addItem(_foodForOrderItem(item, order), quantity: item.quantity);
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Items added to cart'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    context.go(AppRoutes.cart);
   }
 
   @override
@@ -207,7 +239,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   itemCount: _filteredOrders.length,
                   itemBuilder: (context, index) => Padding(
                     padding: const EdgeInsets.only(bottom: 14),
-                    child: _OrderCard(order: _filteredOrders[index], isDark: isDark),
+                    child: _OrderCard(
+                      order: _filteredOrders[index],
+                      isDark: isDark,
+                      onRepeat: () => _repeatOrder(_filteredOrders[index]),
+                    ),
                   ),
                 ),
               ),
@@ -296,8 +332,13 @@ class _FilterChip extends StatelessWidget {
 class _OrderCard extends StatelessWidget {
   final OrderModel order;
   final bool isDark;
+  final VoidCallback onRepeat;
 
-  const _OrderCard({required this.order, required this.isDark});
+  const _OrderCard({
+    required this.order,
+    required this.isDark,
+    required this.onRepeat,
+  });
 
   @override
   Widget build(BuildContext context) {
