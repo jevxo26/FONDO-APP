@@ -96,7 +96,7 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
   @override
   void initState() {
     super.initState();
-    _items = List.from(_subscriptions);
+    _items = _subscriptions;
     Future.delayed(const Duration(milliseconds: 1800), () {
       if (mounted) setState(() => _loading = false);
     });

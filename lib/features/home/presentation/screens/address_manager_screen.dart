@@ -19,7 +19,7 @@ class _AddressManagerScreenState extends State<AddressManagerScreen> {
   @override
   void initState() {
     super.initState();
-    _addresses = List.from(mockAddresses);
+    _addresses = mockAddresses;
     Future.delayed(const Duration(milliseconds: 1800), () {
       if (mounted) setState(() => _loading = false);
     });
@@ -66,19 +66,21 @@ class _AddressManagerScreenState extends State<AddressManagerScreen> {
 
   void _toggleDefault(String id) {
     setState(() {
-      _addresses = _addresses.map((a) => AddressModel(
-        id: a.id,
-        label: a.label,
-        street: a.street,
-        city: a.city,
-        state: a.state,
-        zipCode: a.zipCode,
-        country: a.country,
-        latitude: a.latitude,
-        longitude: a.longitude,
-        isDefault: a.id == id,
-        deliveryInstructions: a.deliveryInstructions,
-      )).toList();
+      for (var i = 0; i < _addresses.length; i++) {
+        _addresses[i] = AddressModel(
+          id: _addresses[i].id,
+          label: _addresses[i].label,
+          street: _addresses[i].street,
+          city: _addresses[i].city,
+          state: _addresses[i].state,
+          zipCode: _addresses[i].zipCode,
+          country: _addresses[i].country,
+          latitude: _addresses[i].latitude,
+          longitude: _addresses[i].longitude,
+          isDefault: _addresses[i].id == id,
+          deliveryInstructions: _addresses[i].deliveryInstructions,
+        );
+      }
     });
   }
 
@@ -129,19 +131,23 @@ class _AddressManagerScreenState extends State<AddressManagerScreen> {
                   onPressed: () {
                     setSheetState(() => loading = true);
                     setState(() {
-                      _addresses = _addresses.map((a) => a.id == address.id ? AddressModel(
-                        id: a.id,
-                        label: labelCtr.text,
-                        street: streetCtr.text,
-                        city: cityCtr.text,
-                        state: a.state,
-                        zipCode: a.zipCode,
-                        country: a.country,
-                        latitude: a.latitude,
-                        longitude: a.longitude,
-                        isDefault: a.isDefault,
-                        deliveryInstructions: instructionsCtr.text.isNotEmpty ? instructionsCtr.text : null,
-                      ) : a).toList();
+                      for (var i = 0; i < _addresses.length; i++) {
+                        if (_addresses[i].id == address.id) {
+                          _addresses[i] = AddressModel(
+                            id: _addresses[i].id,
+                            label: labelCtr.text,
+                            street: streetCtr.text,
+                            city: cityCtr.text,
+                            state: _addresses[i].state,
+                            zipCode: _addresses[i].zipCode,
+                            country: _addresses[i].country,
+                            latitude: _addresses[i].latitude,
+                            longitude: _addresses[i].longitude,
+                            isDefault: _addresses[i].isDefault,
+                            deliveryInstructions: instructionsCtr.text.isNotEmpty ? instructionsCtr.text : null,
+                          );
+                        }
+                      }
                     });
                     Navigator.of(ctx).pop();
                   },
