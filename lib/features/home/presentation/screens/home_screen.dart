@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/mock/mock_data.dart';
 import '../../../../core/providers/cart_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/food_card_skeleton.dart';
+import '../../../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../../../router/routes.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -28,7 +28,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = mockUser;
+    final user = ref.watch(currentUserProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cartCount = ref.watch(cartProvider.select((s) => s.itemCount));
 

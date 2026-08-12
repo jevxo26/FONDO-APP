@@ -6,6 +6,7 @@ import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/skeleton.dart';
+import '../../../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../../../models/customer_tier.dart';
 import '../../../../models/user_model.dart';
 import '../../../../router/routes.dart';
@@ -32,7 +33,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = mockUser;
+    final user = ref.watch(currentUserProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tier = _stats.tier;
     final themeMode = ref.watch(themeModeProvider);

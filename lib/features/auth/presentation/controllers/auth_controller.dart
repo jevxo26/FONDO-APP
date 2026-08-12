@@ -1,11 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../models/address_model.dart';
+import '../../../../models/user_model.dart';
 import '../../data/dtos/login_request_dto.dart';
 import '../../data/dtos/otp_verify_dto.dart';
 import '../../data/dtos/register_request_dto.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'auth_state.dart';
+
+const UserModel _demoUser = UserModel(
+  id: 'usr_demo_001',
+  name: 'Raihan Ahmed',
+  email: 'raihan@example.com',
+  phone: '+8801712345678',
+  avatar: null,
+  gender: 'male',
+  dob: '1995-06-15',
+  role: 'CUSTOMER',
+  isPhoneVerified: true,
+);
+
+/// Single identity source for the current user. In Phase A (mock-only, no live
+/// session) it falls back to the demo identity so every screen renders.
+final currentUserProvider = Provider<UserModel>((ref) {
+  final user = ref.watch(authControllerProvider.select((s) => s.user));
+  return user ?? _demoUser;
+});
 
 final authControllerProvider = StateNotifierProvider<AuthController, AuthState>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);

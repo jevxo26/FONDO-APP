@@ -1,23 +1,8 @@
 import '../../../models/address_model.dart';
-import '../../../models/user_model.dart';
 
 // ---------------------------------------------------------------------------
 // Mock data for static demo phase. Used by screens via "Use Demo Data" buttons.
 // ---------------------------------------------------------------------------
-
-// ── User ──────────────────────────────────────────────────────────────────────
-
-const mockUser = UserModel(
-  id: 'usr_demo_001',
-  name: 'Raihan Ahmed',
-  email: 'raihan@example.com',
-  phone: '+8801712345678',
-  avatar: null,
-  gender: 'male',
-  dob: '1995-06-15',
-  role: 'CUSTOMER',
-  isPhoneVerified: true,
-);
 
 // ── Addresses ─────────────────────────────────────────────────────────────────
 
