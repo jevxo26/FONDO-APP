@@ -65,6 +65,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onTap: () => context.push(AppRoutes.securitySettings),
           ),
           _MenuItem(
+            icon: Icons.devices_other_outlined,
+            title: 'Active Devices',
+            subtitle: 'Login sessions & device control',
+            isDark: isDark,
+            onTap: () => context.push(AppRoutes.deviceRegistry),
+          ),
+          _MenuItem(
             icon: Icons.location_on_outlined,
             title: 'Saved Addresses',
             subtitle: '${mockAddresses.length} address${mockAddresses.length == 1 ? '' : 'es'}',
@@ -404,6 +411,7 @@ class _ProfileSkeleton extends StatelessWidget {
           SizedBox(height: 20),
           _StatsRowSkeleton(),
           SizedBox(height: 24),
+          _MenuItemSkeleton(),
           _MenuItemSkeleton(),
           _MenuItemSkeleton(),
           _MenuItemSkeleton(),
