@@ -19,5 +19,10 @@ class AppRoutes {
   static const String subscriptions = '/profile/subscriptions';
   static const String orderHistory = '/profile/orders';
   static const String settings = '/profile/settings';
+  static const String editProfile = '/profile/edit';
+  static const String securitySettings = '/profile/security';
+  static const String deviceRegistry = '/profile/devices';
+  static const String favorites = '/profile/favorites';
+  static const String liveTracking = '/profile/orders/:orderId/track';
   static const String vendor = '/vendor';
 }

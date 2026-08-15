@@ -10,6 +10,8 @@ import '../features/home/presentation/screens/cart_screen.dart';
 import '../features/home/presentation/screens/food_catalog_screen.dart';
 import '../features/home/presentation/screens/food_detail_screen.dart';
 import '../features/home/presentation/screens/address_manager_screen.dart';
+import '../features/home/presentation/screens/edit_profile_screen.dart';
+import '../features/home/presentation/screens/security_settings_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/home/presentation/screens/order_history_screen.dart';
 import '../features/home/presentation/screens/settings_screen.dart';
@@ -129,6 +131,14 @@ final appRouter = GoRouter(
                 GoRoute(
                   path: 'settings',
                   builder: (context, state) => const SettingsScreen(),
+                ),
+                GoRoute(
+                  path: 'edit',
+                  builder: (context, state) => const EditProfileScreen(),
+                ),
+                GoRoute(
+                  path: 'security',
+                  builder: (context, state) => const SecuritySettingsScreen(),
                 ),
               ],
             ),
