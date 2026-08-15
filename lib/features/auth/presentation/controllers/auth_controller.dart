@@ -45,6 +45,10 @@ class AuthController extends StateNotifier<AuthState> {
     state = state.copyWith(errorMessage: null);
   }
 
+  void updateUser(UserModel user) {
+    state = state.copyWith(user: user);
+  }
+
   Future<void> bootstrap() async {
     try {
       state = state.copyWith(status: AuthStatus.initial);
