@@ -1,197 +1,356 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/auth_scaffold.dart';
+import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
-import '../../data/dtos/register_request_dto.dart';
-import '../../data/repositories/auth_repository.dart';
-import '../controllers/auth_controller.dart';
-import '../controllers/auth_state.dart';
 
-class RegisterScreen extends ConsumerStatefulWidget {
+import '../../../../core/mock/mock_data.dart';
+
+/// Register screen — §2.3. Static UI with hardcoded success behavior.
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  bool _obscurePassword = true;
+
+  String? _fieldError;
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleRegister() async {
+  void _handleRegister() {
+    setState(() => _fieldError = null);
     if (!_formKey.currentState!.validate()) return;
 
-    final phone = _phoneController.text.trim();
-    final dto = RegisterRequestDto(
-      name: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-      phone: phone,
-      password: _passwordController.text,
-    );
-
-    final success = await ref.read(authControllerProvider.notifier).register(dto);
-
-    if (!mounted) return;
-
-    if (success) {
-      // Trigger OTP code send and navigate to verification screen
-      await ref.read(authRepositoryProvider).sendOtp(phone);
+    setState(() => _isLoading = true);
+    Future.delayed(const Duration(milliseconds: 600), () {
       if (!mounted) return;
+      setState(() => _isLoading = false);
+      final phone = _phoneController.text.trim();
       context.push('${AppRoutes.otpVerify}?phone=${Uri.encodeComponent(phone)}');
-    } else {
-      final errorMsg = ref.read(authControllerProvider).errorMessage ?? 'Registration failed';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMsg),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
-    final isLoading = authState.status == AuthStatus.authenticating;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Account'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return AuthScaffold(
+      showBackButton: true,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 40),
+
+            // Headline — §2.3: "Create your account"
+            Text(
+              'Create your account',
+              style: AppTypography.headlineLarge(isDark: isDark),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Subtext — §2.3: "Healthy meals, on your schedule"
+            Text(
+              'Healthy meals, on your schedule',
+              style: AppTypography.bodyMedium(isDark: isDark),
+            ),
+
+            const SizedBox(height: 24),
+
+            InlineErrorBanner(
+              message: _fieldError,
+              onDismiss: () => setState(() => _fieldError = null),
+            ),
+
+            const SizedBox(height: 8),
+
+            // §2.3: "First name, Last name (two-up row)"
+            Row(
               children: [
-                Text(
-                  'Join FONDO 🍔',
-                  style: AppTypography.displayHeadline(isDark: isDark),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Create an account to start ordering fresh meals',
-                  style: AppTypography.bodyMedium(isDark: isDark),
-                ),
-                const SizedBox(height: 28),
-                CustomTextField(
-                  controller: _nameController,
-                  label: 'Full Name',
-                  hint: 'John Doe',
-                  prefixIcon: const Icon(Icons.person_outline),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter your full name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: _emailController,
-                  label: 'Email Address',
-                  hint: 'john@example.com',
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!val.contains('@')) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: _phoneController,
-                  label: 'Phone Number',
-                  hint: '+8801700000000',
-                  keyboardType: TextInputType.phone,
-                  prefixIcon: const Icon(Icons.phone_outlined),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter your phone number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  hint: '••••••••',
-                  obscureText: _obscurePassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                Expanded(
+                  child: AppTextField(
+                    controller: _firstNameController,
+                    label: 'First Name',
+                    hint: 'John',
+                    textInputAction: TextInputAction.next,
+                    prefixIcon: Icon(
+                      Icons.person_outline_rounded,
+                      size: 20,
+                      color: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForegroundLight,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Required';
+                      }
+                      return null;
                     },
                   ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return 'Please enter a password';
-                    }
-                    if (val.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
                 ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: _confirmPasswordController,
-                  label: 'Confirm Password',
-                  hint: '••••••••',
-                  obscureText: _obscurePassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  validator: (val) {
-                    if (val != _passwordController.text) {
-                      return 'Passwords do not match';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 28),
-                PrimaryButton(
-                  text: 'Register & Verify Phone',
-                  isLoading: isLoading,
-                  onPressed: _handleRegister,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AppTextField(
+                    controller: _lastNameController,
+                    label: 'Last Name',
+                    hint: 'Doe',
+                    textInputAction: TextInputAction.next,
+                    prefixIcon: Icon(
+                      Icons.person_outline_rounded,
+                      size: 20,
+                      color: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForegroundLight,
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Required';
+                      }
+                      return null;
+                    },
+                  ),
                 ),
               ],
             ),
-          ),
+
+            const SizedBox(height: 16),
+
+            // §2.3: Phone
+            AppTextField(
+              controller: _phoneController,
+              label: 'Phone Number',
+              hint: '+8801700000000',
+              keyboardType: TextInputType.phone,
+              prefixIcon: Icon(
+                Icons.phone_outlined,
+                size: 20,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight,
+              ),
+              validator: (val) {
+                if (val == null || val.trim().isEmpty) {
+                  return 'Enter your phone number';
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // §2.3: Email
+            AppTextField(
+              controller: _emailController,
+              label: 'Email Address',
+              hint: 'john@example.com',
+              keyboardType: TextInputType.emailAddress,
+              prefixIcon: Icon(
+                Icons.email_outlined,
+                size: 20,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight,
+              ),
+              validator: (val) {
+                if (val == null || val.trim().isEmpty) {
+                  return 'Enter your email';
+                }
+                if (!val.contains('@')) {
+                  return 'Enter a valid email';
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // §2.3: "Password with a lightweight strength hint"
+            AppTextField(
+              controller: _passwordController,
+              label: 'Password',
+              hint: '••••••••',
+              isPassword: true,
+              textInputAction: TextInputAction.done,
+              prefixIcon: Icon(
+                Icons.lock_outline_rounded,
+                size: 20,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight,
+              ),
+              onChanged: (_) => setState(() {}),
+              onSubmitted: (_) => _handleRegister(),
+              validator: (val) {
+                if (val == null || val.isEmpty) return 'Enter a password';
+                if (val.length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
+                return null;
+              },
+            ),
+
+            // §2.3: "simple met/unmet checklist under the field"
+            const SizedBox(height: 8),
+            _PasswordStrengthHint(
+              password: _passwordController.text,
+              isDark: isDark,
+            ),
+
+            const SizedBox(height: 28),
+
+            // §2.3: CTA "Create account"
+            PrimaryButton(
+              text: 'Create account',
+              isLoading: _isLoading,
+              onPressed: _handleRegister,
+            ),
+
+            const SizedBox(height: 16),
+
+            // Demo data quick-fill
+            Center(
+              child: GestureDetector(
+                onTap: () => setState(() {
+                  _firstNameController.text = mockRegisterFirstName;
+                  _lastNameController.text = mockRegisterLastName;
+                  _phoneController.text = mockRegisterPhone;
+                  _emailController.text = mockRegisterEmail;
+                  _passwordController.text = mockRegisterPassword;
+                }),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: AppRadii.full,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.smart_button_outlined,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Use Demo Data',
+                        style: AppTypography.labelConvention(isDark: isDark)
+                            .copyWith(color: AppColors.primary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // §2.3: "Already have an account? Log in"
+            Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    'Already have an account? ',
+                    style: AppTypography.bodyMedium(isDark: isDark),
+                  ),
+                  TextLinkButton(
+                    text: 'Log in',
+                    onPressed: () => context.pop(),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // §2.3: "By continuing you agree to our Terms & Privacy"
+            Center(
+              child: Text(
+                'By continuing you agree to our Terms & Privacy',
+                style: AppTypography.small(isDark: isDark),
+                textAlign: TextAlign.center,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+          ],
         ),
       ),
+    );
+  }
+}
+
+/// §2.3: "simple met/unmet checklist under the field, not a colored strength bar"
+class _PasswordStrengthHint extends StatelessWidget {
+  final String password;
+  final bool isDark;
+
+  const _PasswordStrengthHint({required this.password, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasMinLength = password.length >= 6;
+
+    return Row(
+      children: [
+        Icon(
+          hasMinLength
+              ? Icons.check_circle_outline_rounded
+              : Icons.circle_outlined,
+          size: 14,
+          color: hasMinLength
+              ? AppColors.success
+              : (isDark
+                  ? AppColors.mutedForegroundDark
+                  : AppColors.mutedForegroundLight),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          'At least 6 characters',
+          style: AppTypography.small(isDark: isDark).copyWith(
+            color: hasMinLength
+                ? AppColors.success
+                : (isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight),
+          ),
+        ),
+      ],
     );
   }
 }

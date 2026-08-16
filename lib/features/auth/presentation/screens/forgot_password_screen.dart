@@ -1,25 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/mock/mock_data.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/auth_scaffold.dart';
+import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
-import '../../data/repositories/auth_repository.dart';
-import '../controllers/auth_controller.dart';
 
-class ForgotPasswordScreen extends ConsumerStatefulWidget {
+/// Forgot Password screen — §2.5. Static UI — always shows success state.
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identityController = TextEditingController();
+  bool _sendSuccess = false;
+  String? _fieldError;
   bool _isLoading = false;
 
   @override
@@ -28,82 +33,198 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  Future<void> _handleSendResetCode() async {
+  void _handleSendResetCode() {
+    setState(() => _fieldError = null);
     if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-
-    final identity = _identityController.text.trim();
-    try {
-      final success = await ref.read(authRepositoryProvider).forgotPassword(identity);
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-
-      if (success) {
-        context.push('${AppRoutes.resetPassword}?target=${Uri.encodeComponent(identity)}');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to request reset code'), backgroundColor: AppColors.error),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('AppException: ', '')), backgroundColor: AppColors.error),
-      );
-    }
+    setState(() {
+      _isLoading = true;
+      _sendSuccess = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Forgot Password'),
+    return AuthScaffold(
+      showBackButton: true,
+      child: Form(
+        key: _formKey,
+        child: _sendSuccess
+            ? _buildSuccessState(isDark)
+            : _buildFormState(isDark),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Reset Your Password 🔒',
-                  style: AppTypography.displayHeadline(isDark: isDark),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Enter your registered email address or phone number to receive a 6-digit reset code.',
-                  style: AppTypography.bodyMedium(isDark: isDark),
-                ),
-                const SizedBox(height: 32),
-                CustomTextField(
-                  controller: _identityController,
-                  label: 'Email or Phone Number',
-                  hint: 'john@example.com or +88017...',
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter your registered email or phone';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 28),
-                PrimaryButton(
-                  text: 'Send Reset Code',
-                  isLoading: _isLoading,
-                  onPressed: _handleSendResetCode,
-                ),
-              ],
+    );
+  }
+
+  /// §2.5: confirmation state — "Check your email"
+  Widget _buildSuccessState(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 40),
+
+        // Success icon
+        Center(
+          child: Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.success.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.mark_email_read_outlined,
+              size: 32,
+              color: AppColors.success,
             ),
           ),
         ),
-      ),
+
+        const SizedBox(height: 28),
+
+        Center(
+          child: Text(
+            'Check your email',
+            style: AppTypography.headlineLarge(isDark: isDark),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        Center(
+          child: Text(
+            'We\'ve sent a 6-digit reset code to\n${_identityController.text.trim()}',
+            textAlign: TextAlign.center,
+            style: AppTypography.bodyMedium(isDark: isDark),
+          ),
+        ),
+
+        const SizedBox(height: 32),
+
+        PrimaryButton(
+          text: 'Reset password',
+          onPressed: () {
+            final target = _identityController.text.trim();
+            context.push(
+              '${AppRoutes.resetPassword}?target=${Uri.encodeComponent(target)}',
+            );
+          },
+        ),
+
+        const SizedBox(height: 24),
+
+        Center(
+          child: TextLinkButton(
+            text: 'Back to login',
+            onPressed: () => context.pop(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// §2.5: single email field, "Send reset link" CTA
+  Widget _buildFormState(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 40),
+
+        // Headline
+        Text(
+          'Forgot password?',
+          style: AppTypography.headlineLarge(isDark: isDark),
+        ),
+
+        const SizedBox(height: 8),
+
+        // Subtext
+        Text(
+          'Enter your email or phone number and we\'ll send you a 6-digit reset code.',
+          style: AppTypography.bodyMedium(isDark: isDark),
+        ),
+
+        const SizedBox(height: 24),
+
+        InlineErrorBanner(
+          message: _fieldError,
+          onDismiss: () => setState(() => _fieldError = null),
+        ),
+
+        const SizedBox(height: 8),
+
+        // §2.5: "single email field"
+        AppTextField(
+          controller: _identityController,
+          label: 'Email or Phone Number',
+          hint: 'john@example.com or +88017...',
+          keyboardType: TextInputType.emailAddress,
+          prefixIcon: Icon(
+            Icons.email_outlined,
+            size: 20,
+            color: isDark
+                ? AppColors.mutedForegroundDark
+                : AppColors.mutedForegroundLight,
+          ),
+          onSubmitted: (_) => _handleSendResetCode(),
+          validator: (val) {
+            if (val == null || val.trim().isEmpty) {
+              return 'Enter your registered email or phone';
+            }
+            return null;
+          },
+        ),
+
+        const SizedBox(height: 28),
+
+        // §2.5: "Send reset link" CTA
+        PrimaryButton(
+          text: 'Send reset code',
+          isLoading: _isLoading,
+          onPressed: _handleSendResetCode,
+        ),
+
+        const SizedBox(height: 16),
+
+        // Demo data quick-fill
+        Center(
+          child: GestureDetector(
+            onTap: () => setState(() {
+              _identityController.text = mockLoginEmail;
+            }),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: AppRadii.full,
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.smart_button_outlined,
+                    size: 14,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Use Demo Data',
+                    style: AppTypography.labelConvention(isDark: isDark)
+                        .copyWith(color: AppColors.primary),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

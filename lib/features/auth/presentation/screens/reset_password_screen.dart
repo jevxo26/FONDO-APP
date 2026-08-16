@@ -1,32 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/mock/mock_data.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/auth_scaffold.dart';
+import '../../../../core/widgets/countdown_link.dart';
+import '../../../../core/widgets/inline_error_banner.dart';
+import '../../../../core/widgets/otp_input_row.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../router/routes.dart';
-import '../../data/repositories/auth_repository.dart';
-import '../controllers/auth_controller.dart';
-import '../widgets/pin_code_input.dart';
 
-class ResetPasswordScreen extends ConsumerStatefulWidget {
+/// Reset Password screen — §2.5. Static UI — always succeeds.
+class ResetPasswordScreen extends StatefulWidget {
   final String? target;
 
   const ResetPasswordScreen({super.key, this.target});
 
   @override
-  ConsumerState<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _otpKey = GlobalKey<OtpInputRowState>();
+  final _countdownKey = GlobalKey<CountdownLinkState>();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String _code = '';
-  bool _obscurePassword = true;
+
+  String? _fieldError;
   bool _isLoading = false;
+
+  bool get _isCodeComplete => _code.length == 6;
+
+  void _handleResend() {
+    _countdownKey.currentState?.startCooldown();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('New reset code sent!')),
+    );
+  }
 
   @override
   void dispose() {
@@ -35,136 +50,182 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     super.dispose();
   }
 
-  Future<void> _handleResetPassword() async {
+  void _handleResetPassword() {
+    setState(() => _fieldError = null);
     if (!_formKey.currentState!.validate()) return;
-
-    if (_code.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter all 6 digits of the reset code')),
-      );
-      return;
-    }
+    if (!_isCodeComplete) return;
 
     setState(() => _isLoading = true);
-
-    try {
-      final success = await ref.read(authRepositoryProvider).resetPassword(
-            code: _code,
-            newPassword: _passwordController.text,
-            identity: widget.target,
-          );
-
+    Future.delayed(const Duration(milliseconds: 600), () {
       if (!mounted) return;
-      setState(() => _isLoading = false);
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Password reset successfully! Please log in.'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        context.go(AppRoutes.login);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password reset failed'), backgroundColor: AppColors.error),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('AppException: ', '')), backgroundColor: AppColors.error),
+        const SnackBar(
+          content: Text('Password reset successfully! Please log in.'),
+          backgroundColor: AppColors.success,
+        ),
       );
-    }
+      context.go(AppRoutes.login);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Reset Password'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Set New Password 🔑',
-                  style: AppTypography.displayHeadline(isDark: isDark),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Enter the 6-digit code sent to ${widget.target ?? "your device"} and your new password.',
-                  style: AppTypography.bodyMedium(isDark: isDark),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Reset Code',
-                  style: AppTypography.bodyMedium(isDark: isDark).copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                PinCodeInput(
-                  length: 6,
-                  onChanged: (val) => _code = val,
-                  onCompleted: (val) => _code = val,
-                ),
-                const SizedBox(height: 24),
-                CustomTextField(
-                  controller: _passwordController,
-                  label: 'New Password',
-                  hint: '••••••••',
-                  obscureText: _obscurePassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return 'Please enter a new password';
-                    }
-                    if (val.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: _confirmPasswordController,
-                  label: 'Confirm New Password',
-                  hint: '••••••••',
-                  obscureText: _obscurePassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  validator: (val) {
-                    if (val != _passwordController.text) {
-                      return 'Passwords do not match';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 28),
-                PrimaryButton(
-                  text: 'Reset Password & Sign In',
-                  isLoading: _isLoading,
-                  onPressed: _handleResetPassword,
-                ),
-              ],
+    return AuthScaffold(
+      showBackButton: true,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 40),
+
+            // Headline
+            Text(
+              'Reset password',
+              style: AppTypography.headlineLarge(isDark: isDark),
             ),
-          ),
+
+            const SizedBox(height: 8),
+
+            // Subtext
+            Text(
+              'Enter the 6-digit code sent to ${widget.target ?? "your device"} and choose a new password.',
+              style: AppTypography.bodyMedium(isDark: isDark),
+            ),
+
+            const SizedBox(height: 24),
+
+            InlineErrorBanner(
+              message: _fieldError,
+              onDismiss: () => setState(() => _fieldError = null),
+            ),
+
+            const SizedBox(height: 8),
+
+            // §2.5: "token field"
+            Text(
+              'Reset code',
+              style: AppTypography.labelConvention(isDark: isDark),
+            ),
+            const SizedBox(height: 10),
+            OtpInputRow(
+              key: _otpKey,
+              length: 6,
+              onChanged: (val) => setState(() => _code = val),
+              onCompleted: (val) => _code = val,
+            ),
+
+            const SizedBox(height: 16),
+
+            CountdownLink(
+              key: _countdownKey,
+              onResend: _handleResend,
+            ),
+
+            const SizedBox(height: 24),
+
+            // §2.5: "new password field"
+            AppTextField(
+              controller: _passwordController,
+              label: 'New Password',
+              hint: '••••••••',
+              isPassword: true,
+              prefixIcon: Icon(
+                Icons.lock_outline_rounded,
+                size: 20,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight,
+              ),
+              onChanged: (_) => setState(() {}),
+              validator: (val) {
+                if (val == null || val.isEmpty) return 'Enter a new password';
+                if (val.length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            AppTextField(
+              controller: _confirmPasswordController,
+              label: 'Confirm New Password',
+              hint: '••••••••',
+              isPassword: true,
+              textInputAction: TextInputAction.done,
+              prefixIcon: Icon(
+                Icons.lock_outline_rounded,
+                size: 20,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight,
+              ),
+              onSubmitted: (_) => _handleResetPassword(),
+              validator: (val) {
+                if (val != _passwordController.text) {
+                  return 'Passwords do not match';
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 28),
+
+            // §2.5: "Reset password" CTA
+            PrimaryButton(
+              text: 'Reset password',
+              isLoading: _isLoading,
+              onPressed: _handleResetPassword,
+            ),
+
+            const SizedBox(height: 16),
+
+            // Demo data quick-fill
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  _otpKey.currentState?.setValue(mockOtpCode);
+                  setState(() {
+                    _passwordController.text = mockRegisterPassword;
+                    _confirmPasswordController.text = mockRegisterPassword;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: AppRadii.full,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.smart_button_outlined,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Use Demo Data',
+                        style: AppTypography.labelConvention(isDark: isDark)
+                            .copyWith(color: AppColors.primary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

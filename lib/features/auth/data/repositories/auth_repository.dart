@@ -74,7 +74,7 @@ class AuthRepository {
       final payload = {
         'code': code,
         'newPassword': newPassword,
-        if (identity != null) 'identity': identity,
+        'identity': ?identity,
       };
       final response = await dio.post(ApiEndpoints.resetPassword, data: payload);
       final data = response.data as Map<String, dynamic>;

@@ -20,6 +20,7 @@ class AppTextField extends StatefulWidget {
   final bool readOnly;
   final FocusNode? focusNode;
   final bool autoFocus;
+  final int maxLines;
 
   const AppTextField({
     super.key,
@@ -38,6 +39,7 @@ class AppTextField extends StatefulWidget {
     this.readOnly = false,
     this.focusNode,
     this.autoFocus = false,
+    this.maxLines = 1,
   });
 
   @override
@@ -78,6 +80,7 @@ class _AppTextFieldState extends State<AppTextField> {
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           readOnly: widget.readOnly,
+          maxLines: widget.isPassword ? 1 : widget.maxLines,
           onChanged: widget.onChanged,
           onFieldSubmitted: widget.onSubmitted,
           validator: widget.validator,

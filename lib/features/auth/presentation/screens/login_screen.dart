@@ -1,28 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/auth_scaffold.dart';
+import '../../../../core/widgets/inline_error_banner.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/text_link_button.dart';
 import '../../../../router/routes.dart';
-import '../../data/dtos/login_request_dto.dart';
-import '../controllers/auth_controller.dart';
-import '../controllers/auth_state.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
+/// Login screen — §2.2. Static UI with hardcoded demo credentials.
+/// No API, no controller. test@fondo.com / test123 succeeds.
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identityController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+
+  static const _demoEmail = 'test@fondo.com';
+  static const _demoPassword = 'test123';
+
+  String? _fieldError;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -31,138 +38,255 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  void _handleLogin() {
+    setState(() => _fieldError = null);
     if (!_formKey.currentState!.validate()) return;
 
-    final dto = LoginRequestDto(
-      identity: _identityController.text.trim(),
-      password: _passwordController.text,
-    );
+    setState(() => _isLoading = true);
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
 
-    final success = await ref.read(authControllerProvider.notifier).login(dto);
+      final email = _identityController.text.trim();
+      final password = _passwordController.text;
 
-    if (!mounted) return;
-
-    if (!success) {
-      final errorMsg = ref.read(authControllerProvider).errorMessage ?? 'Login failed';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMsg),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
+      if (email == _demoEmail && password == _demoPassword) {
+        context.go('/home');
+      } else {
+        setState(() {
+          _fieldError = 'Invalid email or password. Please try again.';
+        });
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
-    final isLoading = authState.status == AuthStatus.authenticating;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
-                Text(
-                  'Welcome Back 👋',
-                  style: AppTypography.displayHeadline(isDark: isDark),
+    return AuthScaffold(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 40),
+
+            // Logo mark — small, centred
+            Center(
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Sign in to order your favorite meals',
-                  style: AppTypography.bodyMedium(isDark: isDark),
+                child: const Icon(
+                  Icons.restaurant_menu_rounded,
+                  size: 22,
+                  color: AppColors.primaryForeground,
                 ),
-                const SizedBox(height: 36),
-                CustomTextField(
-                  controller: _identityController,
-                  label: 'Email or Phone Number',
-                  hint: 'enter email or +880 phone',
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.person_outline),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter your email or phone number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                CustomTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  hint: '••••••••',
-                  obscureText: _obscurePassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (val.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => context.push(AppRoutes.forgotPassword),
-                    child: Text(
-                      'Forgot Password?',
-                      style: AppTypography.bodyMedium(isDark: isDark).copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // Headline — Fraunces 32/700
+            Text(
+              'Welcome back',
+              style: AppTypography.headlineLarge(isDark: isDark),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Subtext — Inter 14, muted
+            Text(
+              'Log in to continue your meal plan',
+              style: AppTypography.bodyMedium(isDark: isDark),
+            ),
+
+            const SizedBox(height: 32),
+
+            // API error banner — sits above fields, hidden until set
+            InlineErrorBanner(
+              message: _fieldError,
+              onDismiss: () => setState(() => _fieldError = null),
+            ),
+
+            // Email or Phone (smart detect — no separate toggle)
+            AppTextField(
+              controller: _identityController,
+              label: 'Email or Phone',
+              hint: 'name@domain.com or +8801…',
+              keyboardType: TextInputType.emailAddress,
+              prefixIcon: Icon(
+                Icons.person_outline_rounded,
+                size: 20,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight,
+              ),
+              validator: (val) {
+                if (val == null || val.trim().isEmpty) {
+                  return 'Enter your email or phone number';
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // Password with show/hide toggle built into AppTextField
+            AppTextField(
+              controller: _passwordController,
+              label: 'Password',
+              hint: '••••••••',
+              isPassword: true,
+              textInputAction: TextInputAction.done,
+              prefixIcon: Icon(
+                Icons.lock_outline_rounded,
+                size: 20,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight,
+              ),
+              validator: (val) {
+                if (val == null || val.isEmpty) return 'Enter your password';
+                if (val.length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
+                return null;
+              },
+              onSubmitted: (_) => _handleLogin(),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Forgot password — right-aligned gold link
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextLinkButton(
+                text: 'Forgot password?',
+                onPressed: () => context.push(AppRoutes.forgotPassword),
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // Primary CTA — gold, radius-2xl, spring press
+            PrimaryButton(
+              text: 'Log in',
+              isLoading: _isLoading,
+              onPressed: _handleLogin,
+            ),
+
+            const SizedBox(height: 16),
+
+            // Demo data quick-fill
+            Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                children: [
+                  GestureDetector(
+                    onTap: () => setState(() {
+                      _identityController.text = _demoEmail;
+                      _passwordController.text = _demoPassword;
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 28),
-                PrimaryButton(
-                  text: 'Sign In',
-                  isLoading: isLoading,
-                  onPressed: _handleLogin,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Don't have an account? ",
-                      style: AppTypography.bodyMedium(isDark: isDark),
-                    ),
-                    GestureDetector(
-                      onTap: () => context.push(AppRoutes.register),
-                      child: Text(
-                        'Register',
-                        style: AppTypography.bodyMedium(isDark: isDark).copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.08),
+                        borderRadius: AppRadii.full,
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.25),
                         ),
                       ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.smart_button_outlined,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Customer Demo',
+                            style: AppTypography.labelConvention(isDark: isDark)
+                                .copyWith(color: AppColors.primary),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  GestureDetector(
+                    onTap: () => context.push(AppRoutes.vendor),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondaryDark.withValues(alpha: 0.1),
+                        borderRadius: AppRadii.full,
+                        border: Border.all(
+                          color: AppColors.secondaryDark.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.storefront_outlined,
+                            size: 14,
+                            color: isDark
+                                ? AppColors.secondaryLight
+                                : AppColors.secondaryDark,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Vendor Demo',
+                            style: AppTypography.labelConvention(isDark: isDark)
+                                .copyWith(
+                                  color: isDark
+                                      ? AppColors.secondaryLight
+                                      : AppColors.secondaryDark,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+
+            const SizedBox(height: 28),
+
+            // Secondary link row
+            Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    'New to FONDO? ',
+                    style: AppTypography.bodyMedium(isDark: isDark),
+                  ),
+                  TextLinkButton(
+                    text: 'Create account',
+                    onPressed: () => context.push(AppRoutes.register),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );

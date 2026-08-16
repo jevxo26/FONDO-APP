@@ -10,5 +10,6 @@ void main() {
       ),
     );
     expect(find.byType(FondoApp), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3));
   });
 }
