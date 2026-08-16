@@ -1,4 +1,4 @@
-enum TransactionType { credit, debit }
+enum TransactionType { topUp, payment, refund, cashback, withdrawal }
 
 class WalletTransaction {
   final String id;
