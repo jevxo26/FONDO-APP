@@ -15,6 +15,7 @@ import '../features/home/presentation/screens/edit_profile_screen.dart';
 import '../features/home/presentation/screens/favorites_screen.dart';
 import '../features/home/presentation/screens/security_settings_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
+import '../features/home/presentation/screens/live_order_tracking_screen.dart';
 import '../features/home/presentation/screens/order_history_screen.dart';
 import '../features/home/presentation/screens/settings_screen.dart';
 import '../features/home/presentation/screens/subscription_manager_screen.dart';
@@ -129,6 +130,14 @@ final appRouter = GoRouter(
                 GoRoute(
                   path: 'orders',
                   builder: (context, state) => const OrderHistoryScreen(),
+                  routes: [
+                    GoRoute(
+                      path: ':orderId/track',
+                      builder: (context, state) => LiveOrderTrackingScreen(
+                        orderId: state.pathParameters['orderId']!,
+                      ),
+                    ),
+                  ],
                 ),
                 GoRoute(
                   path: 'settings',

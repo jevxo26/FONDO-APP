@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/mock/mock_foods.dart';
+import '../../../../core/mock/mock_orders.dart';
 import '../../../../core/providers/cart_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -9,116 +10,6 @@ import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/food_item.dart';
 import '../../../../models/order_model.dart';
 import '../../../../router/routes.dart';
-
-final List<OrderModel> _allOrders = [
-  OrderModel(
-    id: 'ord_001',
-    orderNumber: '#FONDO-1024',
-    items: const [
-      OrderItem(foodName: 'Chicken Biryani', quantity: 2, price: 320),
-      OrderItem(foodName: 'Beef Curry', quantity: 1, price: 280),
-      OrderItem(foodName: 'Naan', quantity: 3, price: 40),
-    ],
-    subtotal: 720,
-    deliveryFee: 50,
-    discount: 40,
-    total: 730,
-    status: OrderStatus.delivered,
-    orderedAt: DateTime(2026, 5, 15, 12, 30),
-    deliveredAt: DateTime(2026, 5, 15, 13, 15),
-    deliveryAddress: '42 Gulshan Avenue, Dhaka 1212',
-    paymentMethod: 'Wallet',
-  ),
-  OrderModel(
-    id: 'ord_002',
-    orderNumber: '#FONDO-1025',
-    items: const [
-      OrderItem(foodName: 'Butter Chicken', quantity: 1, price: 350),
-      OrderItem(foodName: 'Naan', quantity: 2, price: 40),
-      OrderItem(foodName: 'Salad', quantity: 1, price: 80),
-    ],
-    subtotal: 510,
-    deliveryFee: 40,
-    discount: 0,
-    total: 550,
-    status: OrderStatus.delivered,
-    orderedAt: DateTime(2026, 5, 22, 19, 0),
-    deliveredAt: DateTime(2026, 5, 22, 19, 40),
-    deliveryAddress: '15/B Banani Road 11, Dhaka 1213',
-    paymentMethod: 'Cash on Delivery',
-  ),
-  OrderModel(
-    id: 'ord_003',
-    orderNumber: '#FONDO-1026',
-    items: const [
-      OrderItem(foodName: 'Dal Tadka', quantity: 2, price: 180),
-      OrderItem(foodName: 'Vegetable Fried Rice', quantity: 1, price: 250),
-    ],
-    subtotal: 610,
-    deliveryFee: 50,
-    discount: 30,
-    total: 630,
-    status: OrderStatus.cancelled,
-    orderedAt: DateTime(2026, 6, 1, 18, 45),
-    deliveryAddress: '7/B Dhanmondi 27, Dhaka 1209',
-    paymentMethod: 'Wallet',
-  ),
-  OrderModel(
-    id: 'ord_004',
-    orderNumber: '#FONDO-1027',
-    items: const [
-      OrderItem(foodName: 'Fish Fry', quantity: 2, price: 220),
-      OrderItem(foodName: 'Vegetable Fried Rice', quantity: 1, price: 250),
-      OrderItem(foodName: 'Salad', quantity: 1, price: 80),
-    ],
-    subtotal: 770,
-    deliveryFee: 40,
-    discount: 50,
-    total: 760,
-    status: OrderStatus.delivered,
-    orderedAt: DateTime(2026, 6, 10, 13, 0),
-    deliveredAt: DateTime(2026, 6, 10, 13, 35),
-    deliveryAddress: '12 Uttara Sector 4, Dhaka 1230',
-    paymentMethod: 'Wallet',
-  ),
-  OrderModel(
-    id: 'ord_005',
-    orderNumber: '#FONDO-1028',
-    items: const [
-      OrderItem(foodName: 'Chicken Biryani', quantity: 1, price: 320),
-      OrderItem(foodName: 'Beef Curry', quantity: 1, price: 280),
-      OrderItem(foodName: 'Dal Tadka', quantity: 1, price: 180),
-      OrderItem(foodName: 'Naan', quantity: 2, price: 40),
-    ],
-    subtotal: 860,
-    deliveryFee: 50,
-    discount: 60,
-    total: 850,
-    status: OrderStatus.outForDelivery,
-    orderedAt: DateTime(2026, 6, 28, 19, 30),
-    deliveryAddress: '25/B Mirpur Road, Dhaka 1205',
-    paymentMethod: 'Cash on Delivery',
-  ),
-  OrderModel(
-    id: 'ord_006',
-    orderNumber: '#FONDO-1029',
-    items: const [
-      OrderItem(foodName: 'Butter Chicken', quantity: 1, price: 350),
-      OrderItem(foodName: 'Fish Fry', quantity: 1, price: 220),
-      OrderItem(foodName: 'Naan', quantity: 3, price: 40),
-      OrderItem(foodName: 'Salad', quantity: 1, price: 80),
-    ],
-    subtotal: 770,
-    deliveryFee: 40,
-    discount: 30,
-    total: 780,
-    status: OrderStatus.delivered,
-    orderedAt: DateTime(2026, 6, 19, 12, 15),
-    deliveredAt: DateTime(2026, 6, 19, 12, 55),
-    deliveryAddress: '10 Gulshan Road, Dhaka 1212',
-    paymentMethod: 'Wallet',
-  ),
-];
 
 Color _statusColor(OrderStatus status) {
   switch (status) {
@@ -166,11 +57,11 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   }
 
   List<OrderModel> get _filteredOrders {
-    if (_filter == 'All') return _allOrders;
+    if (_filter == 'All') return mockOrders;
     if (_filter == 'Delivered') {
-      return _allOrders.where((o) => o.status == OrderStatus.delivered).toList();
+      return mockOrders.where((o) => o.status == OrderStatus.delivered).toList();
     }
-    return _allOrders.where((o) => o.status == OrderStatus.cancelled).toList();
+    return mockOrders.where((o) => o.status == OrderStatus.cancelled).toList();
   }
 
   FoodItem _foodForOrderItem(OrderItem item, OrderModel order) {
@@ -243,6 +134,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                       order: _filteredOrders[index],
                       isDark: isDark,
                       onRepeat: () => _repeatOrder(_filteredOrders[index]),
+                      onTrack: () => context.push(AppRoutes.liveTracking.replaceAll(':orderId', _filteredOrders[index].id)),
                     ),
                   ),
                 ),
@@ -333,11 +225,13 @@ class _OrderCard extends StatelessWidget {
   final OrderModel order;
   final bool isDark;
   final VoidCallback onRepeat;
+  final VoidCallback onTrack;
 
   const _OrderCard({
     required this.order,
     required this.isDark,
     required this.onRepeat,
+    required this.onTrack,
   });
 
   @override
@@ -401,19 +295,55 @@ class _OrderCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () {},
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                side: const BorderSide(color: AppColors.primary),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          if (order.status == OrderStatus.delivered ||
+              order.status == OrderStatus.cancelled) ...[
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: onRepeat,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: const BorderSide(color: AppColors.primary),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Repeat Order'),
               ),
-              child: const Text('Repeat Order'),
             ),
-          ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onTrack,
+                    icon: const Icon(Icons.near_me_outlined, size: 18),
+                    label: const Text('Track Order'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: onRepeat,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForegroundLight,
+                      side: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Repeat'),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
