@@ -23,6 +23,7 @@ class AppRoutes {
   static const String securitySettings = '/profile/security';
   static const String deviceRegistry = '/profile/devices';
   static const String favorites = '/profile/favorites';
+  static const String notifications = '/profile/notifications';
   static const String liveTracking = '/profile/orders/:orderId/track';
   static const String vendor = '/vendor';
 }

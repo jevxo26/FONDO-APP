@@ -22,6 +22,7 @@ import '../features/home/presentation/screens/subscription_manager_screen.dart';
 import '../features/home/presentation/screens/wallet_screen.dart';
 import '../features/home/presentation/screens/main_shell.dart';
 import '../features/vendor/presentation/screens/vendor_shell.dart';
+import '../features/home/presentation/screens/notification_center_screen.dart';
 import '../features/home/presentation/screens/packages_screen.dart';
 import '../features/home/presentation/screens/profile_screen.dart';
 import 'routes.dart';
@@ -158,6 +159,10 @@ final appRouter = GoRouter(
                 GoRoute(
                   path: 'favorites',
                   builder: (context, state) => const FavoritesScreen(),
+                ),
+                GoRoute(
+                  path: 'notifications',
+                  builder: (context, state) => const NotificationCenterScreen(),
                 ),
               ],
             ),

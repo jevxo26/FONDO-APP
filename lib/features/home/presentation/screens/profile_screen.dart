@@ -88,6 +88,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onTap: () => context.push(AppRoutes.favorites),
           ),
           _MenuItem(
+            icon: Icons.notifications_active_outlined,
+            title: 'Notifications & Reminders',
+            subtitle: 'Alerts, offers & schedules',
+            isDark: isDark,
+            onTap: () => context.push(AppRoutes.notifications),
+          ),
+          _MenuItem(
             icon: Icons.account_balance_wallet_outlined,
             title: 'Wallet',
             subtitle: 'Balance & transaction history',
@@ -420,6 +427,7 @@ class _ProfileSkeleton extends StatelessWidget {
           SizedBox(height: 20),
           _StatsRowSkeleton(),
           SizedBox(height: 24),
+          _MenuItemSkeleton(),
           _MenuItemSkeleton(),
           _MenuItemSkeleton(),
           _MenuItemSkeleton(),
