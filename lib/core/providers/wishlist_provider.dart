@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../mock/mock_foods.dart';
 import '../../models/food_item.dart';
 
 class WishlistState {
@@ -17,7 +18,8 @@ class WishlistState {
 }
 
 class WishlistProvider extends StateNotifier<WishlistState> {
-  WishlistProvider() : super(const WishlistState());
+  WishlistProvider()
+      : super(WishlistState(items: mockFoods.where((f) => f.id != 'f_002' && f.id != 'f_010').take(6).toList()));
 
   void toggle(FoodItem food) {
     if (state.isWishlisted(food.id)) {

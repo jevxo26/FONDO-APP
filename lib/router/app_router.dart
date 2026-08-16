@@ -12,6 +12,7 @@ import '../features/home/presentation/screens/food_detail_screen.dart';
 import '../features/home/presentation/screens/address_manager_screen.dart';
 import '../features/home/presentation/screens/device_registry_screen.dart';
 import '../features/home/presentation/screens/edit_profile_screen.dart';
+import '../features/home/presentation/screens/favorites_screen.dart';
 import '../features/home/presentation/screens/security_settings_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/home/presentation/screens/order_history_screen.dart';
@@ -144,6 +145,10 @@ final appRouter = GoRouter(
                 GoRoute(
                   path: 'devices',
                   builder: (context, state) => const DeviceRegistryScreen(),
+                ),
+                GoRoute(
+                  path: 'favorites',
+                  builder: (context, state) => const FavoritesScreen(),
                 ),
               ],
             ),

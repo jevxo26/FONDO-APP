@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/mock/mock_data.dart';
 import '../../../../core/providers/theme_provider.dart';
+import '../../../../core/providers/wishlist_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/skeleton.dart';
@@ -37,6 +38,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tier = _stats.tier;
     final themeMode = ref.watch(themeModeProvider);
+    final favoriteCount = ref.watch(wishlistProvider).count;
 
     if (_loading) {
       return const _ProfileSkeleton();
@@ -77,6 +79,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             subtitle: '${mockAddresses.length} address${mockAddresses.length == 1 ? '' : 'es'}',
             isDark: isDark,
             onTap: () => context.push(AppRoutes.addressManager),
+          ),
+          _MenuItem(
+            icon: Icons.favorite_outline_rounded,
+            title: 'My Favorites',
+            subtitle: '$favoriteCount saved meal${favoriteCount == 1 ? '' : 's'}',
+            isDark: isDark,
+            onTap: () => context.push(AppRoutes.favorites),
           ),
           _MenuItem(
             icon: Icons.account_balance_wallet_outlined,
@@ -411,6 +420,7 @@ class _ProfileSkeleton extends StatelessWidget {
           SizedBox(height: 20),
           _StatsRowSkeleton(),
           SizedBox(height: 24),
+          _MenuItemSkeleton(),
           _MenuItemSkeleton(),
           _MenuItemSkeleton(),
           _MenuItemSkeleton(),
