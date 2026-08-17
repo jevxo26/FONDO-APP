@@ -15,6 +15,7 @@ class ScaffoldWithBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       appBar: appBar,
       body: navigationShell,
       bottomNavigationBar: GlassTabBar(

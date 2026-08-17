@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/cart_provider.dart';
 import '../theme/app_colors.dart';
@@ -66,6 +67,12 @@ class GlassTabBar extends ConsumerWidget {
           borderRadius: BorderRadius.circular(_radius),
           boxShadow: [
             BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              offset: const Offset(0, 2),
+              blurRadius: 24,
+              spreadRadius: -4,
+            ),
+            BoxShadow(
               color: (isDark ? Colors.black : const Color(0x1F1E1A16))
                   .withValues(alpha: isDark ? 0.40 : 0.12),
               offset: const Offset(0, 6),
@@ -84,12 +91,12 @@ class GlassTabBar extends ConsumerWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(_radius),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: isDark
-                    ? AppColors.backgroundDark.withValues(alpha: 0.72)
-                    : Colors.white.withValues(alpha: 0.78),
+                    ? const Color(0xFF1A1A1A).withValues(alpha: 0.40)
+                    : Colors.white.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(_radius),
                 border: Border.all(
                   color: isDark
@@ -213,10 +220,16 @@ class _TabButtonState extends State<_TabButton> {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTapDown: (_) => setState(() => _pressed = true),
+      onTapDown: (_) {
+        HapticFeedback.lightImpact();
+        setState(() => _pressed = true);
+      },
       onTapUp: (_) => setState(() => _pressed = false),
       onTapCancel: () => setState(() => _pressed = false),
-      onTap: widget.onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        widget.onTap();
+      },
       child: AnimatedScale(
         scale: _pressed ? 0.88 : 1,
         duration: const Duration(milliseconds: 120),
