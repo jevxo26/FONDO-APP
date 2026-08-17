@@ -214,10 +214,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: AppColors.primary,
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                            'Customer Demo',
-                            style: AppTypography.labelConvention(isDark: isDark)
-                                .copyWith(color: AppColors.primary),
+                          Flexible(
+                            child: Text(
+                              'Customer Demo',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.labelConvention(isDark: isDark)
+                                  .copyWith(color: AppColors.primary),
+                            ),
                           ),
                         ],
                       ),
@@ -248,14 +252,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                 : AppColors.secondaryDark,
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                            'Vendor Demo',
-                            style: AppTypography.labelConvention(isDark: isDark)
-                                .copyWith(
-                                  color: isDark
-                                      ? AppColors.secondaryLight
-                                      : AppColors.secondaryDark,
-                                ),
+                          Flexible(
+                            child: Text(
+                              'Vendor Demo',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.labelConvention(isDark: isDark)
+                                  .copyWith(
+                                    color: isDark
+                                        ? AppColors.secondaryLight
+                                        : AppColors.secondaryDark,
+                                  ),
+                            ),
                           ),
                         ],
                       ),
