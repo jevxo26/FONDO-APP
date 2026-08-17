@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_glow.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/press_scale.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../../features/auth/presentation/controllers/auth_controller.dart';
@@ -232,16 +235,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ),
         title: const Text('Edit Profile'),
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          children: [
+      body: Stack(
+        children: [
+          const GlowOrbs(),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              children: [
             Center(
               child: GestureDetector(
                 onTap: _pickAvatar,
                 child: Column(
                   children: [
-                    Stack(
+                    PressScale(
+                      child: Stack(
                       alignment: Alignment.bottomRight,
                       children: [
                         CircleAvatar(
@@ -259,6 +266,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           child: const Icon(Icons.edit_rounded, size: 16, color: AppColors.primaryForeground),
                         ),
                       ],
+                    ),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -330,26 +338,22 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           ? AppColors.primary
                           : isDark ? AppColors.borderDark : AppColors.borderLight,
                     ),
-                    onSelected: (_) => setState(() => _gender = g),
+                    onSelected: (_) {
+                      HapticFeedback.selectionClick();
+                      setState(() => _gender = g);
+                    },
                   ),
               ],
             ),
             const SizedBox(height: 20),
             Text('Date of Birth', style: AppTypography.labelConvention(isDark: isDark)),
             const SizedBox(height: 8),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
+            PressScale(
+              child: GlassCard(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                radius: 14,
                 onTap: _pickDob,
-                borderRadius: BorderRadius.circular(14),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.cardDark : AppColors.cardLight,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-                  ),
-                  child: Row(
+                child: Row(
                     children: [
                       Icon(
                         Icons.cake_outlined,
@@ -374,7 +378,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   ),
                 ),
               ),
-            ),
             const SizedBox(height: 24),
             Text('Dietary Preferences', style: AppTypography.labelConvention(isDark: isDark)),
             const SizedBox(height: 8),
@@ -395,7 +398,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           ? AppColors.primary
                           : isDark ? AppColors.borderDark : AppColors.borderLight,
                     ),
-                    onSelected: (_) => _toggleDietary(tag),
+                    onSelected: (_) {
+                      HapticFeedback.selectionClick();
+                      _toggleDietary(tag);
+                    },
                   ),
               ],
             ),
@@ -419,7 +425,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           ? AppColors.primary
                           : isDark ? AppColors.borderDark : AppColors.borderLight,
                     ),
-                    onSelected: (_) => setState(() => _healthGoal = goal),
+                    onSelected: (_) {
+                      HapticFeedback.selectionClick();
+                      setState(() => _healthGoal = goal);
+                    },
                   ),
               ],
             ),
@@ -430,10 +439,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               icon: const Icon(Icons.check_rounded, size: 20),
               onPressed: _save,
             ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      ],
+    ),
+  );
   }
 
   Widget _buildLoadingState({required bool isDark}) {

@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_glow.dart';
+import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/press_scale.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/app_notification.dart';
 
@@ -194,10 +197,13 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
             ),
         ],
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
+      body: Stack(
+        children: [
+          const GlowOrbs(),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
             SizedBox(
               height: 38,
               child: ListView(
@@ -358,8 +364,10 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
               ],
             ),
             const SizedBox(height: 24),
-          ],
-        ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -416,7 +424,10 @@ class _NotifChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
@@ -466,41 +477,34 @@ class _NotificationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final unread = !notification.read;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
+    return PressScale(
+      child: GlassCard(
+        padding: const EdgeInsets.all(14),
+        radius: 14,
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: unread
-                ? AppColors.primary.withValues(alpha: 0.06)
-                : (isDark ? AppColors.cardDark : AppColors.cardLight),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: unread
-                  ? AppColors.primary.withValues(alpha: 0.35)
-                  : (isDark ? AppColors.borderDark : AppColors.borderLight),
-            ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(_icon, color: AppColors.primary, size: 18),
+        color: unread
+            ? AppColors.primary.withValues(alpha: 0.06)
+            : (isDark ? AppColors.cardDark : AppColors.cardLight).withValues(alpha: 0.72),
+        borderColor: unread
+            ? AppColors.primary.withValues(alpha: 0.35)
+            : AppColors.primary.withValues(alpha: 0.05),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              child: Icon(_icon, color: AppColors.primary, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                     Row(
                       children: [
                         Expanded(
@@ -537,8 +541,7 @@ class _NotificationCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -563,12 +566,9 @@ class _SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
+    return GlassCard(
+      padding: EdgeInsets.zero,
+      radius: 14,
       child: Column(
         children: [
           for (var i = 0; i < children.length; i++) ...[

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/mock/mock_orders.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_glow.dart';
+import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/order_model.dart';
 
@@ -241,10 +243,13 @@ class _LiveOrderTrackingScreenState extends State<LiveOrderTrackingScreen> {
         ),
         title: Text('Track ${order.orderNumber}'),
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
+      body: Stack(
+        children: [
+          const GlowOrbs(),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
             if (order.status == OrderStatus.cancelled) ...[
               Container(
                 padding: const EdgeInsets.all(14),
@@ -297,10 +302,12 @@ class _LiveOrderTrackingScreenState extends State<LiveOrderTrackingScreen> {
                   ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      ],
+    ),
+  );
   }
 }
 
@@ -313,13 +320,9 @@ class _StatusHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isActive = order.status == OrderStatus.outForDelivery || order.status == OrderStatus.preparing;
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
+      radius: 16,
       child: Row(
         children: [
           Container(
@@ -366,13 +369,9 @@ class _StageTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
+      radius: 16,
       child: Column(
         children: [
           for (var i = 0; i < _trackStages.length; i++)
@@ -491,15 +490,12 @@ class _LiveMapState extends State<_LiveMap> with SingleTickerProviderStateMixin 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
+    return SizedBox(
       height: 190,
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : const Color(0xFFF2EFE7),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
+      child: GlassCard(
+        padding: EdgeInsets.zero,
+        radius: 16,
+        child: Stack(
         children: [
           AnimatedBuilder(
             animation: _controller,
@@ -518,7 +514,8 @@ class _LiveMapState extends State<_LiveMap> with SingleTickerProviderStateMixin 
             bottom: 12,
             child: _MapPinLabel(icon: Icons.home_outlined, label: 'Home'),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -624,13 +621,9 @@ class _RiderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
+      radius: 16,
       child: Row(
         children: [
           CircleAvatar(
@@ -692,13 +685,9 @@ class _ReceiptCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
+      radius: 16,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

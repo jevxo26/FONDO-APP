@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_glow.dart';
+import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/wallet_transaction.dart';
 
@@ -164,6 +166,7 @@ class _WalletScreenState extends State<WalletScreen> {
                       backgroundColor: isDark ? AppColors.surfaceDark : AppColors.mutedLight,
                       labelStyle: TextStyle(color: selected ? AppColors.primaryForeground : null),
                       onSelected: (_) {
+                        HapticFeedback.selectionClick();
                         setSheetState(() {
                           quickAmount = amount;
                           amountCtr.text = '$amount';
@@ -204,7 +207,10 @@ class _WalletScreenState extends State<WalletScreen> {
                     final selected = method == name;
                     return Expanded(
                       child: GestureDetector(
-                        onTap: () => setSheetState(() => method = name),
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setSheetState(() => method = name);
+                        },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           margin: const EdgeInsets.only(right: 10),
@@ -332,7 +338,10 @@ class _WalletScreenState extends State<WalletScreen> {
                       selectedColor: AppColors.primary,
                       backgroundColor: isDark ? AppColors.surfaceDark : AppColors.mutedLight,
                       labelStyle: TextStyle(color: selected ? AppColors.primaryForeground : null),
-                      onSelected: (_) => setSheetState(() => method = option),
+                      onSelected: (_) {
+                        HapticFeedback.selectionClick();
+                        setSheetState(() => method = option);
+                      },
                     );
                   }).toList(),
                 ),
@@ -416,11 +425,14 @@ class _WalletScreenState extends State<WalletScreen> {
         ),
         title: const Text('Wallet'),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: RefreshIndicator(
+      body: Stack(
+        children: [
+          const GlowOrbs(),
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: RefreshIndicator(
                 onRefresh: () => Future.delayed(const Duration(milliseconds: 600)),
                 child: ListView(
                   padding: const EdgeInsets.all(20),
@@ -504,6 +516,8 @@ class _WalletScreenState extends State<WalletScreen> {
           ],
         ),
       ),
+        ],
+      ),
     );
   }
 
@@ -571,7 +585,10 @@ class _LedgerChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
@@ -700,13 +717,9 @@ class _TransactionRow extends StatelessWidget {
     final isCredit = _isCredit;
     final color = isCredit ? AppColors.success : AppColors.destructive;
     final icon = isCredit ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded;
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
+      radius: 12,
       child: Row(
         children: [
           Container(

@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_glow.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/skeleton.dart';
 
@@ -132,19 +134,18 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
         ),
         title: const Text('Security & Password'),
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          children: [
+      body: Stack(
+        children: [
+          const GlowOrbs(),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              children: [
             Text('Change Password', style: AppTypography.badge(isDark: isDark).copyWith(color: AppColors.primary)),
             const SizedBox(height: 10),
-            Container(
+            GlassCard(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.cardDark : AppColors.cardLight,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-              ),
+              radius: 14,
               child: Column(
                 children: [
                   AppTextField(
@@ -211,12 +212,9 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
             const SizedBox(height: 24),
             Text('Additional Protection', style: AppTypography.badge(isDark: isDark).copyWith(color: AppColors.primary)),
             const SizedBox(height: 10),
-            Container(
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.cardDark : AppColors.cardLight,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-              ),
+            GlassCard(
+              padding: EdgeInsets.zero,
+              radius: 14,
               child: Column(
                 children: [
                   _SecurityToggleTile(
@@ -258,10 +256,12 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
               'You can manage security codes and login history under Active Devices.',
               style: AppTypography.small(isDark: isDark),
             ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      ],
+    ),
+  );
   }
 
   Widget _buildLoadingState({required bool isDark}) {

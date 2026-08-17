@@ -6,6 +6,9 @@ import '../../../../core/providers/cart_provider.dart';
 import '../../../../core/providers/wishlist_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_glow.dart';
+import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/press_scale.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/food_item.dart';
 import '../../../../router/routes.dart';
@@ -73,11 +76,14 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
         ),
         title: const Text('My Favorites'),
       ),
-      body: SafeArea(
-        child: favorites.isEmpty
-            ? _EmptyFavorites(isDark: isDark)
-            : Column(
-                children: [
+      body: Stack(
+        children: [
+          const GlowOrbs(),
+          SafeArea(
+            child: favorites.isEmpty
+                ? _EmptyFavorites(isDark: isDark)
+                : Column(
+                    children: [
                   SizedBox(
                     height: 48,
                     child: ListView(
@@ -126,8 +132,10 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                   ),
                 ],
               ),
-      ),
-    );
+            ),
+          ],
+        ),
+      );
   }
 
   Widget _buildLoadingState({required bool isDark}) {
@@ -247,7 +255,10 @@ class _FilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
@@ -285,21 +296,14 @@ class _FavoriteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
+    return PressScale(
+      child: GlassCard(
+        padding: const EdgeInsets.all(12),
+        radius: 16,
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.cardDark : AppColors.cardLight,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               Expanded(
                 child: Container(
                   width: double.infinity,
@@ -376,8 +380,7 @@ class _FavoriteCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }
 

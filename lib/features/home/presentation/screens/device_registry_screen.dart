@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_glow.dart';
+import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/press_scale.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/skeleton.dart';
 
@@ -172,10 +175,13 @@ class _DeviceRegistryScreenState extends State<DeviceRegistryScreen> {
         ),
         title: const Text('Active Devices'),
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          children: [
+      body: Stack(
+        children: [
+          const GlowOrbs(),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              children: [
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -237,10 +243,12 @@ class _DeviceRegistryScreenState extends State<DeviceRegistryScreen> {
               'If you notice a device you don\'t recognise, log it out and change your password immediately.',
               style: AppTypography.small(isDark: isDark),
             ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      ],
+    ),
+  );
   }
 
   Widget _buildLoadingState({required bool isDark}) {
@@ -287,20 +295,16 @@ class _DeviceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: session.isCurrent
-              ? AppColors.primary.withValues(alpha: 0.5)
-              : isDark ? AppColors.borderDark : AppColors.borderLight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return PressScale(
+      child: GlassCard(
+        padding: const EdgeInsets.all(16),
+        radius: 14,
+        borderColor: session.isCurrent
+            ? AppColors.primary.withValues(alpha: 0.5)
+            : AppColors.primary.withValues(alpha: 0.05),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Row(
             children: [
               Container(
@@ -378,7 +382,8 @@ class _DeviceCard extends StatelessWidget {
               Text(session.lastActive, style: AppTypography.small(isDark: isDark)),
             ],
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
