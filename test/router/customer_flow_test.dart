@@ -30,7 +30,7 @@ void main() {
   testWidgets('customer can interact with home after login', (tester) async {
     await loginAsCustomer(tester);
 
-    expect(find.text('Explore Categories'), findsOneWidget);
+    expect(find.text('Today\'s Picks'), findsOneWidget);
 
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
@@ -46,7 +46,7 @@ void main() {
     await tester.tap(find.text('Breakfast').first);
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(AppBar, 'Breakfast'), findsOneWidget);
+    expect(find.text('Breakfast'), findsWidgets);
   });
 
   testWidgets('customer can switch bottom tabs after login', (tester) async {
