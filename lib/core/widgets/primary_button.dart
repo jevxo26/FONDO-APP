@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_typography.dart';
@@ -47,7 +48,12 @@ class _PrimaryButtonState extends State<PrimaryButton> {
         width: double.infinity,
         height: widget.height,
         child: GestureDetector(
-          onTapDown: isClickable ? (_) => setState(() => _isPressed = true) : null,
+          onTapDown: isClickable
+              ? (_) {
+                  HapticFeedback.lightImpact();
+                  setState(() => _isPressed = true);
+                }
+              : null,
           onTapUp: isClickable ? (_) => setState(() => _isPressed = false) : null,
           onTapCancel: isClickable ? () => setState(() => _isPressed = false) : null,
           child: ElevatedButton(
