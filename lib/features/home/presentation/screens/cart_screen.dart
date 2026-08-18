@@ -59,12 +59,35 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ...cart.items.map(
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: _CartItemCard(
-                      item: item,
-                      isDark: isDark,
-                      onIncrement: () => ref.read(cartProvider.notifier).updateQuantity(item.food.id, item.quantity + 1),
-                      onDecrement: () => ref.read(cartProvider.notifier).updateQuantity(item.food.id, item.quantity - 1),
-                      onRemove: () => ref.read(cartProvider.notifier).removeItem(item.food.id),
+                    child: Dismissible(
+                      key: ValueKey(item.food.id),
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (_) => ref
+                          .read(cartProvider.notifier)
+                          .removeItem(item.food.id),
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        decoration: BoxDecoration(
+                          color: AppColors.destructive.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Icon(Icons.delete_outline_rounded,
+                            color: AppColors.destructive),
+                      ),
+                      child: _CartItemCard(
+                        item: item,
+                        isDark: isDark,
+                        onIncrement: () => ref
+                            .read(cartProvider.notifier)
+                            .updateQuantity(item.food.id, item.quantity + 1),
+                        onDecrement: () => ref
+                            .read(cartProvider.notifier)
+                            .updateQuantity(item.food.id, item.quantity - 1),
+                        onRemove: () => ref
+                            .read(cartProvider.notifier)
+                            .removeItem(item.food.id),
+                      ),
                     ),
                   ),
                 ),
@@ -144,22 +167,30 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+        border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: cart.couponCode != null
           ? Row(
               children: [
-                Icon(Icons.local_offer_rounded, size: 20, color: AppColors.success),
+                const Icon(Icons.local_offer_rounded,
+                    size: 20, color: AppColors.success),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Coupon "${cart.couponCode}" applied — ৳${cart.discount.toStringAsFixed(0)} off',
-                    style: AppTypography.bodyMedium(isDark: isDark).copyWith(color: AppColors.success),
+                    style: AppTypography.bodyMedium(isDark: isDark)
+                        .copyWith(color: AppColors.success),
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.close_rounded, size: 20, color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight),
-                  onPressed: () => ref.read(cartProvider.notifier).removeCoupon(),
+                  icon: Icon(Icons.close_rounded,
+                      size: 20,
+                      color: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForegroundLight),
+                  onPressed: () =>
+                      ref.read(cartProvider.notifier).removeCoupon(),
                 ),
               ],
             )
@@ -171,21 +202,31 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     decoration: InputDecoration(
                       hintText: 'Enter coupon code',
                       hintStyle: AppTypography.small(isDark: isDark),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                        borderSide: BorderSide(
+                            color: isDark
+                                ? AppColors.borderDark
+                                : AppColors.borderLight),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                        borderSide: BorderSide(
+                            color: isDark
+                                ? AppColors.borderDark
+                                : AppColors.borderLight),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.primary),
+                        borderSide:
+                            const BorderSide(color: AppColors.primary),
                       ),
                       filled: true,
-                      fillColor: isDark ? AppColors.inputFillDark : AppColors.inputFillLight,
+                      fillColor: isDark
+                          ? AppColors.inputFillDark
+                          : AppColors.inputFillLight,
                     ),
                     style: AppTypography.bodyMedium(isDark: isDark),
                   ),
@@ -201,8 +242,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.primaryForeground,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                   child: const Text('Apply'),
                 ),
@@ -218,11 +261,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+        border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: Column(
         children: [
-          _PriceLine(label: 'Subtotal', amount: cart.subtotal, isDark: isDark),
+          _PriceLine(
+              label: 'Subtotal', amount: cart.subtotal, isDark: isDark),
           const SizedBox(height: 8),
           if (cart.discount > 0) ...[
             _PriceLine(
@@ -253,9 +298,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        color: (isDark ? AppColors.surfaceDark : AppColors.cardLight)
+            .withValues(alpha: 0.85),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
         border: Border(
-          top: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 0.5),
+          top: BorderSide(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              width: 0.5),
         ),
       ),
       child: SafeArea(
@@ -268,9 +323,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('Total', style: AppTypography.small(isDark: isDark)),
-                  Text(
-                    '৳${grandTotal.toStringAsFixed(0)}',
-                    style: AppTypography.price(isDark: isDark),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      '৳${grandTotal.toStringAsFixed(0)}',
+                      key: ValueKey(grandTotal.toStringAsFixed(0)),
+                      style: AppTypography.price(isDark: isDark),
+                    ),
                   ),
                 ],
               ),
@@ -290,8 +349,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.primaryForeground,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
@@ -323,7 +384,8 @@ class _CartItemCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+        border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,14 +399,16 @@ class _CartItemCard extends StatelessWidget {
                   color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.restaurant_outlined, color: AppColors.primary, size: 22),
+                child: const Icon(Icons.restaurant_outlined,
+                    color: AppColors.primary, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item.food.name, style: AppTypography.titleMedium(isDark: isDark)),
+                    Text(item.food.name,
+                        style: AppTypography.titleMedium(isDark: isDark)),
                     if (item.selectedAddOns.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
@@ -358,9 +422,11 @@ class _CartItemCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.destructive),
+                icon: Icon(Icons.delete_outline_rounded,
+                    size: 20, color: AppColors.destructive),
                 onPressed: onRemove,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                constraints:
+                    const BoxConstraints(minWidth: 36, minHeight: 36),
               ),
             ],
           ),
@@ -370,7 +436,10 @@ class _CartItemCard extends StatelessWidget {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                  border: Border.all(
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -380,7 +449,8 @@ class _CartItemCard extends StatelessWidget {
                       icon: const Icon(Icons.remove_rounded, size: 16),
                       onPressed: onDecrement,
                       color: AppColors.primary,
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                      constraints: const BoxConstraints(
+                          minWidth: 32, minHeight: 32),
                     ),
                     SizedBox(
                       width: 28,
@@ -394,7 +464,8 @@ class _CartItemCard extends StatelessWidget {
                       icon: const Icon(Icons.add_rounded, size: 16),
                       onPressed: onIncrement,
                       color: AppColors.primary,
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                      constraints: const BoxConstraints(
+                          minWidth: 32, minHeight: 32),
                     ),
                   ],
                 ),
@@ -428,7 +499,8 @@ class _PriceLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = color ?? (isDark ? AppColors.foregroundDark : AppColors.foregroundLight);
+    final textColor = color ??
+        (isDark ? AppColors.foregroundDark : AppColors.foregroundLight);
     final labelStyle = isTotal
         ? AppTypography.label(isDark: isDark)
         : AppTypography.bodyMedium(isDark: isDark);
@@ -459,7 +531,8 @@ class _CartItemSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+        border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -511,7 +584,8 @@ class _CartPanelSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+        border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -552,7 +626,9 @@ class _CheckoutBarSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
         border: Border(
-          top: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight, width: 0.5),
+          top: BorderSide(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              width: 0.5),
         ),
       ),
       child: SafeArea(

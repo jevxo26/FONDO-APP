@@ -16,30 +16,47 @@ class FoodCatalogScreen extends StatelessWidget {
     final foods = mockFoods.where((f) => f.category == category).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(category),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: foods.isEmpty
-          ? Center(
-              child: Text(
-                'No items in $category',
-                style: AppTypography.bodyMedium(isDark: isDark),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 120,
+            pinned: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded),
+              onPressed: () => context.pop(),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(
+                category,
+                style: AppTypography.titleLarge(isDark: isDark),
+              ),
+              titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
+            ),
+          ),
+          if (foods.isEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Text(
+                  'No items in $category',
+                  style: AppTypography.bodyMedium(isDark: isDark),
+                ),
               ),
             )
-          : ListView.separated(
+          else
+            SliverPadding(
               padding: const EdgeInsets.all(16),
-              itemCount: foods.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) => _FoodCard(
-                food: foods[index],
-                isDark: isDark,
-                onTap: () => context.push('/food-detail/${foods[index].id}'),
+              sliver: SliverList.separated(
+                itemCount: foods.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, index) => _FoodCard(
+                  food: foods[index],
+                  isDark: isDark,
+                  onTap: () => context.push('/food-detail/${foods[index].id}'),
+                ),
               ),
             ),
+        ],
+      ),
     );
   }
 }
@@ -122,7 +139,7 @@ class _FoodCardState extends State<_FoodCard> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.star_rounded,
                             size: 16,
                             color: AppColors.primary,
