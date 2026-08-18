@@ -145,7 +145,7 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
             const SizedBox(height: 10),
             GlassCard(
               padding: const EdgeInsets.all(16),
-              radius: 14,
+              radius: 24,
               child: Column(
                 children: [
                   AppTextField(
@@ -214,7 +214,7 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
             const SizedBox(height: 10),
             GlassCard(
               padding: EdgeInsets.zero,
-              radius: 14,
+              radius: 24,
               child: Column(
                 children: [
                   _SecurityToggleTile(
@@ -358,7 +358,7 @@ class _SecurityCardSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: Column(

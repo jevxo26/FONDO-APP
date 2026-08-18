@@ -52,83 +52,114 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 20),
           _StatsRow(stats: _stats, isDark: isDark),
           const SizedBox(height: 24),
-          _MenuItem(
-            icon: Icons.person_outline_rounded,
-            title: 'Edit Profile',
-            subtitle: 'Name, avatar & preferences',
+
+          const _SectionLabel('Account'),
+          _SectionGroup(
             isDark: isDark,
-            onTap: () => context.push(AppRoutes.editProfile),
+            children: [
+              _MenuItem(
+                icon: Icons.person_outline_rounded,
+                title: 'Edit Profile',
+                subtitle: 'Name, avatar & preferences',
+                isDark: isDark,
+                onTap: () => context.push(AppRoutes.editProfile),
+              ),
+              _MenuItem(
+                icon: Icons.lock_outline_rounded,
+                title: 'Security & Password',
+                subtitle: 'Password, biometric & 2FA',
+                isDark: isDark,
+                onTap: () => context.push(AppRoutes.securitySettings),
+              ),
+              _MenuItem(
+                icon: Icons.devices_other_outlined,
+                title: 'Active Devices',
+                subtitle: 'Login sessions & device control',
+                isDark: isDark,
+                onTap: () => context.push(AppRoutes.deviceRegistry),
+              ),
+            ],
           ),
-          _MenuItem(
-            icon: Icons.lock_outline_rounded,
-            title: 'Security & Password',
-            subtitle: 'Password, biometric & 2FA',
+          const SizedBox(height: 20),
+
+          const _SectionLabel('Favorites & Orders'),
+          _SectionGroup(
             isDark: isDark,
-            onTap: () => context.push(AppRoutes.securitySettings),
+            children: [
+              _MenuItem(
+                icon: Icons.location_on_outlined,
+                title: 'Saved Addresses',
+                subtitle: '${mockAddresses.length} address${mockAddresses.length == 1 ? '' : 'es'}',
+                isDark: isDark,
+                onTap: () => context.push(AppRoutes.addressManager),
+              ),
+              _MenuItem(
+                icon: Icons.favorite_outline_rounded,
+                title: 'My Favorites',
+                subtitle: '$favoriteCount saved meal${favoriteCount == 1 ? '' : 's'}',
+                isDark: isDark,
+                onTap: () => context.push(AppRoutes.favorites),
+              ),
+              _MenuItem(
+                icon: Icons.account_balance_wallet_outlined,
+                title: 'Wallet',
+                subtitle: 'Balance & transaction history',
+                isDark: isDark,
+                onTap: () => context.push(AppRoutes.wallet),
+              ),
+              _MenuItem(
+                icon: Icons.subscriptions_outlined,
+                title: 'Subscriptions',
+                subtitle: 'Active meal plans',
+                isDark: isDark,
+                onTap: () => context.push(AppRoutes.subscriptions),
+              ),
+              _MenuItem(
+                icon: Icons.receipt_long_outlined,
+                title: 'Order History',
+                subtitle: 'Past orders & receipts',
+                isDark: isDark,
+                onTap: () => context.push(AppRoutes.orderHistory),
+              ),
+            ],
           ),
-          _MenuItem(
-            icon: Icons.devices_other_outlined,
-            title: 'Active Devices',
-            subtitle: 'Login sessions & device control',
+          const SizedBox(height: 20),
+
+          const _SectionLabel('Support'),
+          _SectionGroup(
             isDark: isDark,
-            onTap: () => context.push(AppRoutes.deviceRegistry),
+            children: [
+              _MenuItem(
+                icon: Icons.notifications_active_outlined,
+                title: 'Notifications & Reminders',
+                subtitle: 'Alerts, offers & schedules',
+                isDark: isDark,
+                onTap: () => context.push(AppRoutes.notifications),
+              ),
+            ],
           ),
-          _MenuItem(
-            icon: Icons.location_on_outlined,
-            title: 'Saved Addresses',
-            subtitle: '${mockAddresses.length} address${mockAddresses.length == 1 ? '' : 'es'}',
+          const SizedBox(height: 20),
+
+          const _SectionLabel('Preferences'),
+          _SectionGroup(
             isDark: isDark,
-            onTap: () => context.push(AppRoutes.addressManager),
+            children: [
+              _MenuItem(
+                icon: Icons.settings_outlined,
+                title: 'Settings',
+                subtitle: 'Account & preferences',
+                isDark: isDark,
+                onTap: () => context.push(AppRoutes.settings),
+              ),
+              _ThemeToggleRow(
+                isDark: isDark,
+                value: themeMode == ThemeMode.dark,
+                onChanged: (value) => ref.read(themeModeProvider.notifier).state =
+                    value ? ThemeMode.dark : ThemeMode.light,
+              ),
+            ],
           ),
-          _MenuItem(
-            icon: Icons.favorite_outline_rounded,
-            title: 'My Favorites',
-            subtitle: '$favoriteCount saved meal${favoriteCount == 1 ? '' : 's'}',
-            isDark: isDark,
-            onTap: () => context.push(AppRoutes.favorites),
-          ),
-          _MenuItem(
-            icon: Icons.notifications_active_outlined,
-            title: 'Notifications & Reminders',
-            subtitle: 'Alerts, offers & schedules',
-            isDark: isDark,
-            onTap: () => context.push(AppRoutes.notifications),
-          ),
-          _MenuItem(
-            icon: Icons.account_balance_wallet_outlined,
-            title: 'Wallet',
-            subtitle: 'Balance & transaction history',
-            isDark: isDark,
-            onTap: () => context.push(AppRoutes.wallet),
-          ),
-          _MenuItem(
-            icon: Icons.subscriptions_outlined,
-            title: 'Subscriptions',
-            subtitle: 'Active meal plans',
-            isDark: isDark,
-            onTap: () => context.push(AppRoutes.subscriptions),
-          ),
-          _MenuItem(
-            icon: Icons.receipt_long_outlined,
-            title: 'Order History',
-            subtitle: 'Past orders & receipts',
-            isDark: isDark,
-            onTap: () => context.push(AppRoutes.orderHistory),
-          ),
-          _MenuItem(
-            icon: Icons.settings_outlined,
-            title: 'Settings',
-            subtitle: 'Account & preferences',
-            isDark: isDark,
-            onTap: () => context.push(AppRoutes.settings),
-          ),
-          _ThemeToggleRow(
-            isDark: isDark,
-            value: themeMode == ThemeMode.dark,
-            onChanged: (value) => ref.read(themeModeProvider.notifier).state =
-                value ? ThemeMode.dark : ThemeMode.light,
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           OutlinedButton.icon(
             onPressed: () => context.go('/login'),
             icon: const Icon(Icons.logout_rounded, size: 20),
@@ -141,6 +172,49 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String title;
+  const _SectionLabel(this.title);
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(title, style: AppTypography.badge(isDark: isDark).copyWith(color: AppColors.primary)),
+    );
+  }
+}
+
+class _SectionGroup extends StatelessWidget {
+  final bool isDark;
+  final List<Widget> children;
+  const _SectionGroup({required this.isDark, required this.children});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: Column(
+        children: List.generate(children.length * 2 - 1, (index) {
+          if (index.isOdd) {
+            return Divider(
+              height: 1,
+              thickness: 1,
+              indent: 72,
+              endIndent: 16,
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+            );
+          }
+          return children[index ~/ 2];
+        }),
       ),
     );
   }
@@ -159,13 +233,8 @@ class _ThemeToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
           Container(
@@ -215,14 +284,28 @@ class _ProfileHeader extends StatelessWidget {
     final initials = user.name.split(' ').map((e) => e[0]).take(2).join();
     return Row(
       children: [
-        CircleAvatar(
-          radius: 32,
-          backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-          child: Text(
-            initials,
-            style: AppTypography.titleLarge(isDark: isDark).copyWith(
-              color: AppColors.primary,
-              fontSize: 22,
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.25),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: CircleAvatar(
+            radius: 32,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+            child: Text(
+              initials,
+              style: AppTypography.titleLarge(isDark: isDark).copyWith(
+                color: AppColors.primary,
+                fontSize: 22,
+              ),
             ),
           ),
         ),
@@ -246,9 +329,7 @@ class _ProfileHeader extends StatelessWidget {
 
 class _TierBadge extends StatelessWidget {
   final CustomerTier tier;
-
   const _TierBadge({required this.tier});
-
   @override
   Widget build(BuildContext context) {
     final Color color;
@@ -265,21 +346,23 @@ class _TierBadge extends StatelessWidget {
         icon = Icons.emoji_events_rounded;
     }
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 6),
           Text(
             '${tier.label} Member',
             style: AppTypography.badge(isDark: false).copyWith(
               color: color,
-              fontSize: 11,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -291,16 +374,14 @@ class _TierBadge extends StatelessWidget {
 class _StatsRow extends StatelessWidget {
   final CustomerStats stats;
   final bool isDark;
-
   const _StatsRow({required this.stats, required this.isDark});
-
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: Row(
@@ -320,9 +401,7 @@ class _StatItem extends StatelessWidget {
   final String label;
   final String value;
   final bool isDark;
-
   const _StatItem({required this.label, required this.value, required this.isDark});
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -365,48 +444,39 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.cardDark : AppColors.cardLight,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: AppColors.primary, size: 20),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: AppTypography.titleMedium(isDark: isDark)),
-                      const SizedBox(height: 2),
-                      Text(subtitle, style: AppTypography.small(isDark: isDark)),
-                    ],
-                  ),
+                child: Icon(icon, color: AppColors.primary, size: 20),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: AppTypography.titleMedium(isDark: isDark)),
+                    const SizedBox(height: 2),
+                    Text(subtitle, style: AppTypography.small(isDark: isDark)),
+                  ],
                 ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight,
-                ),
-              ],
-            ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight,
+              ),
+            ],
           ),
         ),
       ),
@@ -416,7 +486,6 @@ class _MenuItem extends StatelessWidget {
 
 class _ProfileSkeleton extends StatelessWidget {
   const _ProfileSkeleton();
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -427,19 +496,73 @@ class _ProfileSkeleton extends StatelessWidget {
           SizedBox(height: 20),
           _StatsRowSkeleton(),
           SizedBox(height: 24),
-          _MenuItemSkeleton(),
-          _MenuItemSkeleton(),
-          _MenuItemSkeleton(),
-          _MenuItemSkeleton(),
-          _MenuItemSkeleton(),
-          _MenuItemSkeleton(),
-          _MenuItemSkeleton(),
-          _MenuItemSkeleton(),
-          _MenuItemSkeleton(),
-          _ThemeToggleSkeleton(),
-          SizedBox(height: 16),
-          _LogoutSkeleton(),
+          SkeletonLine(width: 80, height: 12),
+          SizedBox(height: 8),
+          _SectionGroupSkeleton(lines: 3),
+          SizedBox(height: 20),
+          SkeletonLine(width: 120, height: 12),
+          SizedBox(height: 8),
+          _SectionGroupSkeleton(lines: 5),
+          SizedBox(height: 20),
+          SkeletonLine(width: 60, height: 12),
+          SizedBox(height: 8),
+          _SectionGroupSkeleton(lines: 1),
+          SizedBox(height: 20),
+          SkeletonLine(width: 90, height: 12),
+          SizedBox(height: 8),
+          _SectionGroupSkeleton(lines: 2),
+          SizedBox(height: 24),
+          SkeletonBox(width: double.infinity, height: 48, radius: 12),
         ],
+      ),
+    );
+  }
+}
+
+class _SectionGroupSkeleton extends StatelessWidget {
+  final int lines;
+  const _SectionGroupSkeleton({required this.lines});
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: Column(
+        children: List.generate(lines * 2 - 1, (index) {
+          if (index.isOdd) {
+            return Divider(
+              height: 1,
+              thickness: 1,
+              indent: 72,
+              endIndent: 16,
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+            );
+          }
+          return const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                SkeletonBox(width: 40, height: 40, radius: 10),
+                SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonLine(width: 120),
+                      SizedBox(height: 4),
+                      SkeletonLine(width: 160),
+                    ],
+                  ),
+                ),
+                SkeletonBox(width: 16, height: 16, radius: 8),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }
@@ -447,7 +570,6 @@ class _ProfileSkeleton extends StatelessWidget {
 
 class _ProfileHeaderSkeleton extends StatelessWidget {
   const _ProfileHeaderSkeleton();
-
   @override
   Widget build(BuildContext context) {
     return const Row(
@@ -473,7 +595,6 @@ class _ProfileHeaderSkeleton extends StatelessWidget {
 
 class _StatsRowSkeleton extends StatelessWidget {
   const _StatsRowSkeleton();
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -481,7 +602,7 @@ class _StatsRowSkeleton extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: const Row(
@@ -499,7 +620,6 @@ class _StatsRowSkeleton extends StatelessWidget {
 
 class _StatSkeleton extends StatelessWidget {
   const _StatSkeleton();
-
   @override
   Widget build(BuildContext context) {
     return const Column(
@@ -509,90 +629,5 @@ class _StatSkeleton extends StatelessWidget {
         SkeletonLine(width: 36),
       ],
     );
-  }
-}
-
-class _MenuItemSkeleton extends StatelessWidget {
-  const _MenuItemSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.cardDark : AppColors.cardLight,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final w = constraints.maxWidth;
-            return Row(
-              children: [
-                const SkeletonBox(width: 40, height: 40, radius: 10),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SkeletonLine(width: w * 0.4),
-                      const SizedBox(height: 4),
-                      SkeletonLine(width: w * 0.55),
-                    ],
-                  ),
-                ),
-                const SkeletonBox(width: 16, height: 16, radius: 8),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _ThemeToggleSkeleton extends StatelessWidget {
-  const _ThemeToggleSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
-      child: const Row(
-        children: [
-          SkeletonBox(width: 40, height: 40, radius: 10),
-          SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SkeletonLine(width: 100),
-                SizedBox(height: 4),
-                SkeletonLine(width: 160),
-              ],
-            ),
-          ),
-          SkeletonBox(width: 40, height: 24, radius: 12),
-        ],
-      ),
-    );
-  }
-}
-
-class _LogoutSkeleton extends StatelessWidget {
-  const _LogoutSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SkeletonBox(width: double.infinity, height: 48, radius: 12);
   }
 }

@@ -595,7 +595,7 @@ class _LedgerChip extends StatelessWidget {
           color: selected
               ? AppColors.primary
               : (isDark ? AppColors.surfaceDark : AppColors.mutedLight),
-          borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         ),
         child: Text(
           label,
@@ -763,7 +763,7 @@ class _BalanceCardSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: Column(

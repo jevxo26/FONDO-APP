@@ -186,7 +186,7 @@ class _DeviceRegistryScreenState extends State<DeviceRegistryScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
               ),
               child: Row(
@@ -298,7 +298,7 @@ class _DeviceCard extends StatelessWidget {
     return PressScale(
       child: GlassCard(
         padding: const EdgeInsets.all(16),
-        radius: 14,
+        radius: 24,
         borderColor: session.isCurrent
             ? AppColors.primary.withValues(alpha: 0.5)
             : AppColors.primary.withValues(alpha: 0.05),
@@ -410,7 +410,7 @@ class _DeviceBannerSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: const Row(
@@ -443,7 +443,7 @@ class _DeviceCardSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: const Column(
