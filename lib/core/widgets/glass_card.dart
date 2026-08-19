@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-/// 2026 polish: glassmorphic surface layer.
+/// Glassmorphic surface layer.
 /// Backdrop blur with a translucent fill and a 5%-opacity primary border.
 class GlassCard extends StatelessWidget {
   final Widget child;

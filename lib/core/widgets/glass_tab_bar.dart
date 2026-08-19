@@ -94,9 +94,6 @@ class GlassTabBar extends ConsumerWidget {
             filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF1A1A1A).withValues(alpha: 0.40)
-                    : Colors.white.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(_radius),
                 border: Border.all(
                   color: isDark
