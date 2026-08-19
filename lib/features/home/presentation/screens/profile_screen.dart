@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/mock/mock_data.dart';
@@ -51,6 +53,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _ProfileHeader(user: user, tier: tier, isDark: isDark),
           const SizedBox(height: 20),
           _StatsRow(stats: _stats, isDark: isDark),
+          const SizedBox(height: 20),
+          _RoleSwitcher(isDark: isDark, onSwitchToVendor: () => context.push(AppRoutes.vendor)),
           const SizedBox(height: 24),
 
           const _SectionLabel('Account'),
@@ -186,6 +190,121 @@ class _SectionLabel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(title, style: AppTypography.badge(isDark: isDark).copyWith(color: AppColors.primary)),
+    );
+  }
+}
+
+class _RoleSwitcher extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback onSwitchToVendor;
+  const _RoleSwitcher({required this.isDark, required this.onSwitchToVendor});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.06)
+                : Colors.white.withValues(alpha: 0.55),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : AppColors.primary.withValues(alpha: 0.15),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: _RolePillSegment(
+                  label: 'Customer',
+                  icon: Icons.person_rounded,
+                  active: true,
+                  isDark: isDark,
+                  onTap: () {},
+                ),
+              ),
+              Expanded(
+                child: _RolePillSegment(
+                  label: 'Vendor',
+                  icon: Icons.store_rounded,
+                  active: false,
+                  isDark: isDark,
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    onSwitchToVendor();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RolePillSegment extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool active;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _RolePillSegment({
+    required this.label,
+    required this.icon,
+    required this.active,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: active
+              ? AppColors.primary
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: active
+                  ? AppColors.primaryForeground
+                  : isDark
+                      ? AppColors.mutedForegroundDark
+                      : AppColors.mutedForegroundLight,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: AppTypography.badge(isDark: isDark).copyWith(
+                color: active
+                    ? AppColors.primaryForeground
+                    : isDark
+                        ? AppColors.mutedForegroundDark
+                        : AppColors.mutedForegroundLight,
+                fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
