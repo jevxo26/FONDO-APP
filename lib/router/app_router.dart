@@ -21,7 +21,6 @@ import '../features/home/presentation/screens/settings_screen.dart';
 import '../features/home/presentation/screens/subscription_manager_screen.dart';
 import '../features/home/presentation/screens/wallet_screen.dart';
 import '../features/home/presentation/screens/main_shell.dart';
-import '../features/vendor/presentation/screens/vendor_shell.dart';
 import '../features/home/presentation/screens/notification_center_screen.dart';
 import '../features/home/presentation/screens/packages_screen.dart';
 import '../features/home/presentation/screens/profile_screen.dart';
@@ -63,10 +62,6 @@ final appRouter = GoRouter(
         final target = state.uri.queryParameters['target'];
         return ResetPasswordScreen(target: target);
       },
-    ),
-    GoRoute(
-      path: AppRoutes.vendor,
-      builder: (context, state) => const VendorShell(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
