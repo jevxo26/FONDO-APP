@@ -52,21 +52,62 @@ class GlassTabBar extends ConsumerWidget {
       ),
     ];
 
-    return SizedBox(
-      height: _height,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(_radius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(_radius),
+    final bottomInset = media.padding.bottom;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        0,
+        16,
+        bottomInset > 0 ? bottomInset + 6 : 14,
+      ),
+      child: Container(
+        height: _height,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(_radius),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              offset: const Offset(0, 2),
+              blurRadius: 24,
+              spreadRadius: -4,
             ),
-            child: _GlassBarBody(
-              currentIndex: currentIndex,
-              onTap: onTap,
-              items: items,
-              isDark: isDark,
+            BoxShadow(
+              color: (isDark ? Colors.black : const Color(0x1F1E1A16))
+                  .withValues(alpha: isDark ? 0.40 : 0.12),
+              offset: const Offset(0, 6),
+              blurRadius: 18,
+              spreadRadius: -2,
+            ),
+            BoxShadow(
+              color: (isDark ? Colors.black : const Color(0x0F1E1A16))
+                  .withValues(alpha: isDark ? 0.30 : 0.06),
+              offset: const Offset(0, 18),
+              blurRadius: 40,
+              spreadRadius: -8,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(_radius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_radius),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.10)
+                      : Colors.white.withValues(alpha: 0.85),
+                  width: 1,
+                ),
+              ),
+              child: _GlassBarBody(
+                currentIndex: currentIndex,
+                onTap: onTap,
+                items: items,
+                isDark: isDark,
+              ),
             ),
           ),
         ),

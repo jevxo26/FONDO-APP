@@ -5,6 +5,7 @@ import 'package:fondo/core/widgets/glass_tab_bar.dart';
 
 void main() {
   const barWidth = 400.0;
+  const outerPad = 16.0;
   const innerPad = 14.0;
 
   Finder pill() => find.byKey(const ValueKey('glassTabActivePill'));
@@ -33,9 +34,9 @@ void main() {
     testWidgets('pill is centered on tab $i', (tester) async {
       await pumpBar(tester, i);
 
-      final innerWidth = barWidth - innerPad * 2;
+      final innerWidth = barWidth - outerPad * 2 - innerPad * 2;
       final cellWidth = innerWidth / 4;
-      final expectedCenter = innerPad + (i + 0.5) * cellWidth;
+      final expectedCenter = outerPad + innerPad + (i + 0.5) * cellWidth;
 
       final center = tester.getCenter(pill());
       expect(center.dx, closeTo(expectedCenter, 0.5));
