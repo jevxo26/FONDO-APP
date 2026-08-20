@@ -33,6 +33,7 @@ class _FoodDetailScreenState extends ConsumerState<FoodDetailScreen> {
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         final sheetDark = Theme.of(ctx).brightness == Brightness.dark;

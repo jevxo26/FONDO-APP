@@ -97,6 +97,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     HapticFeedback.lightImpact();
     final selected = await showModalBottomSheet<String>(
       context: context,
+      useRootNavigator: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),

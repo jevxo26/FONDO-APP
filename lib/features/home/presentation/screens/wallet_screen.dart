@@ -82,6 +82,7 @@ class _WalletScreenState extends State<WalletScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => StatefulBuilder(
         builder: (sheetCtx, setSheetState) {
@@ -276,6 +277,7 @@ class _WalletScreenState extends State<WalletScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) {
         final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
