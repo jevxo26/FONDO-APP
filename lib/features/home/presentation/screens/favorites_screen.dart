@@ -85,7 +85,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                 : Column(
                     children: [
                   SizedBox(
-                    height: 48,
+                    height: 40,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -110,7 +110,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                             ),
                           )
                         : GridView.builder(
-                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               mainAxisSpacing: 12,
@@ -170,7 +170,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
             const SizedBox(height: 8),
             Expanded(
               child: GridView.builder(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   mainAxisSpacing: 12,
@@ -260,6 +260,7 @@ class _FilterChip extends StatelessWidget {
         onTap();
       },
       child: Container(
+        alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
           color: selected

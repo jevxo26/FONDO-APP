@@ -435,7 +435,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   child: RefreshIndicator(
                 onRefresh: () => Future.delayed(const Duration(milliseconds: 600)),
                 child: ListView(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
                   children: [
                     _BalanceCard(balance: _balance, holdBalance: _holdBalance, isDark: isDark),
                     const SizedBox(height: 20),

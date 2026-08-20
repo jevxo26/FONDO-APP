@@ -247,26 +247,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 onTap: _pickAvatar,
                 child: Column(
                   children: [
-                    PressScale(
-                      child: Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        CircleAvatar(
-                          radius: 44,
-                          backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-                          child: Text(_avatar, style: const TextStyle(fontSize: 40)),
+                    Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      CircleAvatar(
+                        radius: 44,
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                        child: Text(_avatar, style: const TextStyle(fontSize: 40)),
+                      ),
+                      Container(
+                        width: 30,
+                        height: 30,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
                         ),
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.edit_rounded, size: 16, color: AppColors.primaryForeground),
-                        ),
-                      ],
-                    ),
+                        child: const Icon(Icons.edit_rounded, size: 16, color: AppColors.primaryForeground),
+                      ),
+                    ],
                     ),
                     const SizedBox(height: 8),
                     Text(
