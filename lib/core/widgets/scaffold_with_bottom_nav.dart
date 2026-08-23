@@ -16,13 +16,18 @@ class ScaffoldWithBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
+      backgroundColor: Colors.transparent,
       appBar: appBar,
       body: navigationShell,
-      bottomNavigationBar: GlassTabBar(
-        currentIndex: navigationShell.currentIndex,
-        onTap: (i) => navigationShell.goBranch(
-          i,
-          initialLocation: i == navigationShell.currentIndex,
+      bottomNavigationBar: Material(
+        color: Colors.transparent,
+        elevation: 0,
+        child: GlassTabBar(
+          currentIndex: navigationShell.currentIndex,
+          onTap: (i) => navigationShell.goBranch(
+            i,
+            initialLocation: i == navigationShell.currentIndex,
+          ),
         ),
       ),
     );
