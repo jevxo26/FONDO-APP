@@ -19,6 +19,7 @@ class AppColors {
 
   // Card
   static const Color cardLight = Color(0xFFFFFFFF);
+  static const Color glassBorderLight = Color(0x40CCCCCC);
   static const Color glassBorderDark = Color(0x80CCCCCC);
   static const Color proPurple = Color(0xFF5E17EB);
 
@@ -28,6 +29,9 @@ class AppColors {
   // Secondary (Cream)
   static const Color secondaryLight = Color(0xFFFBF5EB);
   static const Color secondaryDark = Color(0xFF2C2C2C);
+  static const Color goldShine = Color(0xFFF3D08B);
+  static const Color goldDeep = Color(0xFF99732B);
+  static const Color glassBorderLight = Color(0x40CCCCCC);
 
   static const Color secondaryForegroundLight = Color(0xFF1B1612);
   static const Color secondaryForegroundDark = Color(0xFFFAF5EB);

@@ -49,7 +49,56 @@ class GlassCard extends StatelessWidget {
       ),
     );
 
-    if (onTap == null) return card;
-    return GestureDetector(onTap: onTap, child: card);
+    if (onTap == null) {
+      return Stack(
+        children: [
+          card,
+          Positioned(
+            top: 0,
+            left: 0,
+            child: Container(
+              width: 1,
+              height: radius,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0x66FFFFFF),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+    return GestureDetector(
+      onTap: onTap,
+      child: Stack(
+        children: [
+          card,
+          Positioned(
+            top: 0,
+            left: 0,
+            child: Container(
+              width: 1,
+              height: radius,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0x66FFFFFF),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
