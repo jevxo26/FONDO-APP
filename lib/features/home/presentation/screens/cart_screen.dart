@@ -45,6 +45,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     }
 
     return SafeArea(
+      bottom: false,
       child: Column(
         children: [
           Expanded(
@@ -295,26 +296,25 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final deliveryFee = cart.subtotal >= 200 ? 0.0 : 30.0;
     final grandTotal = cart.total + deliveryFee;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-      decoration: BoxDecoration(
-        color: (isDark ? AppColors.surfaceDark : AppColors.cardLight)
-            .withValues(alpha: 0.85),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 95),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.cardLight,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+            width: 1,
           ),
-        ],
-        border: Border(
-          top: BorderSide(
-              color: isDark ? AppColors.borderDark : AppColors.borderLight,
-              width: 0.5),
         ),
-      ),
-      child: SafeArea(
-        top: false,
         child: Row(
           children: [
             Expanded(

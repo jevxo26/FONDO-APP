@@ -94,8 +94,9 @@ class _PackagesScreenState extends State<PackagesScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SafeArea(
+      bottom: false,
       child: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
         children: [
           Text(
             'Meal Packages',

@@ -32,6 +32,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final greeting = _getGreeting();
 
     return SafeArea(
+      bottom: false,
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

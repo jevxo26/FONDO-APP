@@ -45,8 +45,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     return SafeArea(
+      bottom: false,
       child: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
         children: [
           _ProfileHeader(user: user, tier: tier, isDark: isDark),
           const SizedBox(height: 20),
