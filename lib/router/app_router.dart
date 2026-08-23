@@ -23,6 +23,7 @@ import '../features/home/presentation/screens/wallet_screen.dart';
 import '../features/home/presentation/screens/main_shell.dart';
 import '../features/home/presentation/screens/notification_center_screen.dart';
 import '../features/home/presentation/screens/packages_screen.dart';
+import '../features/home/presentation/screens/search_screen.dart';
 import '../features/home/presentation/screens/profile_screen.dart';
 import 'routes.dart';
 
@@ -94,6 +95,14 @@ final appRouter = GoRouter(
             GoRoute(
               path: AppRoutes.packages,
               builder: (context, state) => const PackagesScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/search',
+              builder: (context, state) => const SearchScreen(),
             ),
           ],
         ),
