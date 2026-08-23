@@ -30,25 +30,30 @@ class GlassTabBar extends ConsumerWidget {
 
     final items = [
       _TabItem(
-        icon: Icons.store_outlined,
-        activeIcon: Icons.store,
-        label: 'Home',
+        icon: Icons.restaurant_menu_outlined,
+        activeIcon: Icons.restaurant_menu,
+        label: 'Food',
       ),
       _TabItem(
-        icon: Icons.card_giftcard_outlined,
-        activeIcon: Icons.card_giftcard,
-        label: 'Packages',
+        icon: Icons.storefront_outlined,
+        activeIcon: Icons.storefront,
+        label: 'Grocery',
+      ),
+      _TabItem(
+        icon: Icons.search_rounded,
+        activeIcon: Icons.search,
+        label: 'Search',
       ),
       _TabItem(
         icon: Icons.shopping_bag_outlined,
         activeIcon: Icons.shopping_bag,
-        label: 'Cart',
+        label: 'Carts',
         badgeCount: cartCount,
       ),
       _TabItem(
         icon: Icons.person_outline,
         activeIcon: Icons.person,
-        label: 'Profile',
+        label: 'Account',
       ),
     ];
 
@@ -62,29 +67,16 @@ class GlassTabBar extends ConsumerWidget {
         bottomInset > 0 ? bottomInset + 6 : 14,
       ),
       child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         height: _height,
         decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.08), // very subtle base tint
           borderRadius: BorderRadius.circular(_radius),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.12),
               blurRadius: 24,
-              spreadRadius: -4,
-            ),
-            BoxShadow(
-              color: (isDark ? Colors.black : const Color(0x1F1E1A16))
-                  .withValues(alpha: isDark ? 0.40 : 0.12),
-              offset: const Offset(0, 6),
-              blurRadius: 18,
-              spreadRadius: -2,
-            ),
-            BoxShadow(
-              color: (isDark ? Colors.black : const Color(0x0F1E1A16))
-                  .withValues(alpha: isDark ? 0.30 : 0.06),
-              offset: const Offset(0, 18),
-              blurRadius: 40,
-              spreadRadius: -8,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -94,12 +86,15 @@ class GlassTabBar extends ConsumerWidget {
             filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: DecoratedBox(
               decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withOpacity(0.06)
+                    : Colors.white.withOpacity(0.55),
                 borderRadius: BorderRadius.circular(_radius),
                 border: Border.all(
                   color: isDark
-                      ? Colors.white.withValues(alpha: 0.10)
-                      : Colors.white.withValues(alpha: 0.85),
-                  width: 1,
+                      ? Colors.white.withValues(alpha: 0.12)
+                      : Colors.white.withValues(alpha: 0.90),
+                  width: 1.2,
                 ),
               ),
               child: _GlassBarBody(
@@ -155,10 +150,15 @@ class _GlassBarBody extends StatelessWidget {
                     child: Container(
                       key: const ValueKey('glassTabActivePill'),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(
-                          alpha: isDark ? 0.20 : 0.12,
-                        ),
+                        gradient: AppColors.warmGoldGradient,
                         borderRadius: BorderRadius.circular(22),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -259,6 +259,7 @@ class _TabButtonState extends State<_TabButton> {
                       child: AnimatedScale(
                         scale: widget.active ? 0.8 : 1,
                         duration: GlassTabBar._animDuration,
+                        curve: Curves.elasticOut,
                         child: Icon(widget.item.icon, size: 23, color: muted),
                       ),
                     ),
@@ -268,6 +269,7 @@ class _TabButtonState extends State<_TabButton> {
                       child: AnimatedScale(
                         scale: widget.active ? 1 : 0.8,
                         duration: GlassTabBar._animDuration,
+                        curve: Curves.elasticOut,
                         child: Icon(
                           widget.item.activeIcon,
                           size: 23,
