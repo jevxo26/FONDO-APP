@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../theme/app_colors.dart';
 import 'glass_tab_bar.dart';
 
 class ScaffoldWithBottomNav extends StatelessWidget {
@@ -14,22 +15,32 @@ class ScaffoldWithBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      extendBody: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor:
+          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       appBar: appBar,
-      body: navigationShell,
-      bottomNavigationBar: Material(
-        color: Colors.transparent,
-        elevation: 0,
-        child: GlassTabBar(
-          currentIndex: navigationShell.currentIndex,
-          onTap: (i) => navigationShell.goBranch(
-            i,
-            initialLocation: i == navigationShell.currentIndex,
+      body: Stack(
+        children: [
+          // Full-screen content
+          navigationShell,
+          // Truly floating glass tab bar overlaid on top
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: GlassTabBar(
+              currentIndex: navigationShell.currentIndex,
+              onTap: (i) => navigationShell.goBranch(
+                i,
+                initialLocation: i == navigationShell.currentIndex,
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
+

@@ -61,39 +61,37 @@ class GlassTabBar extends ConsumerWidget {
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        16,
+        20,
         0,
-        16,
-        bottomInset > 0 ? bottomInset + 6 : 14,
+        20,
+        bottomInset > 0 ? bottomInset + 8 : 16,
       ),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         height: _height,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08), // very subtle base tint
           borderRadius: BorderRadius.circular(_radius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
+              color: Colors.black.withOpacity(isDark ? 0.35 : 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(_radius),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(0.06)
-                    : Colors.white.withOpacity(0.55),
+                    ? AppColors.cardDark.withOpacity(0.75)
+                    : Colors.white.withOpacity(0.82),
                 borderRadius: BorderRadius.circular(_radius),
                 border: Border.all(
                   color: isDark
-                      ? Colors.white.withValues(alpha: 0.12)
-                      : Colors.white.withValues(alpha: 0.90),
+                      ? Colors.white.withOpacity(0.12)
+                      : Colors.white.withOpacity(0.85),
                   width: 1.2,
                 ),
               ),
