@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_glow.dart';
-import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/premium_container.dart';
 import '../../../../core/widgets/press_scale.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/skeleton.dart';
@@ -296,12 +296,11 @@ class _DeviceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PressScale(
-      child: GlassCard(
-        padding: const EdgeInsets.all(16),
-        radius: 24,
-        borderColor: session.isCurrent
-            ? AppColors.primary.withValues(alpha: 0.5)
-            : AppColors.primary.withValues(alpha: 0.05),
+      child: PremiumContainer(
+        // padding removed for PremiumContainer
+        // radius removed for PremiumContainer
+        // borderColor removed for PremiumContainer
+        // styling handled by PremiumContainer
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
