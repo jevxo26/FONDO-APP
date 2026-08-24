@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/mock/mock_foods.dart';
+import '../../../../core/providers/cart_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/skeleton.dart';
@@ -64,23 +68,32 @@ const List<MealPlan> _plans = [
   ),
 ];
 
-class PackagesScreen extends StatefulWidget {
+class PackagesScreen extends ConsumerStatefulWidget {
   const PackagesScreen({super.key});
 
   @override
-  State<PackagesScreen> createState() => _PackagesScreenState();
+  ConsumerState<PackagesScreen> createState() => _PackagesScreenState();
 }
 
-class _PackagesScreenState extends State<PackagesScreen> {
+class _PackagesScreenState extends ConsumerState<PackagesScreen> {
   bool _loading = true;
   String? _selectedPlanId;
   String _dietaryPreference = 'Regular';
   int _weeks = 1;
+  String _selectedGroceryCat = 'All';
+
+  final List<Map<String, dynamic>> _groceryCategories = const [
+    {'name': 'All', 'icon': Icons.grid_view_rounded},
+    {'name': 'Vegetables', 'icon': Icons.eco_outlined},
+    {'name': 'Dairy & Eggs', 'icon': Icons.egg_outlined},
+    {'name': 'Spices', 'icon': Icons.soup_kitchen_outlined},
+    {'name': 'Snacks', 'icon': Icons.cookie_outlined},
+  ];
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 1800), () {
+    Future.delayed(const Duration(milliseconds: 1400), () {
       if (mounted) setState(() => _loading = false);
     });
   }
@@ -92,25 +105,318 @@ class _PackagesScreenState extends State<PackagesScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final groceryItems = mockFoods.where((f) => f.category == 'Groceries').toList();
 
     return SafeArea(
       bottom: false,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
         children: [
-          Text(
-            'Meal Packages',
-            style: AppTypography.titleLarge(isDark: isDark),
+          // ── Header Title ──
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Grocery & Packages',
+                    style: AppTypography.headlineMedium(isDark: isDark).copyWith(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    'Fresh ingredients & weekly meal plans',
+                    style: AppTypography.small(isDark: isDark),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Icons.storefront_rounded, size: 16, color: AppColors.primary),
+                    SizedBox(width: 4),
+                    Text(
+                      'FONDO Mart',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Subscribe to a meal plan and enjoy freshly cooked meals delivered to your door.',
-            style: AppTypography.bodyMedium(isDark: isDark),
+
+          const SizedBox(height: 16),
+
+          // ── Express Service Area Status Banner ──
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [const Color(0xFF1E3A2F), const Color(0xFF132A22)]
+                    : [const Color(0xFFE6F7ED), const Color(0xFFD4EFE0)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF10B981).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF10B981),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.bolt_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Express Grocery Delivery Active',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF047857),
+                        ),
+                      ),
+                      Text(
+                        'Guaranteed delivery in 15–25 mins to Dhanmondi',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 24),
+
+          const SizedBox(height: 20),
+
+          // ── Grocery Category Pills ──
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _groceryCategories.map((cat) {
+                final selected = _selectedGroceryCat == cat['name'];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedGroceryCat = cat['name'] as String),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? AppColors.primary
+                            : (isDark ? AppColors.cardDark : AppColors.cardLight),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: selected
+                              ? AppColors.primary
+                              : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            cat['icon'] as IconData,
+                            size: 15,
+                            color: selected
+                                ? AppColors.primaryForeground
+                                : (isDark ? Colors.white70 : Colors.black87),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            cat['name'] as String,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                              color: selected
+                                  ? AppColors.primaryForeground
+                                  : (isDark ? Colors.white : Colors.black87),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // ── Fresh Grocery Essentials Section ──
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Fresh Essentials',
+                style: AppTypography.headlineMedium(isDark: isDark).copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                'Instant Stock',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          SizedBox(
+            height: 190,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: groceryItems.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final item = groceryItems[index];
+                return Container(
+                  width: 155,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.cardDark : AppColors.cardLight,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 60,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.shopping_basket_outlined,
+                          color: AppColors.primary,
+                          size: 30,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        item.name,
+                        style: AppTypography.label(isDark: isDark).copyWith(fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Fresh Pack',
+                        style: AppTypography.small(isDark: isDark).copyWith(fontSize: 10.5),
+                      ),
+                      const Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '৳${item.price.toStringAsFixed(0)}',
+                            style: AppTypography.price(isDark: isDark).copyWith(
+                              fontSize: 14,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              ref.read(cartProvider.notifier).addItem(item);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('${item.name} added to cart!'),
+                                  duration: const Duration(milliseconds: 1000),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: const BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.add_rounded,
+                                size: 15,
+                                color: AppColors.primaryForeground,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // ── Meal Packages Header ──
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Meal Subscriptions',
+                style: AppTypography.headlineMedium(isDark: isDark).copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                'Auto Daily Meals',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Subscribe to a chef meal plan with free daily doorstep delivery.',
+            style: AppTypography.small(isDark: isDark),
+          ),
+          const SizedBox(height: 16),
           if (_loading) ...[
-            const _PlanCardSkeleton(),
-            const SizedBox(height: 16),
             const _PlanCardSkeleton(),
             const SizedBox(height: 16),
             const _PlanCardSkeleton(),
@@ -129,7 +435,7 @@ class _PackagesScreenState extends State<PackagesScreen> {
           if (_selectedPlan != null) ...[
             const SizedBox(height: 8),
             _buildCustomization(isDark),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             _buildSummary(isDark),
             const SizedBox(height: 16),
             FilledButton(
