@@ -10,6 +10,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../models/food_item.dart';
 import '../../../../router/routes.dart';
+import '../providers/user_location_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -20,7 +21,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _loading = true;
-  String _selectedLocation = 'House 12, Road 5, Dhanmondi';
   String _selectedSort = 'Popular';
   bool _onlyHighRating = false;
   String? _selectedCategoryFilter;
@@ -181,7 +181,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ],
                   ),
                   Text(
-                    _selectedLocation,
+                    ref.watch(userLocationProvider),
                     style: AppTypography.label(isDark: isDark).copyWith(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -812,7 +812,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 14),
               ...addresses.map((addr) {
-                final isSelected = addr == _selectedLocation;
+                final currentLocation = ref.watch(userLocationProvider);
+                final isSelected = addr == currentLocation;
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(
@@ -830,7 +831,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
                       : null,
                   onTap: () {
-                    setState(() => _selectedLocation = addr);
+                    ref.read(userLocationProvider.notifier).state = addr;
                     Navigator.pop(ctx);
                   },
                 );

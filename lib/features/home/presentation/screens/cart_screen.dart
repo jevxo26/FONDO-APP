@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/providers/cart_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/food_item.dart';
+import '../providers/user_location_provider.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -20,7 +23,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 1800), () {
+    Future.delayed(const Duration(milliseconds: 1400), () {
       if (mounted) setState(() => _loading = false);
     });
   }
@@ -41,22 +44,51 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     }
 
     if (cart.items.isEmpty) {
-      return _buildEmptyState(isDark);
+      return _buildEmptyState(context, isDark);
     }
 
     return SafeArea(
       bottom: false,
       child: Column(
         children: [
+          // ── Top Delivery Address Header ──
+          _buildDeliveryHeader(context, isDark),
+
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
               children: [
-                Text(
-                  'Cart (${cart.itemCount} item${cart.itemCount == 1 ? '' : 's'})',
-                  style: AppTypography.titleLarge(isDark: isDark),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Your Cart (${cart.itemCount} item${cart.itemCount == 1 ? '' : 's'})',
+                      style: AppTypography.headlineMedium(isDark: isDark).copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: () {
+                        ref.read(cartProvider.notifier).clear();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Cart cleared'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.delete_sweep_outlined, size: 18),
+                      label: const Text('Clear'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.destructive,
+                        padding: EdgeInsets.zero,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 ...cart.items.map(
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -73,18 +105,24 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           color: AppColors.destructive.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: Icon(Icons.delete_outline_rounded,
+                        child: const Icon(Icons.delete_outline_rounded,
                             color: AppColors.destructive),
                       ),
                       child: _CartItemCard(
                         item: item,
                         isDark: isDark,
-                        onIncrement: () => ref
-                            .read(cartProvider.notifier)
-                            .updateQuantity(item.food.id, item.quantity + 1),
-                        onDecrement: () => ref
-                            .read(cartProvider.notifier)
-                            .updateQuantity(item.food.id, item.quantity - 1),
+                        onIncrement: () {
+                          HapticFeedback.selectionClick();
+                          ref
+                              .read(cartProvider.notifier)
+                              .updateQuantity(item.food.id, item.quantity + 1);
+                        },
+                        onDecrement: () {
+                          HapticFeedback.selectionClick();
+                          ref
+                              .read(cartProvider.notifier)
+                              .updateQuantity(item.food.id, item.quantity - 1);
+                        },
                         onRemove: () => ref
                             .read(cartProvider.notifier)
                             .removeItem(item.food.id),
@@ -96,6 +134,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 _buildCouponSection(cart, isDark),
                 const SizedBox(height: 12),
                 _buildPriceBreakdown(cart, isDark),
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -131,7 +170,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
   }
 
-  Widget _buildEmptyState(bool isDark) {
+  Widget _buildEmptyState(BuildContext context, bool isDark) {
     return SafeArea(
       child: Center(
         child: Padding(
@@ -139,25 +178,132 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.shopping_bag_outlined,
-                size: 64,
-                color: AppColors.primary.withValues(alpha: 0.4),
+              Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 48,
+                  color: AppColors.primary,
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               Text(
-                'Your cart is empty',
-                style: AppTypography.titleLarge(isDark: isDark),
+                "Hungry? You haven't added anything to your cart!",
+                style: AppTypography.headlineMedium(isDark: isDark).copyWith(
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
               Text(
-                'Browse the catalog and add items to get started.',
+                'Explore delicious dishes, chef specials, and fresh groceries.',
                 textAlign: TextAlign.center,
-                style: AppTypography.bodyMedium(isDark: isDark),
+                style: AppTypography.bodyMedium(isDark: isDark).copyWith(
+                  color: isDark
+                      ? AppColors.mutedForegroundDark
+                      : AppColors.mutedForegroundLight,
+                  fontSize: 13.5,
+                ),
+              ),
+              const SizedBox(height: 28),
+              FilledButton.icon(
+                onPressed: () => context.go('/home'),
+                icon: const Icon(Icons.restaurant_menu_rounded, size: 18),
+                label: const Text('Browse Dishes'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.primaryForeground,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDeliveryHeader(BuildContext context, bool isDark) {
+    final location = ref.watch(userLocationProvider);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+            width: 0.8,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.location_on_rounded,
+              color: AppColors.primary,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _showLocationSelector(context, isDark),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Deliver to',
+                    style: AppTypography.small(isDark: isDark).copyWith(
+                      fontSize: 10.5,
+                      color: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForegroundLight,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          location,
+                          style: AppTypography.label(isDark: isDark).copyWith(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -256,7 +402,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Widget _buildPriceBreakdown(CartState cart, bool isDark) {
-    final deliveryFee = cart.subtotal >= 200 ? 0.0 : 30.0;
+    final deliveryFee = cart.subtotal >= 300 ? 0.0 : 30.0;
+    final taxable = (cart.subtotal - cart.discount) > 0 ? (cart.subtotal - cart.discount) : 0.0;
+    final vat = taxable * 0.05;
+    final grandTotal = taxable + deliveryFee + vat;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -266,24 +416,44 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            'Bill Summary',
+            style: AppTypography.label(isDark: isDark).copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 12),
           _PriceLine(
-              label: 'Subtotal', amount: cart.subtotal, isDark: isDark),
+              label: 'Item Subtotal', amount: cart.subtotal, isDark: isDark),
           const SizedBox(height: 8),
           if (cart.discount > 0) ...[
             _PriceLine(
-              label: 'Discount',
+              label: 'Discount Voucher',
               amount: -cart.discount,
               isDark: isDark,
               color: AppColors.success,
             ),
             const SizedBox(height: 8),
           ],
-          _PriceLine(label: 'Delivery', amount: deliveryFee, isDark: isDark),
+          _PriceLine(
+            label: 'Delivery Fee',
+            amount: deliveryFee,
+            isDark: isDark,
+            subtitle: deliveryFee == 0 ? '(Free delivery applied)' : null,
+          ),
+          const SizedBox(height: 8),
+          _PriceLine(
+            label: 'Govt VAT & Taxes (5%)',
+            amount: vat,
+            isDark: isDark,
+          ),
           const Divider(height: 24),
           _PriceLine(
-            label: 'Total',
-            amount: cart.total + deliveryFee,
+            label: 'Grand Total',
+            amount: grandTotal,
             isDark: isDark,
             isTotal: true,
           ),
@@ -293,8 +463,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Widget _buildCheckoutBar(CartState cart, bool isDark) {
-    final deliveryFee = cart.subtotal >= 200 ? 0.0 : 30.0;
-    final grandTotal = cart.total + deliveryFee;
+    final deliveryFee = cart.subtotal >= 300 ? 0.0 : 30.0;
+    final taxable = (cart.subtotal - cart.discount) > 0 ? (cart.subtotal - cart.discount) : 0.0;
+    final vat = taxable * 0.05;
+    final grandTotal = taxable + deliveryFee + vat;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 95),
@@ -305,7 +477,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -322,13 +494,17 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Total', style: AppTypography.small(isDark: isDark)),
+                  Text('Total to Pay', style: AppTypography.small(isDark: isDark)),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: Text(
                       '৳${grandTotal.toStringAsFixed(0)}',
                       key: ValueKey(grandTotal.toStringAsFixed(0)),
-                      style: AppTypography.price(isDark: isDark),
+                      style: AppTypography.price(isDark: isDark).copyWith(
+                        color: AppColors.primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ],
@@ -336,28 +512,107 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
             FilledButton.icon(
               onPressed: () {
+                final currentLocation = ref.read(userLocationProvider);
+                HapticFeedback.heavyImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Order placed! (demo)'),
+                  SnackBar(
+                    content: Text(
+                      'Order placed successfully! Delivering to $currentLocation',
+                    ),
                     behavior: SnackBarBehavior.floating,
-                    width: 200,
+                    backgroundColor: AppColors.success,
+                    duration: const Duration(seconds: 3),
                   ),
                 );
+                ref.read(cartProvider.notifier).clear();
               },
-              icon: const Icon(Icons.shopping_bag_outlined),
-              label: const Text('Place Order'),
+              icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+              label: const Text('Proceed to Checkout'),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.primaryForeground,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(14)),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showLocationSelector(BuildContext context, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.cardLight,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        final addresses = [
+          'House 12, Road 5, Dhanmondi',
+          'Flat 4B, Banani DOHS, Dhaka',
+          'Floor 7, Gulshan 2, Dhaka',
+          'Uttara Sector 3, Dhaka',
+        ];
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : Colors.black12,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Select Delivery Address',
+                style: AppTypography.headlineMedium(isDark: isDark).copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 14),
+              ...addresses.map((addr) {
+                final currentLocation = ref.watch(userLocationProvider);
+                final isSelected = addr == currentLocation;
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    Icons.location_on_outlined,
+                    color: isSelected ? AppColors.primary : null,
+                  ),
+                  title: Text(
+                    addr,
+                    style: TextStyle(
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? AppColors.primary : null,
+                    ),
+                  ),
+                  trailing: isSelected
+                      ? const Icon(Icons.check_circle_rounded,
+                          color: AppColors.primary)
+                      : null,
+                  onTap: () {
+                    ref.read(userLocationProvider.notifier).state = addr;
+                    Navigator.pop(ctx);
+                  },
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -484,6 +739,7 @@ class _CartItemCard extends StatelessWidget {
 
 class _PriceLine extends StatelessWidget {
   final String label;
+  final String? subtitle;
   final double amount;
   final bool isDark;
   final bool isTotal;
@@ -491,6 +747,7 @@ class _PriceLine extends StatelessWidget {
 
   const _PriceLine({
     required this.label,
+    this.subtitle,
     required this.amount,
     required this.isDark,
     this.isTotal = false,
@@ -510,7 +767,23 @@ class _PriceLine extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: labelStyle.copyWith(color: textColor)),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label, style: labelStyle.copyWith(color: textColor)),
+            if (subtitle != null) ...[
+              const SizedBox(width: 4),
+              Text(
+                subtitle!,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppColors.success,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
         Text(
           '${amount < 0 ? '-' : ''}৳${amount.abs().toStringAsFixed(0)}',
           style: amountStyle.copyWith(color: textColor),
