@@ -47,8 +47,8 @@ class _SearchScreenState extends State<SearchScreen> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isDark
-                        ? Colors.white.withOpacity(0.08)
-                        : Colors.black.withOpacity(0.06),
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.06),
                   ),
                 ),
                 child: TextField(
@@ -62,7 +62,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           ? AppColors.mutedForegroundDark
                           : AppColors.mutedForegroundLight,
                     ),
-                    prefixIcon: Icon(
+                    prefixIcon: const Icon(
                       Icons.search_rounded,
                       color: AppColors.primary,
                     ),
@@ -81,7 +81,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     Icon(
                       Icons.search_rounded,
                       size: 64,
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                     ),
                     const SizedBox(height: 12),
                     Text(

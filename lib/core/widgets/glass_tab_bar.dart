@@ -72,7 +72,7 @@ class GlassTabBar extends ConsumerWidget {
           borderRadius: BorderRadius.circular(_radius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.35 : 0.08),
+              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
               blurRadius: 20,
               offset: const Offset(0, 6),
             ),
@@ -85,13 +85,13 @@ class GlassTabBar extends ConsumerWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: isDark
-                    ? AppColors.cardDark.withOpacity(0.75)
-                    : Colors.white.withOpacity(0.82),
+                    ? AppColors.cardDark.withValues(alpha: 0.75)
+                    : Colors.white.withValues(alpha: 0.82),
                 borderRadius: BorderRadius.circular(_radius),
                 border: Border.all(
                   color: isDark
-                      ? Colors.white.withOpacity(0.12)
-                      : Colors.white.withOpacity(0.85),
+                      ? Colors.white.withValues(alpha: 0.12)
+                      : Colors.white.withValues(alpha: 0.85),
                   width: 1.2,
                 ),
               ),

@@ -15,52 +15,31 @@ class AppBadgePill extends StatelessWidget {
   final String label;
   final BadgeVariant variant;
   const AppBadgePill({
-    Key? key,
+    super.key,
     required this.label,
     this.variant = BadgeVariant.defaultVariant,
-  }) : super(key: key);
+  });
 
-  Color get _backgroundColor {
-    switch (variant) {
-      case BadgeVariant.success:
-        return AppColors.success.withOpacity(0.10);
-      case BadgeVariant.warning:
-        return AppColors.warning.withOpacity(0.10);
-      case BadgeVariant.danger:
-        return AppColors.destructive.withOpacity(0.10);
-      case BadgeVariant.defaultVariant:
-      default:
-        return AppColors.primary.withOpacity(0.10);
-    }
-  }
+  Color get _backgroundColor => switch (variant) {
+        BadgeVariant.success => AppColors.success.withValues(alpha: 0.10),
+        BadgeVariant.warning => AppColors.warning.withValues(alpha: 0.10),
+        BadgeVariant.danger => AppColors.destructive.withValues(alpha: 0.10),
+        BadgeVariant.defaultVariant => AppColors.primary.withValues(alpha: 0.10),
+      };
 
-  Color get _textColor {
-    switch (variant) {
-      case BadgeVariant.success:
-        return AppColors.success;
-      case BadgeVariant.warning:
-        return AppColors.warning;
-      case BadgeVariant.danger:
-        return AppColors.destructive;
-      case BadgeVariant.defaultVariant:
-      default:
-        return AppColors.primary;
-    }
-  }
+  Color get _textColor => switch (variant) {
+        BadgeVariant.success => AppColors.success,
+        BadgeVariant.warning => AppColors.warning,
+        BadgeVariant.danger => AppColors.destructive,
+        BadgeVariant.defaultVariant => AppColors.primary,
+      };
 
-  Color get _ringColor {
-    switch (variant) {
-      case BadgeVariant.success:
-        return AppColors.success.withOpacity(0.20);
-      case BadgeVariant.warning:
-        return AppColors.warning.withOpacity(0.20);
-      case BadgeVariant.danger:
-        return AppColors.destructive.withOpacity(0.20);
-      case BadgeVariant.defaultVariant:
-      default:
-        return AppColors.primary.withOpacity(0.20);
-    }
-  }
+  Color get _ringColor => switch (variant) {
+        BadgeVariant.success => AppColors.success.withValues(alpha: 0.20),
+        BadgeVariant.warning => AppColors.warning.withValues(alpha: 0.20),
+        BadgeVariant.danger => AppColors.destructive.withValues(alpha: 0.20),
+        BadgeVariant.defaultVariant => AppColors.primary.withValues(alpha: 0.20),
+      };
 
   @override
   Widget build(BuildContext context) {
