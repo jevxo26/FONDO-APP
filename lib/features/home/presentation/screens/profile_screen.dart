@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/mock/mock_data.dart';
@@ -6,6 +7,8 @@ import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/providers/wishlist_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_glow.dart';
+import '../../../../core/widgets/press_scale.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../../../models/customer_tier.dart';
@@ -27,9 +30,171 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 1800), () {
+    Future.delayed(const Duration(milliseconds: 1400), () {
       if (mounted) setState(() => _loading = false);
     });
+  }
+
+  void _showInviteFriendsModal() {
+    HapticFeedback.lightImpact();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.card_giftcard_rounded, color: AppColors.primary, size: 32),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Invite Friends, Get ৳100',
+              style: AppTypography.titleLarge(isDark: isDark),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Share your referral code with friends. When they place their first order above ৳300, you both get ৳100 voucher.',
+              textAlign: TextAlign.center,
+              style: AppTypography.bodyMedium(isDark: isDark),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.cardDark : AppColors.mutedLight,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'FONDO-ABIR99',
+                    style: AppTypography.titleMedium(isDark: isDark).copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  FilledButton.tonal(
+                    onPressed: () {
+                      Clipboard.setData(const ClipboardData(text: 'FONDO-ABIR99'));
+                      Navigator.of(ctx).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Referral code copied to clipboard!'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    ),
+                    child: const Text('Copy'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.primaryForeground,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                child: const Text('Done'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showVouchersModal() {
+    HapticFeedback.lightImpact();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text('Available Vouchers & Offers', style: AppTypography.titleLarge(isDark: isDark)),
+            const SizedBox(height: 14),
+            _VoucherCard(
+              code: 'PRO40',
+              title: '40% OFF on Top Restaurants',
+              subtitle: 'Valid on orders over ৳399. Max discount ৳150.',
+              expiry: 'Expires in 3 days',
+              isDark: isDark,
+            ),
+            const SizedBox(height: 10),
+            _VoucherCard(
+              code: 'FREESHIP',
+              title: 'Free Delivery on FONDO Mart',
+              subtitle: 'Valid on grocery orders over ৳249.',
+              expiry: 'Expires in 7 days',
+              isDark: isDark,
+            ),
+            const SizedBox(height: 10),
+            _VoucherCard(
+              code: 'WELCOME50',
+              title: '৳50 Flat Discount',
+              subtitle: 'Valid on all food and mart items.',
+              expiry: 'Expires in 14 days',
+              isDark: isDark,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -44,224 +209,238 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       return const _ProfileSkeleton();
     }
 
-    return SafeArea(
-      bottom: false,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+    return Scaffold(
+      body: Stack(
         children: [
-          _ProfileHeader(user: user, tier: tier, isDark: isDark),
-          const SizedBox(height: 20),
-          _StatsRow(stats: _stats, isDark: isDark),
-          const SizedBox(height: 24),
-
-          const _SectionLabel('Account'),
-          _SectionGroup(
-            isDark: isDark,
-            children: [
-              _MenuItem(
-                icon: Icons.person_outline_rounded,
-                title: 'Edit Profile',
-                subtitle: 'Name, avatar & preferences',
-                isDark: isDark,
-                onTap: () => context.push(AppRoutes.editProfile),
-              ),
-              _MenuItem(
-                icon: Icons.lock_outline_rounded,
-                title: 'Security & Password',
-                subtitle: 'Password, biometric & 2FA',
-                isDark: isDark,
-                onTap: () => context.push(AppRoutes.securitySettings),
-              ),
-              _MenuItem(
-                icon: Icons.devices_other_outlined,
-                title: 'Active Devices',
-                subtitle: 'Login sessions & device control',
-                isDark: isDark,
-                onTap: () => context.push(AppRoutes.deviceRegistry),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          const _SectionLabel('Favorites & Orders'),
-          _SectionGroup(
-            isDark: isDark,
-            children: [
-              _MenuItem(
-                icon: Icons.location_on_outlined,
-                title: 'Saved Addresses',
-                subtitle: '${mockAddresses.length} address${mockAddresses.length == 1 ? '' : 'es'}',
-                isDark: isDark,
-                onTap: () => context.push(AppRoutes.addressManager),
-              ),
-              _MenuItem(
-                icon: Icons.favorite_outline_rounded,
-                title: 'My Favorites',
-                subtitle: '$favoriteCount saved meal${favoriteCount == 1 ? '' : 's'}',
-                isDark: isDark,
-                onTap: () => context.push(AppRoutes.favorites),
-              ),
-              _MenuItem(
-                icon: Icons.account_balance_wallet_outlined,
-                title: 'Wallet',
-                subtitle: 'Balance & transaction history',
-                isDark: isDark,
-                onTap: () => context.push(AppRoutes.wallet),
-              ),
-              _MenuItem(
-                icon: Icons.subscriptions_outlined,
-                title: 'Subscriptions',
-                subtitle: 'Active meal plans',
-                isDark: isDark,
-                onTap: () => context.push(AppRoutes.subscriptions),
-              ),
-              _MenuItem(
-                icon: Icons.receipt_long_outlined,
-                title: 'Order History',
-                subtitle: 'Past orders & receipts',
-                isDark: isDark,
-                onTap: () => context.push(AppRoutes.orderHistory),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          const _SectionLabel('Support'),
-          _SectionGroup(
-            isDark: isDark,
-            children: [
-              _MenuItem(
-                icon: Icons.notifications_active_outlined,
-                title: 'Notifications & Reminders',
-                subtitle: 'Alerts, offers & schedules',
-                isDark: isDark,
-                onTap: () => context.push(AppRoutes.notifications),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          const _SectionLabel('Preferences'),
-          _SectionGroup(
-            isDark: isDark,
-            children: [
-              _MenuItem(
-                icon: Icons.settings_outlined,
-                title: 'Settings',
-                subtitle: 'Account & preferences',
-                isDark: isDark,
-                onTap: () => context.push(AppRoutes.settings),
-              ),
-              _ThemeToggleRow(
-                isDark: isDark,
-                value: themeMode == ThemeMode.dark,
-                onChanged: (value) => ref.read(themeModeProvider.notifier).state =
-                    value ? ThemeMode.dark : ThemeMode.light,
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          OutlinedButton.icon(
-            onPressed: () => context.go('/login'),
-            icon: const Icon(Icons.logout_rounded, size: 20),
-            label: const Text('Log Out'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.destructive,
-              side: const BorderSide(color: AppColors.destructive),
-              minimumSize: const Size(double.infinity, 48),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  final String title;
-  const _SectionLabel(this.title);
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(title, style: AppTypography.badge(isDark: isDark).copyWith(color: AppColors.primary)),
-    );
-  }
-}
-
-class _SectionGroup extends StatelessWidget {
-  final bool isDark;
-  final List<Widget> children;
-  const _SectionGroup({required this.isDark, required this.children});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
-      child: Column(
-        children: List.generate(children.length * 2 - 1, (index) {
-          if (index.isOdd) {
-            return Divider(
-              height: 1,
-              thickness: 1,
-              indent: 72,
-              endIndent: 16,
-              color: isDark ? AppColors.borderDark : AppColors.borderLight,
-            );
-          }
-          return children[index ~/ 2];
-        }),
-      ),
-    );
-  }
-}
-
-class _ThemeToggleRow extends StatelessWidget {
-  final bool isDark;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _ThemeToggleRow({
-    required this.isDark,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.dark_mode_outlined, color: AppColors.primary, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          const GlowOrbs(),
+          SafeArea(
+            bottom: false,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
               children: [
-                Text('Dark Mode', style: AppTypography.titleMedium(isDark: isDark)),
-                const SizedBox(height: 2),
-                Text('Toggle between light and dark theme', style: AppTypography.small(isDark: isDark)),
+                // Top Header with User Info & Settings gear
+                _ProfileHeader(user: user, tier: tier, isDark: isDark),
+                const SizedBox(height: 16),
+
+                // Purple FONDO Pro Card Banner (Foodpanda Reference style)
+                _ProBannerCard(
+                  isDark: isDark,
+                  onTap: () => context.push(AppRoutes.proPerks),
+                ),
+                const SizedBox(height: 16),
+
+                // 3-Card Grid: Orders, Favourites, Addresses
+                _QuickActionGrid(
+                  orderCount: _stats.totalOrders,
+                  favoriteCount: favoriteCount,
+                  addressCount: mockAddresses.length,
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 20),
+
+                // Wallet & Refund Account Section
+                const _SectionLabel('Wallet & Payments'),
+                _SectionGroup(
+                  isDark: isDark,
+                  children: [
+                    _MenuItem(
+                      icon: Icons.account_balance_wallet_outlined,
+                      title: 'Refund Account',
+                      subtitle: 'Available balance: ৳1,280',
+                      badgeText: '৳1,280',
+                      badgeColor: AppColors.success,
+                      isDark: isDark,
+                      onTap: () => context.push(AppRoutes.wallet),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Perks Section
+                const _SectionLabel('Perks & Rewards'),
+                _SectionGroup(
+                  isDark: isDark,
+                  children: [
+                    _MenuItem(
+                      icon: Icons.workspace_premium_rounded,
+                      iconColor: const Color(0xFF7B1FA2),
+                      title: 'FONDO Pro',
+                      subtitle: 'Unlimited free delivery & 20% off',
+                      badgeText: 'PRO',
+                      badgeColor: const Color(0xFF7B1FA2),
+                      isDark: isDark,
+                      onTap: () => context.push(AppRoutes.proPerks),
+                    ),
+                    _MenuItem(
+                      icon: Icons.emoji_events_outlined,
+                      title: 'Rewards & Tier Benefits',
+                      subtitle: '${tier.label} Member — 45,280 pts',
+                      isDark: isDark,
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('You are currently a ${tier.label} Tier member with VIP rewards!'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                    ),
+                    _MenuItem(
+                      icon: Icons.confirmation_number_outlined,
+                      title: 'Vouchers & Offers',
+                      subtitle: '3 vouchers available to use',
+                      badgeText: '3 Active',
+                      badgeColor: AppColors.primary,
+                      isDark: isDark,
+                      onTap: _showVouchersModal,
+                    ),
+                    _MenuItem(
+                      icon: Icons.card_giftcard_rounded,
+                      title: 'Invite Friends',
+                      subtitle: 'Get ৳100 voucher for every invite',
+                      isDark: isDark,
+                      onTap: _showInviteFriendsModal,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Account & General Section
+                const _SectionLabel('General & Account'),
+                _SectionGroup(
+                  isDark: isDark,
+                  children: [
+                    _MenuItem(
+                      icon: Icons.person_outline_rounded,
+                      title: 'Edit Profile',
+                      subtitle: 'Name, email, mobile & avatar',
+                      isDark: isDark,
+                      onTap: () => context.push(AppRoutes.editProfile),
+                    ),
+                    _MenuItem(
+                      icon: Icons.subscriptions_outlined,
+                      title: 'Meal Subscriptions',
+                      subtitle: 'Manage daily lunch & dinner plans',
+                      isDark: isDark,
+                      onTap: () => context.push(AppRoutes.subscriptions),
+                    ),
+                    _MenuItem(
+                      icon: Icons.lock_outline_rounded,
+                      title: 'Security & Password',
+                      subtitle: 'Password, biometric & 2FA',
+                      isDark: isDark,
+                      onTap: () => context.push(AppRoutes.securitySettings),
+                    ),
+                    _MenuItem(
+                      icon: Icons.devices_other_outlined,
+                      title: 'Active Devices',
+                      subtitle: 'Login sessions & device control',
+                      isDark: isDark,
+                      onTap: () => context.push(AppRoutes.deviceRegistry),
+                    ),
+                    _MenuItem(
+                      icon: Icons.help_outline_rounded,
+                      title: 'Help Center',
+                      subtitle: '24/7 customer support & FAQs',
+                      isDark: isDark,
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Help Center: Connect with FONDO live support'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                    ),
+                    _MenuItem(
+                      icon: Icons.business_center_outlined,
+                      title: 'FONDO for Business',
+                      subtitle: 'Corporate meal allowances & billing',
+                      isDark: isDark,
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('FONDO for Business: Corporate plans'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                    ),
+                    _MenuItem(
+                      icon: Icons.description_outlined,
+                      title: 'Terms & Policies',
+                      subtitle: 'Privacy policy & terms of service',
+                      isDark: isDark,
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('FONDO Terms of Service and Privacy Policy'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                    ),
+                    _ThemeToggleRow(
+                      isDark: isDark,
+                      value: themeMode == ThemeMode.dark,
+                      onChanged: (value) => ref.read(themeModeProvider.notifier).state =
+                          value ? ThemeMode.dark : ThemeMode.light,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Logout Button
+                OutlinedButton.icon(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Log Out'),
+                        content: const Text('Are you sure you want to log out of your account?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(ctx).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                          FilledButton(
+                            onPressed: () {
+                              Navigator.of(ctx).pop();
+                              context.go(AppRoutes.login);
+                            },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.destructive,
+                            ),
+                            child: const Text('Log Out'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.logout_rounded, size: 20),
+                  label: const Text('Log Out'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.destructive,
+                    side: const BorderSide(color: AppColors.destructive),
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // App Version
+                Center(
+                  child: Text(
+                    'FONDO v1.0.0 (Build 124) • Made with ❤️ in Bangladesh',
+                    style: AppTypography.small(isDark: isDark).copyWith(
+                      color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
               ],
             ),
-          ),
-          Switch(
-            value: value,
-            activeThumbColor: AppColors.primary,
-            onChanged: onChanged,
           ),
         ],
       ),
@@ -282,45 +461,81 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initials = user.name.split(' ').map((e) => e[0]).take(2).join();
+    final initials = user.name.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join();
     return Row(
       children: [
         Container(
-          width: 72,
-          height: 72,
+          width: 60,
+          height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
                 color: AppColors.primary.withValues(alpha: 0.25),
-                blurRadius: 20,
-                spreadRadius: 2,
+                blurRadius: 16,
+                spreadRadius: 1,
               ),
             ],
           ),
           child: CircleAvatar(
-            radius: 32,
+            radius: 30,
             backgroundColor: AppColors.primary.withValues(alpha: 0.2),
             child: Text(
               initials,
               style: AppTypography.titleLarge(isDark: isDark).copyWith(
                 color: AppColors.primary,
-                fontSize: 22,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(user.name, style: AppTypography.titleLarge(isDark: isDark)),
+              Text(
+                user.name,
+                style: AppTypography.titleLarge(isDark: isDark).copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(user.email, style: AppTypography.small(isDark: isDark)),
-              const SizedBox(height: 6),
-              _TierBadge(tier: tier),
+              GestureDetector(
+                onTap: () => context.push(AppRoutes.editProfile),
+                child: Row(
+                  children: [
+                    Text(
+                      'View profile',
+                      style: AppTypography.small(isDark: isDark).copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 10, color: AppColors.primary),
+                  ],
+                ),
+              ),
             ],
+          ),
+        ),
+        IconButton(
+          onPressed: () => context.push(AppRoutes.settings),
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDark : AppColors.mutedLight,
+              shape: BoxShape.circle,
+              border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+            ),
+            child: Icon(
+              Icons.settings_outlined,
+              size: 20,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
           ),
         ),
       ],
@@ -328,158 +543,478 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-class _TierBadge extends StatelessWidget {
-  final CustomerTier tier;
-  const _TierBadge({required this.tier});
+class _ProBannerCard extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _ProBannerCard({required this.isDark, required this.onTap});
+
   @override
   Widget build(BuildContext context) {
-    final Color color;
-    final IconData icon;
-    switch (tier) {
-      case CustomerTier.bronze:
-        color = const Color(0xFFCD7F32);
-        icon = Icons.emoji_events_outlined;
-      case CustomerTier.silver:
-        color = const Color(0xFFC0C0C0);
-        icon = Icons.emoji_events_outlined;
-      case CustomerTier.gold:
-        color = AppColors.primary;
-        icon = Icons.emoji_events_rounded;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 6),
-          Text(
-            '${tier.label} Member',
-            style: AppTypography.badge(isDark: false).copyWith(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+    return PressScale(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF5E17EB), Color(0xFF8E24AA)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF7B1FA2).withValues(alpha: 0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-        ],
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD54F), size: 26),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'FONDO Pro',
+                      style: TextStyle(
+                        color: Color(0xFFFFD54F),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Save on your future orders with FONDO Pro',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Text(
+                    'Learn more',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.chevron_right_rounded, color: Colors.white, size: 18),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _StatsRow extends StatelessWidget {
-  final CustomerStats stats;
+class _QuickActionGrid extends StatelessWidget {
+  final int orderCount;
+  final int favoriteCount;
+  final int addressCount;
   final bool isDark;
-  const _StatsRow({required this.stats, required this.isDark});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
-      child: Row(
-        children: [
-          Expanded(child: _StatItem(label: 'Orders', value: '${stats.totalOrders}', isDark: isDark)),
-          _StatDivider(isDark: isDark),
-          Expanded(child: _StatItem(label: 'Spent', value: '৳${stats.totalSpent.toStringAsFixed(0)}', isDark: isDark)),
-          _StatDivider(isDark: isDark),
-          Expanded(child: _StatItem(label: 'Member', value: stats.memberSince, isDark: isDark)),
-        ],
-      ),
-    );
-  }
-}
 
-class _StatItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool isDark;
-  const _StatItem({required this.label, required this.value, required this.isDark});
+  const _QuickActionGrid({
+    required this.orderCount,
+    required this.favoriteCount,
+    required this.addressCount,
+    required this.isDark,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       children: [
-        Text(value, style: AppTypography.statValue(isDark: isDark).copyWith(fontSize: 20)),
-        const SizedBox(height: 4),
-        Text(label, style: AppTypography.small(isDark: isDark)),
+        Expanded(
+          child: _QuickActionCard(
+            icon: Icons.receipt_long_outlined,
+            label: 'Orders',
+            badge: '$orderCount',
+            isDark: isDark,
+            onTap: () => context.push(AppRoutes.orderHistory),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _QuickActionCard(
+            icon: Icons.favorite_outline_rounded,
+            label: 'Favourites',
+            badge: '$favoriteCount',
+            isDark: isDark,
+            onTap: () => context.push(AppRoutes.favorites),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _QuickActionCard(
+            icon: Icons.location_on_outlined,
+            label: 'Addresses',
+            badge: '$addressCount',
+            isDark: isDark,
+            onTap: () => context.push(AppRoutes.addressManager),
+          ),
+        ),
       ],
     );
   }
 }
 
-class _StatDivider extends StatelessWidget {
-  final bool isDark;
-  const _StatDivider({required this.isDark});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 36,
-      color: isDark ? AppColors.borderDark : AppColors.borderLight,
-    );
-  }
-}
-
-class _MenuItem extends StatelessWidget {
+class _QuickActionCard extends StatelessWidget {
   final IconData icon;
-  final String title;
-  final String subtitle;
+  final String label;
+  final String badge;
   final bool isDark;
   final VoidCallback onTap;
 
-  const _MenuItem({
+  const _QuickActionCard({
     required this.icon,
-    required this.title,
-    required this.subtitle,
+    required this.label,
+    required this.badge,
     required this.isDark,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    return PressScale(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.cardDark : AppColors.cardLight,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: AppColors.primary, size: 22),
+                  ),
+                  if (badge != '0')
+                    Positioned(
+                      top: -4,
+                      right: -4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          badge,
+                          style: const TextStyle(
+                            color: AppColors.primaryForeground,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: AppTypography.titleMedium(isDark: isDark).copyWith(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String title;
+  const _SectionLabel(this.title);
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        title,
+        style: AppTypography.badge(isDark: isDark).copyWith(
+          color: isDark ? Colors.white70 : Colors.black87,
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionGroup extends StatelessWidget {
+  final bool isDark;
+  final List<Widget> children;
+  const _SectionGroup({required this.isDark, required this.children});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: Column(
+        children: List.generate(children.length * 2 - 1, (index) {
+          if (index.isOdd) {
+            return Divider(
+              height: 1,
+              thickness: 1,
+              indent: 68,
+              endIndent: 16,
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+            );
+          }
+          return children[index ~/ 2];
+        }),
+      ),
+    );
+  }
+}
+
+class _MenuItem extends StatelessWidget {
+  final IconData icon;
+  final Color? iconColor;
+  final String title;
+  final String subtitle;
+  final String? badgeText;
+  final Color? badgeColor;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _MenuItem({
+    required this.icon,
+    this.iconColor,
+    required this.title,
+    required this.subtitle,
+    this.badgeText,
+    this.badgeColor,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveColor = iconColor ?? AppColors.primary;
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: effectiveColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 20),
+                child: Icon(icon, color: effectiveColor, size: 20),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: AppTypography.titleMedium(isDark: isDark)),
+                    Text(title, style: AppTypography.titleMedium(isDark: isDark).copyWith(fontSize: 14)),
                     const SizedBox(height: 2),
-                    Text(subtitle, style: AppTypography.small(isDark: isDark)),
+                    Text(subtitle, style: AppTypography.small(isDark: isDark).copyWith(fontSize: 12)),
                   ],
                 ),
               ),
+              if (badgeText != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: (badgeColor ?? AppColors.primary).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    badgeText!,
+                    style: TextStyle(
+                      color: badgeColor ?? AppColors.primary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
               Icon(
                 Icons.chevron_right_rounded,
                 color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight,
+                size: 20,
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ThemeToggleRow extends StatelessWidget {
+  final bool isDark;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _ThemeToggleRow({
+    required this.isDark,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.dark_mode_outlined, color: AppColors.primary, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Dark Mode', style: AppTypography.titleMedium(isDark: isDark).copyWith(fontSize: 14)),
+                const SizedBox(height: 2),
+                Text('Toggle app visual theme', style: AppTypography.small(isDark: isDark).copyWith(fontSize: 12)),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            activeThumbColor: AppColors.primary,
+            onChanged: (val) {
+              HapticFeedback.lightImpact();
+              onChanged(val);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VoucherCard extends StatelessWidget {
+  final String code;
+  final String title;
+  final String subtitle;
+  final String expiry;
+  final bool isDark;
+
+  const _VoucherCard({
+    required this.code,
+    required this.title,
+    required this.subtitle,
+    required this.expiry,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.mutedLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              code,
+              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : Colors.black87)),
+                const SizedBox(height: 2),
+                Text(subtitle, style: TextStyle(fontSize: 11, color: isDark ? Colors.white60 : Colors.black54)),
+                const SizedBox(height: 2),
+                Text(expiry, style: const TextStyle(fontSize: 10, color: Colors.green, fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -495,75 +1030,30 @@ class _ProfileSkeleton extends StatelessWidget {
         children: const [
           _ProfileHeaderSkeleton(),
           SizedBox(height: 20),
-          _StatsRowSkeleton(),
+          SkeletonBox(width: double.infinity, height: 74, radius: 20),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: SkeletonBox(width: double.infinity, height: 90, radius: 18)),
+              SizedBox(width: 10),
+              Expanded(child: SkeletonBox(width: double.infinity, height: 90, radius: 18)),
+              SizedBox(width: 10),
+              Expanded(child: SkeletonBox(width: double.infinity, height: 90, radius: 18)),
+            ],
+          ),
           SizedBox(height: 24),
           SkeletonLine(width: 80, height: 12),
           SizedBox(height: 8),
-          _SectionGroupSkeleton(lines: 3),
+          SkeletonBox(width: double.infinity, height: 60, radius: 20),
           SizedBox(height: 20),
           SkeletonLine(width: 120, height: 12),
           SizedBox(height: 8),
-          _SectionGroupSkeleton(lines: 5),
-          SizedBox(height: 20),
-          SkeletonLine(width: 60, height: 12),
-          SizedBox(height: 8),
-          _SectionGroupSkeleton(lines: 1),
+          SkeletonBox(width: double.infinity, height: 180, radius: 20),
           SizedBox(height: 20),
           SkeletonLine(width: 90, height: 12),
           SizedBox(height: 8),
-          _SectionGroupSkeleton(lines: 2),
-          SizedBox(height: 24),
-          SkeletonBox(width: double.infinity, height: 48, radius: 12),
+          SkeletonBox(width: double.infinity, height: 240, radius: 20),
         ],
-      ),
-    );
-  }
-}
-
-class _SectionGroupSkeleton extends StatelessWidget {
-  final int lines;
-  const _SectionGroupSkeleton({required this.lines});
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
-      child: Column(
-        children: List.generate(lines * 2 - 1, (index) {
-          if (index.isOdd) {
-            return Divider(
-              height: 1,
-              thickness: 1,
-              indent: 72,
-              endIndent: 16,
-              color: isDark ? AppColors.borderDark : AppColors.borderLight,
-            );
-          }
-          return const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                SkeletonBox(width: 40, height: 40, radius: 10),
-                SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SkeletonLine(width: 120),
-                      SizedBox(height: 4),
-                      SkeletonLine(width: 160),
-                    ],
-                  ),
-                ),
-                SkeletonBox(width: 16, height: 16, radius: 8),
-              ],
-            ),
-          );
-        }),
       ),
     );
   }
@@ -575,7 +1065,7 @@ class _ProfileHeaderSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Row(
       children: [
-        SkeletonBox(width: 64, height: 64, radius: 32),
+        SkeletonBox(width: 60, height: 60, radius: 30),
         SizedBox(width: 16),
         Expanded(
           child: Column(
@@ -583,51 +1073,11 @@ class _ProfileHeaderSkeleton extends StatelessWidget {
             children: [
               SkeletonLine(width: 140, height: 20),
               SizedBox(height: 6),
-              SkeletonLine(width: 180),
-              SizedBox(height: 8),
-              SkeletonLine(width: 110, height: 18),
+              SkeletonLine(width: 90),
             ],
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _StatsRowSkeleton extends StatelessWidget {
-  const _StatsRowSkeleton();
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
-      child: const Row(
-        children: [
-          Expanded(child: _StatSkeleton()),
-          SkeletonBox(width: 1, height: 36, radius: 0),
-          Expanded(child: _StatSkeleton()),
-          SkeletonBox(width: 1, height: 36, radius: 0),
-          Expanded(child: _StatSkeleton()),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatSkeleton extends StatelessWidget {
-  const _StatSkeleton();
-  @override
-  Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        SkeletonLine(width: 56, height: 18),
-        SizedBox(height: 6),
-        SkeletonLine(width: 36),
+        SkeletonBox(width: 36, height: 36, radius: 18),
       ],
     );
   }

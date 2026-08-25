@@ -154,6 +154,7 @@ class _SubscriptionManagerScreenState extends State<SubscriptionManagerScreen> {
                             lastDate: DateTime.now().add(const Duration(days: 365)),
                           );
                           if (picked != null) {
+                            if (!ctx.mounted) return;
                             final end = await showDatePicker(
                               context: ctx,
                               initialDate: _customPauseRange?.end ?? picked.add(const Duration(days: 7)),

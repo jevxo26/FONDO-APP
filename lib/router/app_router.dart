@@ -25,6 +25,7 @@ import '../features/home/presentation/screens/notification_center_screen.dart';
 import '../features/home/presentation/screens/packages_screen.dart';
 import '../features/home/presentation/screens/search_screen.dart';
 import '../features/home/presentation/screens/profile_screen.dart';
+import '../features/home/presentation/screens/pro_perks_screen.dart';
 import 'routes.dart';
 
 final appRouter = GoRouter(
@@ -163,6 +164,10 @@ final appRouter = GoRouter(
                 GoRoute(
                   path: 'favorites',
                   builder: (context, state) => const FavoritesScreen(),
+                ),
+                GoRoute(
+                  path: 'pro-perks',
+                  builder: (context, state) => const ProPerksScreen(),
                 ),
                 GoRoute(
                   path: 'notifications',
