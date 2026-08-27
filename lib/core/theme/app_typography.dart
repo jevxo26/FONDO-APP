@@ -6,17 +6,24 @@ import 'app_colors.dart';
 class AppTypography {
   AppTypography._();
 
-  // Fraunces Headings
-  static TextStyle display({bool isDark = false}) => GoogleFonts.fraunces(
-        fontSize: 40,
-        fontWeight: FontWeight.bold,
+  // Golden Ratio Fraunces Headings
+  static TextStyle displayHero({bool isDark = false}) => GoogleFonts.fraunces(
+        fontSize: 48,
+        fontWeight: FontWeight.w800,
         color: isDark ? AppColors.foregroundDark : AppColors.foregroundLight,
         height: 1.1,
       );
 
+  static TextStyle display({bool isDark = false}) => GoogleFonts.fraunces(
+        fontSize: 38,
+        fontWeight: FontWeight.w700,
+        color: isDark ? AppColors.foregroundDark : AppColors.foregroundLight,
+        height: 1.15,
+      );
+
   static TextStyle headlineLarge({bool isDark = false}) => GoogleFonts.fraunces(
-        fontSize: 32,
-        fontWeight: FontWeight.bold,
+        fontSize: 30,
+        fontWeight: FontWeight.w700,
         color: isDark ? AppColors.foregroundDark : AppColors.foregroundLight,
         height: 1.2,
       );
@@ -32,6 +39,7 @@ class AppTypography {
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: isDark ? AppColors.cardForegroundDark : AppColors.cardForegroundLight,
+        height: 1.3,
       );
 
   static TextStyle statValue({bool isDark = false}) => GoogleFonts.fraunces(
@@ -66,7 +74,7 @@ class AppTypography {
 
   static TextStyle price({bool isDark = false}) => GoogleFonts.inter(
         fontSize: 18,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w700,
         color: isDark ? AppColors.foregroundDark : AppColors.foregroundLight,
       );
 
@@ -84,7 +92,7 @@ class AppTypography {
         color: isDark ? AppColors.foregroundDark : AppColors.foregroundLight,
       );
 
-  /// §7.9 Label Convention: text-[10px] uppercase tracking-widest text-muted-foreground
+  /// Label Convention: text-[10px] uppercase tracking-widest text-muted-foreground
   static TextStyle labelConvention({bool isDark = false}) => GoogleFonts.inter(
         fontSize: 10,
         fontWeight: FontWeight.w600,
