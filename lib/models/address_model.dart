@@ -41,6 +41,34 @@ class AddressModel {
     );
   }
 
+  AddressModel copyWith({
+    String? id,
+    String? label,
+    String? street,
+    String? city,
+    String? state,
+    String? zipCode,
+    String? country,
+    double? latitude,
+    double? longitude,
+    bool? isDefault,
+    String? deliveryInstructions,
+  }) {
+    return AddressModel(
+      id: id ?? this.id,
+      label: label ?? this.label,
+      street: street ?? this.street,
+      city: city ?? this.city,
+      state: state ?? this.state,
+      zipCode: zipCode ?? this.zipCode,
+      country: country ?? this.country,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      isDefault: isDefault ?? this.isDefault,
+      deliveryInstructions: deliveryInstructions ?? this.deliveryInstructions,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

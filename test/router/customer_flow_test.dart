@@ -52,9 +52,9 @@ void main() {
   testWidgets('customer can switch bottom tabs after login', (tester) async {
     await loginAsCustomer(tester);
 
-    await tester.tap(find.text('Packages'));
+    await tester.tap(find.text('Grocery'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Meal Packages'), findsOneWidget);
+    expect(find.text('Grocery & Packages'), findsOneWidget);
   });
 }

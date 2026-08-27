@@ -5,23 +5,26 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_glow.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/press_scale.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/wallet_transaction.dart';
 
 double _balance = 1280.0;
 double _holdBalance = 150.0;
+double _cashbackEarned = 420.0;
+bool _refundAccountActivated = false;
 
 final List<WalletTransaction> _transactions = [
-  WalletTransaction(id: 'tx_001', type: TransactionType.topUp, amount: 500, description: 'Wallet top-up', timestamp: DateTime(2026, 7, 28)),
-  WalletTransaction(id: 'tx_002', type: TransactionType.payment, amount: 350, description: 'Kacchi Biryani x2', timestamp: DateTime(2026, 7, 27)),
-  WalletTransaction(id: 'tx_003', type: TransactionType.topUp, amount: 200, description: 'Wallet top-up', timestamp: DateTime(2026, 7, 25)),
-  WalletTransaction(id: 'tx_004', type: TransactionType.refund, amount: 80, description: 'Refund — Salad', timestamp: DateTime(2026, 7, 24)),
-  WalletTransaction(id: 'tx_005', type: TransactionType.payment, amount: 120, description: 'Paratha & Dal', timestamp: DateTime(2026, 7, 23)),
-  WalletTransaction(id: 'tx_006', type: TransactionType.cashback, amount: 45, description: 'Cashback — Weekend deal', timestamp: DateTime(2026, 7, 21)),
-  WalletTransaction(id: 'tx_007', type: TransactionType.topUp, amount: 1000, description: 'Wallet top-up', timestamp: DateTime(2026, 7, 20)),
-  WalletTransaction(id: 'tx_008', type: TransactionType.payment, amount: 250, description: 'Beef Khichuri', timestamp: DateTime(2026, 7, 19)),
-  WalletTransaction(id: 'tx_009', type: TransactionType.withdrawal, amount: 300, description: 'Withdrawal to bKash', timestamp: DateTime(2026, 7, 18)),
-  WalletTransaction(id: 'tx_010', type: TransactionType.payment, amount: 320, description: 'Grilled Chicken Platter', timestamp: DateTime(2026, 7, 18)),
+  WalletTransaction(id: 'tx_001', type: TransactionType.topUp, amount: 500, description: 'Wallet top-up via bKash', timestamp: DateTime(2026, 8, 24, 14, 30)),
+  WalletTransaction(id: 'tx_002', type: TransactionType.payment, amount: 350, description: 'Kacchi Biryani x2 — Sultans Dine', timestamp: DateTime(2026, 8, 23, 20, 15)),
+  WalletTransaction(id: 'tx_003', type: TransactionType.refund, amount: 180, description: 'Instant Refund — Order #FO-8821', timestamp: DateTime(2026, 8, 22, 11, 45)),
+  WalletTransaction(id: 'tx_004', type: TransactionType.cashback, amount: 65, description: 'FONDO Pro 5% Weekend Cashback', timestamp: DateTime(2026, 8, 20, 18, 00)),
+  WalletTransaction(id: 'tx_005', type: TransactionType.topUp, amount: 1000, description: 'Wallet top-up via Nagad', timestamp: DateTime(2026, 8, 18, 16, 20)),
+  WalletTransaction(id: 'tx_006', type: TransactionType.payment, amount: 420, description: 'FONDO Mart Grocery Essentials', timestamp: DateTime(2026, 8, 17, 19, 10)),
+  WalletTransaction(id: 'tx_007', type: TransactionType.withdrawal, amount: 300, description: 'Withdrawal to bKash (017•••••882)', timestamp: DateTime(2026, 8, 15, 12, 05)),
+  WalletTransaction(id: 'tx_008', type: TransactionType.cashback, amount: 45, description: 'PRO Member Friday Bonus', timestamp: DateTime(2026, 8, 12, 21, 30)),
+  WalletTransaction(id: 'tx_009', type: TransactionType.payment, amount: 250, description: 'Beef Tehari & Borhani', timestamp: DateTime(2026, 8, 10, 13, 40)),
+  WalletTransaction(id: 'tx_010', type: TransactionType.topUp, amount: 800, description: 'Wallet top-up via Card', timestamp: DateTime(2026, 8, 5, 10, 15)),
 ];
 
 const _quickAmounts = [100, 200, 500, 1000, 2000, 5000];
@@ -32,7 +35,7 @@ const _topUpMethods = [
   ('Card', Icons.credit_card_rounded, Color(0xFF0F6FDE)),
 ];
 
-const _payoutMethods = ['Bank Transfer', 'bKash', 'Nagad'];
+const _payoutMethods = ['bKash', 'Nagad', 'City Bank', 'BRAC Bank'];
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -50,7 +53,7 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 1800), () {
+    Future.delayed(const Duration(milliseconds: 1400), () {
       if (mounted) setState(() => _loading = false);
     });
   }
@@ -72,11 +75,189 @@ class _WalletScreenState extends State<WalletScreen> {
     }
   }
 
+  void _showRefundOnboardingModal() {
+    HapticFeedback.mediumImpact();
+    String selectedMethod = 'bKash';
+    final accountCtr = TextEditingController(text: '01712345678');
+    bool agreeTerms = true;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (sheetCtx, setSheetState) {
+          final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
+          return Container(
+            padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(sheetCtx).viewInsets.bottom + 28),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.verified_user_rounded, color: AppColors.success, size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Activate Refund Account', style: AppTypography.titleLarge(isDark: isDark)),
+                          const SizedBox(height: 2),
+                          Text('Instant auto-refunds in under 60 seconds', style: AppTypography.small(isDark: isDark)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.cardDark : AppColors.mutedLight,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: const [
+                          Icon(Icons.bolt_rounded, color: Colors.orange, size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Failed or cancelled orders are immediately credited back to your designated account.',
+                              style: TextStyle(fontSize: 12, height: 1.3),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: const [
+                          Icon(Icons.lock_outline_rounded, color: Colors.blue, size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'End-to-end 256-bit encrypted banking security.',
+                              style: TextStyle(fontSize: 12, height: 1.3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text('Select Payout Channel', style: AppTypography.label(isDark: isDark)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 10,
+                  children: ['bKash', 'Nagad', 'Bank Account'].map((m) {
+                    final selected = selectedMethod == m;
+                    return ChoiceChip(
+                      label: Text(m),
+                      selected: selected,
+                      selectedColor: AppColors.primary,
+                      backgroundColor: isDark ? AppColors.surfaceDark : AppColors.mutedLight,
+                      labelStyle: TextStyle(color: selected ? AppColors.primaryForeground : null),
+                      onSelected: (_) {
+                        HapticFeedback.selectionClick();
+                        setSheetState(() => selectedMethod = m);
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: accountCtr,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: '$selectedMethod Account / Mobile Number',
+                    hintText: '01XXXXXXXXX',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    prefixIcon: const Icon(Icons.account_balance_rounded, size: 20),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: agreeTerms,
+                      activeColor: AppColors.primary,
+                      onChanged: (v) => setSheetState(() => agreeTerms = v ?? true),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        'I accept FONDO Refund Account Terms & Conditions and 2-way verification policy.',
+                        style: TextStyle(fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: agreeTerms
+                        ? () {
+                            HapticFeedback.heavyImpact();
+                            Navigator.of(sheetCtx).pop();
+                            setState(() => _refundAccountActivated = true);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('🎉 Refund Account activated for $selectedMethod (${accountCtr.text})!'),
+                                backgroundColor: AppColors.success,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        : null,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.primaryForeground,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: const Text('Confirm & Activate', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   void _showTopUpModal() {
     final amountCtr = TextEditingController();
     final messenger = ScaffoldMessenger.of(context);
     int? quickAmount;
-    String? method;
+    String? method = 'bKash';
     var processing = false;
 
     showModalBottomSheet<void>(
@@ -148,12 +329,12 @@ class _WalletScreenState extends State<WalletScreen> {
                         color: AppColors.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text('SSLCommerz', style: AppTypography.badge(isDark: isDark).copyWith(color: AppColors.primary)),
+                      child: Text('Instant 0% Fee', style: AppTypography.badge(isDark: isDark).copyWith(color: AppColors.primary)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text('Choose an amount, then a payment method', style: AppTypography.bodyMedium(isDark: isDark)),
+                Text('Choose an amount or enter custom value', style: AppTypography.bodyMedium(isDark: isDark)),
                 const SizedBox(height: 18),
                 Wrap(
                   spacing: 10,
@@ -185,14 +366,6 @@ class _WalletScreenState extends State<WalletScreen> {
                     hintText: 'Enter custom amount',
                     hintStyle: AppTypography.bodyMedium(isDark: isDark),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.primary),
-                    ),
                     filled: true,
                     fillColor: isDark ? AppColors.inputFillDark : AppColors.inputFillLight,
                   ),
@@ -200,7 +373,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   onChanged: (_) => setSheetState(() => quickAmount = null),
                 ),
                 const SizedBox(height: 18),
-                Text('Payment Method', style: AppTypography.label(isDark: isDark)),
+                Text('Payment Gateway', style: AppTypography.label(isDark: isDark)),
                 const SizedBox(height: 10),
                 Row(
                   children: _topUpMethods.map((entry) {
@@ -246,7 +419,6 @@ class _WalletScreenState extends State<WalletScreen> {
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(double.infinity, 52),
                       backgroundColor: AppColors.primary,
-                      disabledBackgroundColor: isDark ? AppColors.surfaceDark : AppColors.mutedLight,
                       foregroundColor: AppColors.primaryForeground,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
@@ -279,10 +451,10 @@ class _WalletScreenState extends State<WalletScreen> {
       isScrollControlled: true,
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetCtx) {
-        final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
-        return StatefulBuilder(
-          builder: (sheetCtx, setSheetState) => Container(
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (sheetCtx, setSheetState) {
+          final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
+          return Container(
             padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(sheetCtx).viewInsets.bottom + 24),
             decoration: BoxDecoration(
               color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
@@ -303,9 +475,9 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text('Withdraw Funds', style: AppTypography.titleLarge(isDark: isDark)),
+                Text('Withdraw to Bank / Wallet', style: AppTypography.titleLarge(isDark: isDark)),
                 const SizedBox(height: 4),
-                Text('Available balance ৳${_balance.toStringAsFixed(0)}', style: AppTypography.bodyMedium(isDark: isDark)),
+                Text('Available balance: ৳${_balance.toStringAsFixed(0)}', style: AppTypography.bodyMedium(isDark: isDark)),
                 const SizedBox(height: 18),
                 TextField(
                   controller: amountCtr,
@@ -313,16 +485,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   decoration: InputDecoration(
                     prefixText: '৳ ',
                     hintText: 'Enter amount to withdraw',
-                    hintStyle: AppTypography.bodyMedium(isDark: isDark),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.primary),
-                    ),
                     filled: true,
                     fillColor: isDark ? AppColors.inputFillDark : AppColors.inputFillLight,
                   ),
@@ -347,7 +510,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -356,11 +519,11 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline_rounded, size: 16, color: AppColors.primary),
+                      const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Withdrawals are verified before release. Funds are held for up to 24 hours.',
+                          'Funds are disbursed instantly for verified MFS numbers, or within 2 hours for banks.',
                           style: AppTypography.small(isDark: isDark),
                         ),
                       ),
@@ -389,7 +552,7 @@ class _WalletScreenState extends State<WalletScreen> {
                       Navigator.of(sheetCtx).pop();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('৳${parsed.toStringAsFixed(0)} withdrawal requested — funds on hold'),
+                          content: Text('৳${parsed.toStringAsFixed(0)} withdrawal requested to $method'),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -400,14 +563,14 @@ class _WalletScreenState extends State<WalletScreen> {
                       foregroundColor: AppColors.primaryForeground,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
-                    child: const Text('Request Withdrawal', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                    child: const Text('Confirm Withdrawal', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -425,99 +588,141 @@ class _WalletScreenState extends State<WalletScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Wallet'),
+        title: const Text('Refund Account & Wallet'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline_rounded),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('FONDO Wallet supports instant refunds, top-ups, and cashback rewards.'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Stack(
         children: [
           const GlowOrbs(),
           SafeArea(
-            child: Column(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
               children: [
-                Expanded(
-                  child: RefreshIndicator(
-                onRefresh: () => Future.delayed(const Duration(milliseconds: 600)),
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
+                // Top Balance & Refund Card
+                _BalanceCard(
+                  balance: _balance,
+                  holdBalance: _holdBalance,
+                  cashbackEarned: _cashbackEarned,
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 16),
+
+                // Refund Setup Prompt Card (if not activated or banner)
+                if (!_refundAccountActivated)
+                  _RefundSetupCard(
+                    isDark: isDark,
+                    onTap: _showRefundOnboardingModal,
+                  ),
+                if (!_refundAccountActivated) const SizedBox(height: 16),
+
+                // Quick Action Buttons (Add Money, Withdraw)
+                Row(
                   children: [
-                    _BalanceCard(balance: _balance, holdBalance: _holdBalance, isDark: isDark),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: _showTopUpModal,
-                            icon: const Icon(Icons.add_rounded, size: 20),
-                            label: const Text('Add Money'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: AppColors.primaryForeground,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: _showTopUpModal,
+                        icon: const Icon(Icons.add_rounded, size: 20),
+                        label: const Text('Add Money'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.primaryForeground,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _showPayoutModal,
-                            icon: const Icon(Icons.currency_exchange_rounded, size: 20),
-                            label: const Text('Withdraw'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.primary,
-                              side: const BorderSide(color: AppColors.primary),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Text('Transaction History', style: AppTypography.label(isDark: isDark)),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 38,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: _LedgerFilter.values.map((filter) {
-                          final label = switch (filter) {
-                            _LedgerFilter.all => 'All',
-                            _LedgerFilter.topUp => 'Top-ups',
-                            _LedgerFilter.payment => 'Payments',
-                            _LedgerFilter.refund => 'Refunds',
-                            _LedgerFilter.cashback => 'Cashbacks',
-                          };
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: _LedgerChip(
-                              label: label,
-                              selected: _filter == filter,
-                              onTap: () => setState(() => _filter = filter),
-                            ),
-                          );
-                        }).toList(),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    if (_filteredTransactions.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40),
-                        child: Center(
-                          child: Text('No transactions in this category', style: AppTypography.bodyMedium(isDark: isDark)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _showPayoutModal,
+                        icon: const Icon(Icons.currency_exchange_rounded, size: 20),
+                        label: const Text('Withdraw'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.primary),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
-                      )
-                    else
-                      ..._filteredTransactions.map((tx) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _TransactionRow(transaction: tx, isDark: isDark),
-                      )),
+                      ),
+                    ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 24),
+
+                // Transaction Ledger Header & Filters
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Transaction History',
+                      style: AppTypography.titleMedium(isDark: isDark).copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      '${_filteredTransactions.length} items',
+                      style: AppTypography.small(isDark: isDark),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Filter Chips
+                SizedBox(
+                  height: 38,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: _LedgerFilter.values.map((filter) {
+                      final label = switch (filter) {
+                        _LedgerFilter.all => 'All',
+                        _LedgerFilter.topUp => 'Top-ups',
+                        _LedgerFilter.payment => 'Payments',
+                        _LedgerFilter.refund => 'Refunds',
+                        _LedgerFilter.cashback => 'Cashbacks',
+                      };
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _LedgerChip(
+                          label: label,
+                          selected: _filter == filter,
+                          onTap: () => setState(() => _filter = filter),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Transactions List
+                if (_filteredTransactions.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    child: Center(
+                      child: Text('No transactions found in this category', style: AppTypography.bodyMedium(isDark: isDark)),
+                    ),
+                  )
+                else
+                  ..._filteredTransactions.map((tx) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _TransactionRow(transaction: tx, isDark: isDark),
+                  )),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
         ],
       ),
     );
@@ -530,46 +735,231 @@ class _WalletScreenState extends State<WalletScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Wallet'),
+        title: const Text('Refund Account & Wallet'),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(20),
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: const [
+            SkeletonBox(width: double.infinity, height: 180, radius: 20),
+            SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(child: SkeletonBox(width: double.infinity, height: 48, radius: 14)),
+                SizedBox(width: 12),
+                Expanded(child: SkeletonBox(width: double.infinity, height: 48, radius: 14)),
+              ],
+            ),
+            SizedBox(height: 24),
+            SkeletonLine(width: 140, height: 16),
+            SizedBox(height: 14),
+            Row(
+              children: [
+                SkeletonBox(width: 54, height: 34, radius: 20),
+                SizedBox(width: 8),
+                SkeletonBox(width: 76, height: 34, radius: 20),
+                SizedBox(width: 8),
+                SkeletonBox(width: 76, height: 34, radius: 20),
+              ],
+            ),
+            SizedBox(height: 14),
+            SkeletonBox(width: double.infinity, height: 64, radius: 14),
+            SizedBox(height: 10),
+            SkeletonBox(width: double.infinity, height: 64, radius: 14),
+            SizedBox(height: 10),
+            SkeletonBox(width: double.infinity, height: 64, radius: 14),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BalanceCard extends StatelessWidget {
+  final double balance;
+  final double holdBalance;
+  final double cashbackEarned;
+  final bool isDark;
+
+  const _BalanceCard({
+    required this.balance,
+    required this.holdBalance,
+    required this.cashbackEarned,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E88E5), Color(0xFF1565C0), Color(0xFF0D47A1)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1565C0).withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
                 children: const [
-                  _BalanceCardSkeleton(),
-                  SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(child: SkeletonBox(width: double.infinity, height: 46, radius: 12)),
-                      SizedBox(width: 12),
-                      Expanded(child: SkeletonBox(width: double.infinity, height: 46, radius: 12)),
-                    ],
+                  Icon(Icons.verified_rounded, color: Colors.lightGreenAccent, size: 18),
+                  SizedBox(width: 6),
+                  Text(
+                    'FONDO REFUND ACCOUNT',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      letterSpacing: 1.1,
+                    ),
                   ),
-                  SizedBox(height: 24),
-                  SkeletonLine(width: 120),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      SkeletonBox(width: 52, height: 34, radius: 20),
-                      SizedBox(width: 8),
-                      SkeletonBox(width: 72, height: 34, radius: 20),
-                      SizedBox(width: 8),
-                      SkeletonBox(width: 64, height: 34, radius: 20),
-                    ],
-                  ),
-                  SizedBox(height: 12),
-                  _TransactionSkeleton(),
-                  SizedBox(height: 10),
-                  _TransactionSkeleton(),
-                  SizedBox(height: 10),
-                  _TransactionSkeleton(),
                 ],
               ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'SSL Encrypted',
+                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            '৳${balance.toStringAsFixed(0)}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              letterSpacing: -0.5,
             ),
-          ],
+          ),
+          const SizedBox(height: 2),
+          const Text(
+            'Available for instant checkout & withdrawal',
+            style: TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.lock_clock_outlined, size: 13, color: Colors.white70),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Hold: ৳${holdBalance.toStringAsFixed(0)}',
+                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.savings_outlined, size: 13, color: Colors.amberAccent),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Earned: ৳${cashbackEarned.toStringAsFixed(0)}',
+                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RefundSetupCard extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _RefundSetupCard({required this.isDark, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return PressScale(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.bolt_rounded, color: Colors.blue, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Activate Instant Auto-Refunds',
+                      style: AppTypography.titleMedium(isDark: isDark).copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Link your bKash or Bank for automated 60-second refund credits.',
+                      style: AppTypography.small(isDark: isDark).copyWith(fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: Colors.blue, size: 22),
+            ],
+          ),
         ),
       ),
     );
@@ -597,7 +987,7 @@ class _LedgerChip extends StatelessWidget {
           color: selected
               ? AppColors.primary
               : (isDark ? AppColors.surfaceDark : AppColors.mutedLight),
-        borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
@@ -611,86 +1001,6 @@ class _LedgerChip extends StatelessWidget {
   }
 }
 
-class _BalanceCard extends StatelessWidget {
-  final double balance;
-  final double holdBalance;
-  final bool isDark;
-
-  const _BalanceCard({required this.balance, required this.holdBalance, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.account_balance_wallet_rounded, color: AppColors.primaryForeground.withValues(alpha: 0.8), size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Wallet Balance',
-                style: AppTypography.bodyMedium(isDark: false).copyWith(
-                  color: AppColors.primaryForeground.withValues(alpha: 0.8),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '৳${balance.toStringAsFixed(0)}',
-            style: AppTypography.display(isDark: false).copyWith(
-              color: AppColors.primaryForeground,
-              fontSize: 36,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.primaryForeground.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.lock_clock_outlined, size: 14, color: AppColors.primaryForeground),
-                const SizedBox(width: 6),
-                Text(
-                  'On Hold ৳${holdBalance.toStringAsFixed(0)}',
-                  style: AppTypography.bodyMedium(isDark: false).copyWith(
-                    color: AppColors.primaryForeground.withValues(alpha: 0.85),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            '•••• 4592',
-            style: AppTypography.bodyMedium(isDark: false).copyWith(
-              color: AppColors.primaryForeground.withValues(alpha: 0.6),
-              letterSpacing: 2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _TransactionRow extends StatelessWidget {
   final WalletTransaction transaction;
   final bool isDark;
@@ -699,7 +1009,14 @@ class _TransactionRow extends StatelessWidget {
 
   String _formatDate(DateTime dt) {
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${dt.day} ${months[dt.month - 1]}';
+    return '${dt.day} ${months[dt.month - 1]} • ${_formatTime(dt)}';
+  }
+
+  String _formatTime(DateTime dt) {
+    final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
+    final minute = dt.minute.toString().padLeft(2, '0');
+    final period = dt.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $period';
   }
 
   bool get _isCredit {
@@ -717,113 +1034,65 @@ class _TransactionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCredit = _isCredit;
-    final color = isCredit ? AppColors.success : AppColors.destructive;
-    final icon = isCredit ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded;
+    final color = switch (transaction.type) {
+      TransactionType.topUp => AppColors.success,
+      TransactionType.refund => const Color(0xFF2196F3),
+      TransactionType.cashback => const Color(0xFF9C27B0),
+      TransactionType.payment => AppColors.destructive,
+      TransactionType.withdrawal => Colors.orange,
+    };
+
+    final icon = switch (transaction.type) {
+      TransactionType.topUp => Icons.add_circle_outline_rounded,
+      TransactionType.refund => Icons.replay_rounded,
+      TransactionType.cashback => Icons.savings_outlined,
+      TransactionType.payment => Icons.shopping_bag_outlined,
+      TransactionType.withdrawal => Icons.arrow_outward_rounded,
+    };
+
     return GlassCard(
       padding: const EdgeInsets.all(14),
-      radius: 12,
+      radius: 16,
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 18),
+            child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(transaction.description, style: AppTypography.bodyMedium(isDark: isDark)),
+                Text(
+                  transaction.description,
+                  style: AppTypography.bodyMedium(isDark: isDark).copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(_formatDate(transaction.timestamp), style: AppTypography.small(isDark: isDark)),
+                Text(
+                  _formatDate(transaction.timestamp),
+                  style: AppTypography.small(isDark: isDark).copyWith(fontSize: 11),
+                ),
               ],
             ),
           ),
           Text(
             '${isCredit ? '+' : '-'}৳${transaction.amount.toStringAsFixed(0)}',
-            style: AppTypography.label(isDark: isDark).copyWith(color: color),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _BalanceCardSkeleton extends StatelessWidget {
-  const _BalanceCardSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              SkeletonBox(width: 20, height: 20, radius: 6),
-              SizedBox(width: 8),
-              SkeletonLine(width: 110),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const SkeletonLine(width: 140, height: 30),
-          const SizedBox(height: 12),
-          SkeletonBox(width: 120, height: 30, radius: 10),
-          const SizedBox(height: 14),
-          SkeletonLine(width: 90),
-        ],
-      ),
-    );
-  }
-}
-
-class _TransactionSkeleton extends StatelessWidget {
-  const _TransactionSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final w = constraints.maxWidth;
-          return Row(
-            children: [
-              const SkeletonBox(width: 36, height: 36, radius: 10),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SkeletonLine(width: w * 0.5),
-                    const SizedBox(height: 4),
-                    SkeletonLine(width: w * 0.3),
-                  ],
-                ),
-              ),
-              SkeletonLine(width: 44),
-            ],
-          );
-        },
       ),
     );
   }
