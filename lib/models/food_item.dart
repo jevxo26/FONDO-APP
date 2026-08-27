@@ -9,6 +9,11 @@ class FoodItem {
   final int ratingCount;
   final bool isAvailable;
   final List<String> addOns;
+  final String prepTime;
+  final List<String> ingredients;
+  final List<String> dietaryTags;
+  final bool isSignature;
+  final bool isPopular;
 
   const FoodItem({
     required this.id,
@@ -21,7 +26,48 @@ class FoodItem {
     this.ratingCount = 0,
     this.isAvailable = true,
     this.addOns = const [],
+    this.prepTime = '20-30 min',
+    this.ingredients = const [],
+    this.dietaryTags = const ['100% Halal'],
+    this.isSignature = false,
+    this.isPopular = false,
   });
+
+  FoodItem copyWith({
+    String? id,
+    String? name,
+    String? description,
+    double? price,
+    String? imageUrl,
+    String? category,
+    double? rating,
+    int? ratingCount,
+    bool? isAvailable,
+    List<String>? addOns,
+    String? prepTime,
+    List<String>? ingredients,
+    List<String>? dietaryTags,
+    bool? isSignature,
+    bool? isPopular,
+  }) {
+    return FoodItem(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      imageUrl: imageUrl ?? this.imageUrl,
+      category: category ?? this.category,
+      rating: rating ?? this.rating,
+      ratingCount: ratingCount ?? this.ratingCount,
+      isAvailable: isAvailable ?? this.isAvailable,
+      addOns: addOns ?? this.addOns,
+      prepTime: prepTime ?? this.prepTime,
+      ingredients: ingredients ?? this.ingredients,
+      dietaryTags: dietaryTags ?? this.dietaryTags,
+      isSignature: isSignature ?? this.isSignature,
+      isPopular: isPopular ?? this.isPopular,
+    );
+  }
 }
 
 class CartItem {
