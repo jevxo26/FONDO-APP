@@ -43,6 +43,7 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Breakfast').first);
     await tester.tap(find.text('Breakfast').first);
     await tester.pumpAndSettle();
 
