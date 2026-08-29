@@ -20,12 +20,15 @@ class ScaffoldWithBottomNav extends StatelessWidget {
     return Scaffold(
       backgroundColor:
           isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       appBar: appBar,
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          // Full-screen content
+          // Full-screen content flowing unobstructed behind floating navbar
           navigationShell,
-          // Truly floating glass tab bar overlaid on top
+          // Truly floating glass tab bar overlaid on top with zero opaque barriers
           Positioned(
             left: 0,
             right: 0,
