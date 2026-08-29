@@ -72,34 +72,58 @@ class GlassTabBar extends ConsumerWidget {
           borderRadius: BorderRadius.circular(_radius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 6),
+              color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.06),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(_radius),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: isDark
-                    ? AppColors.cardDark.withValues(alpha: 0.75)
-                    : Colors.white.withValues(alpha: 0.82),
+                    ? const Color(0xFF161616).withValues(alpha: 0.32)
+                    : Colors.white.withValues(alpha: 0.22),
                 borderRadius: BorderRadius.circular(_radius),
                 border: Border.all(
                   color: isDark
-                      ? Colors.white.withValues(alpha: 0.12)
-                      : Colors.white.withValues(alpha: 0.85),
-                  width: 1.2,
+                      ? Colors.white.withValues(alpha: 0.16)
+                      : Colors.white.withValues(alpha: 0.60),
+                  width: 1.0,
                 ),
               ),
-              child: _GlassBarBody(
-                currentIndex: currentIndex,
-                onTap: onTap,
-                items: items,
-                isDark: isDark,
+              child: Stack(
+                children: [
+                  // Top specular highlight rim (Windows 11 / iOS acrylic edge)
+                  Positioned(
+                    top: 0,
+                    left: 20,
+                    right: 20,
+                    child: Container(
+                      height: 1.0,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            isDark
+                                ? const Color(0x55FFFFFF)
+                                : const Color(0xAAFFFFFF),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  _GlassBarBody(
+                    currentIndex: currentIndex,
+                    onTap: onTap,
+                    items: items,
+                    isDark: isDark,
+                  ),
+                ],
               ),
             ),
           ),
@@ -148,13 +172,29 @@ class _GlassBarBody extends StatelessWidget {
                     child: Container(
                       key: const ValueKey('glassTabActivePill'),
                       decoration: BoxDecoration(
-                        gradient: AppColors.warmGoldGradient,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: isDark
+                              ? [
+                                  AppColors.primary.withValues(alpha: 0.35),
+                                  AppColors.goldShine.withValues(alpha: 0.18),
+                                ]
+                              : [
+                                  AppColors.primary.withValues(alpha: 0.28),
+                                  AppColors.goldShine.withValues(alpha: 0.14),
+                                ],
+                        ),
                         borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: isDark ? 0.45 : 0.50),
+                          width: 1.0,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
@@ -208,10 +248,12 @@ class _TabButtonState extends State<_TabButton> {
 
   @override
   Widget build(BuildContext context) {
-    final primary = AppColors.primary;
+    final primary = widget.isDark
+        ? AppColors.goldShine
+        : const Color(0xFF99732B);
     final muted = widget.isDark
         ? AppColors.mutedForegroundDark
-        : AppColors.mutedForegroundLight;
+        : const Color(0xFF4A443F);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
