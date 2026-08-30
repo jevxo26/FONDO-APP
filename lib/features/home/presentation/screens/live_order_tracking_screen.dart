@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +11,36 @@ import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/order_model.dart';
 
-const _trackStages = ['Placed', 'Prep', 'Quality', 'Out for Delivery', 'Delivered'];
+// ── 4-Phase Order Lifecycle ─────────────────────────────────────────────────
+const _trackStages = [
+  _TrackStage(
+    label: 'Order Placed',
+    subtitle: 'We received your order',
+    icon: Icons.receipt_long_rounded,
+  ),
+  _TrackStage(
+    label: 'Kitchen Preparing',
+    subtitle: 'Chefs are cooking your meal',
+    icon: Icons.outdoor_grill_rounded,
+  ),
+  _TrackStage(
+    label: 'Rider on the Way',
+    subtitle: 'Your order has been picked up',
+    icon: Icons.electric_bike_rounded,
+  ),
+  _TrackStage(
+    label: 'Delivered',
+    subtitle: 'Enjoy your meal!',
+    icon: Icons.home_rounded,
+  ),
+];
+
+class _TrackStage {
+  final String label;
+  final String subtitle;
+  final IconData icon;
+  const _TrackStage({required this.label, required this.subtitle, required this.icon});
+}
 
 const _riderName = 'Rahim Uddin';
 const _riderPhone = '+880 1712-345678';
@@ -25,41 +55,54 @@ const _issueCategories = [
   'Other',
 ];
 
+// Map OrderStatus → stage index (0-based, 4 stages)
 int _stageProgress(OrderStatus status) {
   switch (status) {
     case OrderStatus.pending:
     case OrderStatus.confirmed:
-      return 1;
+      return 1; // Order Placed done
     case OrderStatus.preparing:
-      return 3;
+      return 2; // Kitchen Preparing done
     case OrderStatus.outForDelivery:
-      return 4;
+      return 3; // Rider on the Way done
     case OrderStatus.delivered:
-      return 5;
+      return 4; // All done
     case OrderStatus.cancelled:
+      return 0;
+  }
+}
+
+// ETA seconds remaining per status (simulated)
+int _etaSeconds(OrderStatus status) {
+  switch (status) {
+    case OrderStatus.pending:
+    case OrderStatus.confirmed:
+      return 28 * 60;
+    case OrderStatus.preparing:
+      return 18 * 60;
+    case OrderStatus.outForDelivery:
+      return 7 * 60;
+    default:
       return 0;
   }
 }
 
 String _stageTime(OrderStatus status, int index) {
   if (status == OrderStatus.delivered) {
-    const times = ['12:05', '12:20', '12:32', '12:45', '12:55'];
-    return times[index];
+    const times = ['12:05', '12:20', '12:45', '12:55'];
+    return index < 4 ? times[index] : '';
   }
   switch (status) {
     case OrderStatus.outForDelivery:
-      const times = ['07:31', '07:36', '07:42', '07:51'];
-      return index < 4 ? times[index] : '';
-    case OrderStatus.preparing:
-      const times = ['12:12', '12:18', '12:25'];
+      const times = ['07:31', '07:36', '07:51'];
       return index < 3 ? times[index] : '';
+    case OrderStatus.preparing:
+      const times = ['12:12', '12:25'];
+      return index < 2 ? times[index] : '';
     case OrderStatus.confirmed:
-      return index == 0 ? '19:32' : '';
     case OrderStatus.pending:
-      return index == 0 ? '19:30' : '';
-    case OrderStatus.delivered:
-      return '';
-    case OrderStatus.cancelled:
+      return index == 0 ? '19:32' : '';
+    default:
       return '';
   }
 }
@@ -75,13 +118,47 @@ class LiveOrderTrackingScreen extends StatefulWidget {
 
 class _LiveOrderTrackingScreenState extends State<LiveOrderTrackingScreen> {
   bool _loading = true;
+  late int _etaSecondsRemaining;
+  Timer? _etaTimer;
 
   @override
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 1800), () {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        final order = _order;
+        setState(() {
+          _loading = false;
+          _etaSecondsRemaining = order != null ? _etaSeconds(order.status) : 0;
+        });
+        _startEtaTimer();
+      }
     });
+  }
+
+  void _startEtaTimer() {
+    _etaTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      if (_etaSecondsRemaining > 0) {
+        setState(() => _etaSecondsRemaining--);
+      } else {
+        _etaTimer?.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _etaTimer?.cancel();
+    super.dispose();
+  }
+
+  String get _etaFormatted {
+    if (_etaSecondsRemaining <= 0) return 'Arriving now';
+    final m = _etaSecondsRemaining ~/ 60;
+    final s = _etaSecondsRemaining % 60;
+    if (m == 0) return '${s}s';
+    return '${m}m ${s.toString().padLeft(2, '0')}s';
   }
 
   OrderModel? get _order {
@@ -276,9 +353,18 @@ class _LiveOrderTrackingScreenState extends State<LiveOrderTrackingScreen> {
               ),
               const SizedBox(height: 20),
             ],
-            _StatusHeader(order: order, isDark: isDark),
+            _StatusHeader(
+              order: order,
+              isDark: isDark,
+              etaFormatted: _etaFormatted,
+            ),
             const SizedBox(height: 16),
-            _StageTimeline(progress: progress, isDark: isDark, status: order.status),
+            _StageTimeline(
+              progress: progress,
+              isDark: isDark,
+              status: order.status,
+              etaFormatted: _etaFormatted,
+            ),
             const SizedBox(height: 16),
             if (active) ...[
               const _LiveMap(),
@@ -315,43 +401,101 @@ class _LiveOrderTrackingScreenState extends State<LiveOrderTrackingScreen> {
 class _StatusHeader extends StatelessWidget {
   final OrderModel order;
   final bool isDark;
+  final String etaFormatted;
 
-  const _StatusHeader({required this.order, required this.isDark});
+  const _StatusHeader({
+    required this.order,
+    required this.isDark,
+    required this.etaFormatted,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isActive = order.status == OrderStatus.outForDelivery || order.status == OrderStatus.preparing;
+    final isActive = order.status == OrderStatus.outForDelivery ||
+        order.status == OrderStatus.preparing ||
+        order.status == OrderStatus.confirmed ||
+        order.status == OrderStatus.pending;
+    final isDelivered = order.status == OrderStatus.delivered;
+
     return GlassCard(
-      padding: const EdgeInsets.all(16),
-      radius: 16,
+      padding: const EdgeInsets.all(18),
+      radius: 18,
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
+              color: isDelivered
+                  ? AppColors.success.withValues(alpha: 0.15)
+                  : AppColors.primary.withValues(alpha: 0.14),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isActive ? Icons.local_shipping_outlined : Icons.check_circle_outline_rounded,
-              color: isActive ? AppColors.primary : AppColors.success,
+              isDelivered
+                  ? Icons.check_circle_rounded
+                  : isActive
+                      ? Icons.electric_bike_rounded
+                      : Icons.cancel_rounded,
+              color: isDelivered ? AppColors.success : AppColors.primary,
+              size: 26,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isActive ? 'Order on the way' : 'Order ${order.statusLabel.toLowerCase()}',
-                  style: AppTypography.cardTitle(isDark: isDark),
+                  isDelivered
+                      ? 'Order Delivered! 🎉'
+                      : isActive
+                          ? 'Your order is on the way'
+                          : 'Order ${order.statusLabel.toLowerCase()}',
+                  style: AppTypography.cardTitle(isDark: isDark).copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                  ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  isActive ? 'Estimated arrival in 12 min' : 'Delivered to your door',
-                  style: AppTypography.small(isDark: isDark),
-                ),
+                const SizedBox(height: 4),
+                if (isActive)
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFB8860B), AppColors.primary],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.timer_rounded,
+                                size: 12, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Text(
+                              'ETA $etaFormatted',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Text(
+                    isDelivered
+                        ? 'Delivered to your door'
+                        : 'We\'ll update you shortly',
+                    style: AppTypography.small(isDark: isDark),
+                  ),
               ],
             ),
           ),
@@ -365,24 +509,34 @@ class _StageTimeline extends StatelessWidget {
   final int progress;
   final bool isDark;
   final OrderStatus status;
+  final String etaFormatted;
 
-  const _StageTimeline({required this.progress, required this.isDark, required this.status});
+  const _StageTimeline({
+    required this.progress,
+    required this.isDark,
+    required this.status,
+    required this.etaFormatted,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GlassCard(
-      padding: const EdgeInsets.all(16),
-      radius: 16,
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+      radius: 18,
       child: Column(
         children: [
           for (var i = 0; i < _trackStages.length; i++)
             _StageRow(
               index: i,
-              title: _trackStages[i],
+              stage: _trackStages[i],
               time: _stageTime(status, i),
               done: i < progress,
+              isActive: i == progress && progress < _trackStages.length,
               isLast: i == _trackStages.length - 1,
               isDark: isDark,
+              etaFormatted: (i == progress && progress < _trackStages.length)
+                  ? etaFormatted
+                  : null,
             ),
         ],
       ),
@@ -392,73 +546,169 @@ class _StageTimeline extends StatelessWidget {
 
 class _StageRow extends StatelessWidget {
   final int index;
-  final String title;
+  final _TrackStage stage;
   final String time;
   final bool done;
+  final bool isActive;
   final bool isLast;
   final bool isDark;
+  final String? etaFormatted;
 
   const _StageRow({
     required this.index,
-    required this.title,
+    required this.stage,
     required this.time,
     required this.done,
+    required this.isActive,
     required this.isLast,
     required this.isDark,
+    this.etaFormatted,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = done ? AppColors.primary : (isDark ? AppColors.borderDark : AppColors.mutedLight);
+    final Color nodeColor;
+    if (done) {
+      nodeColor = AppColors.primary;
+    } else if (isActive) {
+      nodeColor = AppColors.primary;
+    } else {
+      nodeColor = isDark ? AppColors.borderDark : const Color(0xFFDDD6CF);
+    }
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: done ? AppColors.primary : Colors.transparent,
-                border: Border.all(color: color, width: 2),
-              ),
-              child: done
-                  ? const Icon(Icons.check_rounded, size: 16, color: AppColors.primaryForeground)
-                  : null,
-            ),
-            if (!isLast)
-              Container(
-                width: 2,
-                height: 28,
-                color: done ? AppColors.primary : (isDark ? AppColors.borderDark : AppColors.mutedLight),
-              ),
-          ],
-        ),
-        const SizedBox(width: 12),
-        Expanded(
+        // ── Node + connector line ──
+        SizedBox(
+          width: 44,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: AppTypography.bodyMedium(isDark: isDark).copyWith(
-                        fontWeight: done ? FontWeight.w600 : FontWeight.w400,
-                        color: done ? null : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight),
-                      ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: done
+                      ? AppColors.primary
+                      : isActive
+                          ? AppColors.primary.withValues(alpha: 0.14)
+                          : Colors.transparent,
+                  border: Border.all(
+                    color: nodeColor,
+                    width: isActive ? 2.5 : 2,
+                  ),
+                  boxShadow: (done || isActive)
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          )
+                        ]
+                      : null,
+                ),
+                child: done
+                    ? const Icon(Icons.check_rounded,
+                        size: 18, color: Colors.white)
+                    : isActive
+                        ? Icon(stage.icon,
+                            size: 16, color: AppColors.primary)
+                        : Icon(stage.icon,
+                            size: 14,
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForegroundLight),
+              ),
+              if (!isLast)
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  width: 2,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: done
+                          ? [AppColors.primary, AppColors.primary]
+                          : [
+                              nodeColor,
+                              nodeColor.withValues(alpha: 0.3),
+                            ],
                     ),
                   ),
-                  if (time.isNotEmpty)
-                    Text(time, style: AppTypography.small(isDark: isDark).copyWith(fontSize: 11)),
-                ],
-              ),
-              if (!isLast) const SizedBox(height: 28),
+                ),
             ],
+          ),
+        ),
+        const SizedBox(width: 10),
+        // ── Stage info ──
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(top: 6, bottom: isLast ? 0 : 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        stage.label,
+                        style:
+                            AppTypography.bodyMedium(isDark: isDark).copyWith(
+                          fontWeight: (done || isActive)
+                              ? FontWeight.w700
+                              : FontWeight.w400,
+                          color: (done || isActive)
+                              ? null
+                              : (isDark
+                                  ? AppColors.mutedForegroundDark
+                                  : AppColors.mutedForegroundLight),
+                        ),
+                      ),
+                    ),
+                    if (time.isNotEmpty)
+                      Text(
+                        time,
+                        style: AppTypography.small(isDark: isDark)
+                            .copyWith(fontSize: 11),
+                      ),
+                    if (isActive && etaFormatted != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '~$etaFormatted',
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                if (done || isActive) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    stage.subtitle,
+                    style: AppTypography.small(isDark: isDark).copyWith(
+                      fontSize: 11.5,
+                      color: (done || isActive)
+                          ? (isDark
+                              ? AppColors.mutedForegroundDark
+                              : AppColors.mutedForegroundLight)
+                          : Colors.transparent,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ],
