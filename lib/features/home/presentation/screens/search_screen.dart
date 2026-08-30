@@ -6,6 +6,7 @@ import '../../../../core/mock/mock_foods.dart';
 import '../../../../core/providers/cart_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/press_scale.dart';
 import '../../../../models/food_item.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -19,21 +20,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
   String _query = '';
   List<String> _recentSearches = [
-    'Kacchi Biryani',
-    'Beef Burger',
-    'Cold Brew',
-    'Chicken Khichuri',
+    'Royal Mutton Kacchi',
+    'Special Tehari',
+    'Seekh Kebab Platter',
+    'Special Borhani',
   ];
 
   final List<String> _popularTags = [
-    'Biryani',
-    'Burger',
-    'Pizza',
-    'Khichuri',
-    'Pasta',
-    'Coffee',
-    'Salad',
-    'Dessert',
+    'Kacchi',
+    'Tehari',
+    'Mutton Rezala',
+    'Seekh Kebab',
+    'Chicken Roast',
+    'Malai Curry',
+    'Borhani',
+    'Firni',
+    'Combos',
   ];
 
   @override
@@ -59,7 +61,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       final matchName = food.name.toLowerCase().contains(lower);
       final matchDesc = food.description.toLowerCase().contains(lower);
       final matchCat = food.category.toLowerCase().contains(lower);
-      return matchName || matchDesc || matchCat;
+      final matchIngredients = food.ingredients.any((i) => i.toLowerCase().contains(lower));
+      final matchTags = food.dietaryTags.any((t) => t.toLowerCase().contains(lower));
+      return matchName || matchDesc || matchCat || matchIngredients || matchTags;
     }).toList();
   }
 
@@ -430,7 +434,7 @@ class _SearchResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return PressScale(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(14),
