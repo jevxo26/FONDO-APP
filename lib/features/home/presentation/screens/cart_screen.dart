@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/providers/cart_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/press_scale.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../../models/food_item.dart';
 import '../providers/user_location_provider.dart';
@@ -238,40 +240,45 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Widget _buildDeliveryHeader(BuildContext context, bool isDark) {
     final location = ref.watch(userLocationProvider);
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-            width: 0.8,
+    return GestureDetector(
+      onTap: () => _showLocationSelector(context, isDark),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.cardLight,
+          border: Border(
+            bottom: BorderSide(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              width: 0.8,
+            ),
           ),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.18),
+                    AppColors.primary.withValues(alpha: 0.08),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.location_on_rounded,
+                color: AppColors.primary,
+                size: 20,
+              ),
             ),
-            child: const Icon(
-              Icons.location_on_rounded,
-              color: AppColors.primary,
-              size: 18,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _showLocationSelector(context, isDark),
+            const SizedBox(width: 12),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Deliver to',
+                    'Delivering to',
                     style: AppTypography.small(isDark: isDark).copyWith(
                       fontSize: 10.5,
                       color: isDark
@@ -279,14 +286,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           : AppColors.mutedForegroundLight,
                     ),
                   ),
+                  const SizedBox(height: 1),
                   Row(
                     children: [
                       Flexible(
                         child: Text(
                           location,
                           style: AppTypography.label(isDark: isDark).copyWith(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -295,15 +303,42 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       const SizedBox(width: 4),
                       const Icon(
                         Icons.keyboard_arrow_down_rounded,
-                        size: 16,
+                        size: 18,
+                        color: AppColors.primary,
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.bolt_rounded,
+                      size: 12, color: Color(0xFF059669)),
+                  SizedBox(width: 3),
+                  Text(
+                    '30 min',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF059669),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -313,88 +348,152 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight),
+          color: cart.couponCode != null
+              ? AppColors.success.withValues(alpha: 0.5)
+              : (isDark ? AppColors.borderDark : AppColors.borderLight),
+        ),
       ),
       child: cart.couponCode != null
           ? Row(
               children: [
-                const Icon(Icons.local_offer_rounded,
-                    size: 20, color: AppColors.success),
-                const SizedBox(width: 10),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.local_offer_rounded,
+                      size: 18, color: AppColors.success),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    'Coupon "${cart.couponCode}" applied — ৳${cart.discount.toStringAsFixed(0)} off',
-                    style: AppTypography.bodyMedium(isDark: isDark)
-                        .copyWith(color: AppColors.success),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Coupon Applied!',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.success,
+                        ),
+                      ),
+                      Text(
+                        '"${cart.couponCode}" — ৳${cart.discount.toStringAsFixed(0)} saved',
+                        style: AppTypography.small(isDark: isDark)
+                            .copyWith(color: AppColors.success),
+                      ),
+                    ],
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.close_rounded,
-                      size: 20,
-                      color: isDark
-                          ? AppColors.mutedForegroundDark
-                          : AppColors.mutedForegroundLight),
-                  onPressed: () =>
-                      ref.read(cartProvider.notifier).removeCoupon(),
+                GestureDetector(
+                  onTap: () => ref.read(cartProvider.notifier).removeCoupon(),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.surfaceDark : AppColors.mutedLight,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.close_rounded,
+                        size: 16,
+                        color: isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForegroundLight),
+                  ),
                 ),
               ],
             )
-          : Row(
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _couponController,
-                    decoration: InputDecoration(
-                      hintText: 'Enter coupon code',
-                      hintStyle: AppTypography.small(isDark: isDark),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                            color: isDark
-                                ? AppColors.borderDark
-                                : AppColors.borderLight),
+                Row(
+                  children: [
+                    const Icon(Icons.confirmation_num_outlined,
+                        size: 16, color: AppColors.primary),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Have a coupon code?',
+                      style: AppTypography.label(isDark: isDark).copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                            color: isDark
-                                ? AppColors.borderDark
-                                : AppColors.borderLight),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: AppColors.primary),
-                      ),
-                      filled: true,
-                      fillColor: isDark
-                          ? AppColors.inputFillDark
-                          : AppColors.inputFillLight,
                     ),
-                    style: AppTypography.bodyMedium(isDark: isDark),
-                  ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                FilledButton(
-                  onPressed: () {
-                    final code = _couponController.text.trim();
-                    if (code.isEmpty) return;
-                    ref.read(cartProvider.notifier).applyCoupon(code);
-                    _couponController.clear();
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.primaryForeground,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: const Text('Apply'),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _couponController,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: InputDecoration(
+                          hintText: 'e.g. FONDO20',
+                          hintStyle: AppTypography.small(isDark: isDark)
+                              .copyWith(letterSpacing: 0.5),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                          prefixIcon: const Icon(
+                            Icons.tag_rounded,
+                            size: 18,
+                            color: AppColors.primary,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                                color: isDark
+                                    ? AppColors.borderDark
+                                    : AppColors.borderLight),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                                color: isDark
+                                    ? AppColors.borderDark
+                                    : AppColors.borderLight),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:
+                                const BorderSide(color: AppColors.primary, width: 1.5),
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? AppColors.inputFillDark
+                              : AppColors.inputFillLight,
+                        ),
+                        style: AppTypography.bodyMedium(isDark: isDark)
+                            .copyWith(letterSpacing: 1.2, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    PressScale(
+                      onTap: () {
+                        final code = _couponController.text.trim();
+                        if (code.isEmpty) return;
+                        ref.read(cartProvider.notifier).applyCoupon(code);
+                        _couponController.clear();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 13),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'Apply',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -406,32 +505,55 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final taxable = (cart.subtotal - cart.discount) > 0 ? (cart.subtotal - cart.discount) : 0.0;
     final vat = taxable * 0.05;
     final grandTotal = taxable + deliveryFee + vat;
+    final totalSavings = cart.discount + (deliveryFee == 0 ? 30.0 : 0.0);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
             color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Bill Summary',
-            style: AppTypography.label(isDark: isDark).copyWith(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Bill Details',
+                style: AppTypography.label(isDark: isDark).copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                ),
+              ),
+              if (totalSavings > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Saving ৳${totalSavings.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.success,
+                    ),
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           _PriceLine(
               label: 'Item Subtotal', amount: cart.subtotal, isDark: isDark),
           const SizedBox(height: 8),
           if (cart.discount > 0) ...[
             _PriceLine(
-              label: 'Discount Voucher',
+              label: 'Coupon Discount',
               amount: -cart.discount,
               isDark: isDark,
               color: AppColors.success,
@@ -442,7 +564,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             label: 'Delivery Fee',
             amount: deliveryFee,
             isDark: isDark,
-            subtitle: deliveryFee == 0 ? '(Free delivery applied)' : null,
+            subtitle: deliveryFee == 0 ? '(Free above ৳300)' : null,
           ),
           const SizedBox(height: 8),
           _PriceLine(
@@ -450,13 +572,54 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             amount: vat,
             isDark: isDark,
           ),
-          const Divider(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Divider(
+                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
           _PriceLine(
             label: 'Grand Total',
             amount: grandTotal,
             isDark: isDark,
             isTotal: true,
           ),
+          if (totalSavings > 0) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: AppColors.success.withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.savings_rounded,
+                      size: 14, color: AppColors.success),
+                  const SizedBox(width: 6),
+                  Text(
+                    'You saved ৳${totalSavings.toStringAsFixed(0)} on this order 🎉',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.success,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -470,74 +633,136 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 95),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.cardDark : AppColors.cardLight,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
+            decoration: BoxDecoration(
+              color: (isDark ? const Color(0xFF1A1A1A) : Colors.white)
+                  .withValues(alpha: isDark ? 0.88 : 0.92),
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.14),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.20),
+                width: 1,
+              ),
             ),
-          ],
-          border: Border.all(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-            width: 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Total to Pay', style: AppTypography.small(isDark: isDark)),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: Text(
-                      '৳${grandTotal.toStringAsFixed(0)}',
-                      key: ValueKey(grandTotal.toStringAsFixed(0)),
-                      style: AppTypography.price(isDark: isDark).copyWith(
-                        color: AppColors.primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Total to Pay',
+                        style: AppTypography.small(isDark: isDark).copyWith(
+                          fontSize: 11,
+                        ),
                       ),
+                      const SizedBox(height: 2),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (child, anim) => FadeTransition(
+                          opacity: anim,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.3),
+                              end: Offset.zero,
+                            ).animate(anim),
+                            child: child,
+                          ),
+                        ),
+                        child: Text(
+                          '৳${grandTotal.toStringAsFixed(0)}',
+                          key: ValueKey(grandTotal.toStringAsFixed(0)),
+                          style: AppTypography.price(isDark: isDark).copyWith(
+                            color: AppColors.primary,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      if (cart.subtotal < 300)
+                        Text(
+                          'Add ৳${(300 - cart.subtotal).toStringAsFixed(0)} for free delivery',
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            color: Color(0xFFD97706),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                PressScale(
+                  onTap: () {
+                    final currentLocation = ref.read(userLocationProvider);
+                    HapticFeedback.heavyImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Order placed! Delivering to $currentLocation',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: AppColors.success,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                    ref.read(cartProvider.notifier).clear();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 14),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFFB8860B),
+                          AppColors.primary,
+                          Color(0xFFB8860B),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.shopping_bag_rounded,
+                            size: 16, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          'Checkout',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            FilledButton.icon(
-              onPressed: () {
-                final currentLocation = ref.read(userLocationProvider);
-                HapticFeedback.heavyImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Order placed successfully! Delivering to $currentLocation',
-                    ),
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: AppColors.success,
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-                ref.read(cartProvider.notifier).clear();
-              },
-              icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
-              label: const Text('Proceed to Checkout'),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.primaryForeground,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -638,9 +863,16 @@ class _CartItemCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
             color: isDark ? AppColors.borderDark : AppColors.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -648,86 +880,127 @@ class _CartItemCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withValues(alpha: 0.15),
+                      AppColors.primary.withValues(alpha: 0.06),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.restaurant_outlined,
-                    color: AppColors.primary, size: 22),
+                child: const Icon(Icons.restaurant_rounded,
+                    color: AppColors.primary, size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item.food.name,
-                        style: AppTypography.titleMedium(isDark: isDark)),
+                    Text(
+                      item.food.name,
+                      style: AppTypography.titleMedium(isDark: isDark)
+                          .copyWith(fontWeight: FontWeight.w700),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
                     if (item.selectedAddOns.isNotEmpty) ...[
-                      const SizedBox(height: 2),
                       Text(
-                        item.selectedAddOns.join(', '),
-                        style: AppTypography.small(isDark: isDark),
+                        '+ ${item.selectedAddOns.join(', ')}',
+                        style: AppTypography.small(isDark: isDark).copyWith(
+                          color: AppColors.primary,
+                          fontSize: 11,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    ],
+                    ] else
+                      Text(
+                        item.food.category,
+                        style: AppTypography.small(isDark: isDark)
+                            .copyWith(fontSize: 11),
+                      ),
                   ],
                 ),
               ),
-              IconButton(
-                icon: Icon(Icons.delete_outline_rounded,
-                    size: 20, color: AppColors.destructive),
-                onPressed: onRemove,
-                constraints:
-                    const BoxConstraints(minWidth: 36, minHeight: 36),
+              GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.destructive.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline_rounded,
+                    size: 18,
+                    color: AppColors.destructive,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(
-                      color: isDark
-                          ? AppColors.borderDark
-                          : AppColors.borderLight),
-                  borderRadius: BorderRadius.circular(8),
+                      color: AppColors.primary.withValues(alpha: 0.3)),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove_rounded, size: 16),
-                      onPressed: onDecrement,
-                      color: AppColors.primary,
-                      constraints: const BoxConstraints(
-                          minWidth: 32, minHeight: 32),
+                    GestureDetector(
+                      onTap: onDecrement,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 8),
+                        child: Icon(
+                          Icons.remove_rounded,
+                          size: 16,
+                          color: item.quantity > 1
+                              ? AppColors.primary
+                              : AppColors.primary.withValues(alpha: 0.3),
+                        ),
+                      ),
                     ),
                     SizedBox(
                       width: 28,
                       child: Text(
                         '${item.quantity}',
                         textAlign: TextAlign.center,
-                        style: AppTypography.label(isDark: isDark),
+                        style: AppTypography.label(isDark: isDark)
+                            .copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.add_rounded, size: 16),
-                      onPressed: onIncrement,
-                      color: AppColors.primary,
-                      constraints: const BoxConstraints(
-                          minWidth: 32, minHeight: 32),
+                    GestureDetector(
+                      onTap: onIncrement,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 8),
+                        child: const Icon(
+                          Icons.add_rounded,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
               Text(
                 '৳${item.totalPrice.toStringAsFixed(0)}',
-                style: AppTypography.price(isDark: isDark),
+                style: AppTypography.price(isDark: isDark).copyWith(
+                  fontSize: 16,
+                ),
               ),
             ],
           ),
