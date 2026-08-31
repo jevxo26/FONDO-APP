@@ -220,6 +220,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 // Top Header with User Info & Settings gear
                 _ProfileHeader(user: user, tier: tier, isDark: isDark),
+                const SizedBox(height: 12),
+                _StatsStrip(stats: _stats, isDark: isDark),
                 const SizedBox(height: 16),
 
                 // Purple FONDO Pro Card Banner (Foodpanda Reference style)
@@ -240,19 +242,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                 // Wallet & Refund Account Section
                 const _SectionLabel('Wallet & Payments'),
-                _SectionGroup(
+                _WalletCard(
                   isDark: isDark,
-                  children: [
-                    _MenuItem(
-                      icon: Icons.account_balance_wallet_outlined,
-                      title: 'Refund Account',
-                      subtitle: 'Available balance: ৳1,280',
-                      badgeText: '৳1,280',
-                      badgeColor: AppColors.success,
-                      isDark: isDark,
-                      onTap: () => context.push(AppRoutes.wallet),
-                    ),
-                  ],
+                  onTap: () => context.push(AppRoutes.wallet),
                 ),
                 const SizedBox(height: 20),
 
@@ -543,11 +535,36 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-class _ProBannerCard extends StatelessWidget {
+class _ProBannerCard extends StatefulWidget {
   final bool isDark;
   final VoidCallback onTap;
-
   const _ProBannerCard({required this.isDark, required this.onTap});
+  @override
+  State<_ProBannerCard> createState() => _ProBannerCardState();
+}
+
+class _ProBannerCardState extends State<_ProBannerCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shimmer;
+  late final Animation<double> _shimmerAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmer = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: false);
+    _shimmerAnim = Tween<double>(begin: -1.5, end: 2.5).animate(
+      CurvedAnimation(parent: _shimmer, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _shimmer.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -555,11 +572,10 @@ class _ProBannerCard extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           HapticFeedback.selectionClick();
-          onTap();
+          widget.onTap();
         },
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF5E17EB), Color(0xFF8E24AA)],
@@ -569,66 +585,130 @@ class _ProBannerCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF7B1FA2).withValues(alpha: 0.3),
+                color: const Color(0xFF7B1FA2).withValues(alpha: 0.35),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
             ],
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD54F), size: 26),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'FONDO Pro',
-                      style: TextStyle(
-                        color: Color(0xFFFFD54F),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Save on your future orders with FONDO Pro',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Text(
-                    'Learn more',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              children: [
+                // Shimmer golden light sweep overlay
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _shimmerAnim,
+                    builder: (context, _) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment(_shimmerAnim.value - 0.7, -0.6),
+                            end: Alignment(_shimmerAnim.value + 0.3, 0.6),
+                            colors: [
+                              Colors.transparent,
+                              const Color(0xFFFFD54F).withValues(alpha: 0.08),
+                              const Color(0xFFFFF9C4).withValues(alpha: 0.22),
+                              const Color(0xFFFFD54F).withValues(alpha: 0.08),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.35, 0.5, 0.65, 1.0],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  SizedBox(width: 4),
-                  Icon(Icons.chevron_right_rounded, color: Colors.white, size: 18),
-                ],
-              ),
-            ],
+                ),
+                // Card Content with generous padding
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: const Color(0xFFFFD54F).withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.workspace_premium_rounded,
+                          color: Color(0xFFFFD54F),
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'FONDO Pro',
+                              style: TextStyle(
+                                color: Color(0xFFFFD54F),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                            SizedBox(height: 3),
+                            Text(
+                              'Save on your future orders with FONDO Pro',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                                height: 1.25,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black38,
+                                    offset: Offset(0, 1),
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFFFD54F).withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text(
+                              'Learn more',
+                              style: TextStyle(
+                                color: Color(0xFFFFD54F),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11.5,
+                              ),
+                            ),
+                            SizedBox(width: 2),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              color: Color(0xFFFFD54F),
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1016,6 +1096,218 @@ class _VoucherCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Wallet Card ───────────────────────────────────────────────────────────
+class _WalletCard extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback onTap;
+  const _WalletCard({required this.isDark, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return PressScale(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.cardDark : AppColors.cardLight,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.success.withValues(alpha: 0.25),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.success.withValues(alpha: isDark ? 0.08 : 0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Wallet icon with green gradient
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.success.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Balance info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Refund Account',
+                      style: AppTypography.small(isDark: isDark).copyWith(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForegroundLight,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '৳0',
+                      style: AppTypography.price(isDark: isDark).copyWith(
+                        fontSize: 24,
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Available Balance',
+                      style: AppTypography.small(isDark: isDark).copyWith(fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              // Right side: status + chevron
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      'No Refunds',
+                      style: TextStyle(
+                        color: AppColors.success,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight,
+                    size: 22,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Stats Strip ────────────────────────────────────────────────────────────
+class _StatsStrip extends StatelessWidget {
+  final CustomerStats stats;
+  final bool isDark;
+  const _StatsStrip({required this.stats, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.14)),
+      ),
+      child: Row(
+        children: [
+          _StatItem(
+            value: '${stats.totalOrders}',
+            label: 'Orders',
+            isDark: isDark,
+          ),
+          _VerticalStatDivider(isDark: isDark),
+          _StatItem(
+            value:
+                '৳${(stats.totalSpent / 1000).toStringAsFixed(1)}k',
+            label: 'Spent',
+            isDark: isDark,
+          ),
+          _VerticalStatDivider(isDark: isDark),
+          _StatItem(
+            value: stats.memberSince,
+            label: 'Member Since',
+            isDark: isDark,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  final String value;
+  final String label;
+  final bool isDark;
+  const _StatItem({
+    required this.value,
+    required this.label,
+    required this.isDark,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: AppTypography.cardTitle(isDark: isDark).copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: AppTypography.small(isDark: isDark).copyWith(fontSize: 10.5),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VerticalStatDivider extends StatelessWidget {
+  final bool isDark;
+  const _VerticalStatDivider({required this.isDark});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 32,
+      color: AppColors.primary.withValues(alpha: 0.2),
     );
   }
 }
