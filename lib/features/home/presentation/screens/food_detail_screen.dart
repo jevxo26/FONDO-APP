@@ -886,7 +886,7 @@ class _FloatingOrderBar extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
           decoration: BoxDecoration(
             color: (isDark
                     ? const Color(0xFF0E0E0E)

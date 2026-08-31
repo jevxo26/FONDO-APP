@@ -632,7 +632,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final grandTotal = taxable + deliveryFee + vat;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 95),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 105),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(22),
         child: BackdropFilter(
