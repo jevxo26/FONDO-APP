@@ -90,7 +90,7 @@ class _WalletScreenState extends State<WalletScreen> {
         builder: (sheetCtx, setSheetState) {
           final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
           return Container(
-            padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(sheetCtx).viewInsets.bottom + 28),
+            padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(sheetCtx).viewInsets.bottom + MediaQuery.of(sheetCtx).padding.bottom + 24),
             decoration: BoxDecoration(
               color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -299,7 +299,7 @@ class _WalletScreenState extends State<WalletScreen> {
           }
 
           return Container(
-            padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(sheetCtx).viewInsets.bottom + 24),
+            padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(sheetCtx).viewInsets.bottom + MediaQuery.of(sheetCtx).padding.bottom + 24),
             decoration: BoxDecoration(
               color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -455,7 +455,7 @@ class _WalletScreenState extends State<WalletScreen> {
         builder: (sheetCtx, setSheetState) {
           final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
           return Container(
-            padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(sheetCtx).viewInsets.bottom + 24),
+            padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(sheetCtx).viewInsets.bottom + MediaQuery.of(sheetCtx).padding.bottom + 24),
             decoration: BoxDecoration(
               color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
