@@ -126,4 +126,6 @@ class AppColors {
       Colors.transparent,
     ],
   );
+
+  static const Gradient specularRimGradient = specularBorderLight;
 }
