@@ -10,6 +10,7 @@ import '../../../../core/providers/cart_provider.dart';
 import '../../../../core/providers/user_provider.dart';
 import '../../../../core/providers/wishlist_provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/press_scale.dart';
@@ -1284,59 +1285,87 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   }
 
   Widget _buildCategoriesSection(BuildContext context, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Explore Categories',
-            style: AppTypography.headlineMedium(isDark: isDark).copyWith(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 12),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.6,
+    final categories = [
+      (
+        title: 'Breakfast',
+        icon: Icons.breakfast_dining_rounded,
+        count: '3 items',
+      ),
+      (
+        title: 'Lunch',
+        icon: Icons.lunch_dining_rounded,
+        count: '3 items',
+      ),
+      (
+        title: 'Dinner',
+        icon: Icons.dinner_dining_rounded,
+        count: '3 items',
+      ),
+      (
+        title: 'Groceries',
+        icon: Icons.shopping_bag_rounded,
+        count: '3 items',
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _CategoryGridCard(
-                icon: Icons.breakfast_dining_outlined,
-                title: 'Breakfast',
-                itemCount: '3 items',
-                isDark: isDark,
+              Text(
+                'Explore Categories',
+                style: AppTypography.headlineMedium(isDark: isDark).copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              GestureDetector(
                 onTap: () => context.push('${AppRoutes.home}/catalog/Breakfast'),
-              ),
-              _CategoryGridCard(
-                icon: Icons.lunch_dining_outlined,
-                title: 'Lunch',
-                itemCount: '3 items',
-                isDark: isDark,
-                onTap: () => context.push('${AppRoutes.home}/catalog/Lunch'),
-              ),
-              _CategoryGridCard(
-                icon: Icons.dinner_dining_outlined,
-                title: 'Dinner',
-                itemCount: '3 items',
-                isDark: isDark,
-                onTap: () => context.push('${AppRoutes.home}/catalog/Dinner'),
-              ),
-              _CategoryGridCard(
-                icon: Icons.shopping_bag_outlined,
-                title: 'Groceries',
-                itemCount: '3 items',
-                isDark: isDark,
-                onTap: () => context.push('${AppRoutes.home}/catalog/Groceries'),
+                child: Text(
+                  'See all',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: 128,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: categories.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final cat = categories[index];
+              final isSelected = _selectedCategoryFilter == cat.title;
+
+              return _Category3DTile(
+                icon: cat.icon,
+                title: cat.title,
+                itemCount: cat.count,
+                isDark: isDark,
+                isSelected: isSelected,
+                onTap: () {
+                  setState(() {
+                    _selectedCategoryFilter = isSelected ? null : cat.title;
+                  });
+                  context.push('${AppRoutes.home}/catalog/${cat.title}');
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -2025,75 +2054,114 @@ class _PopularDishCard extends StatelessWidget {
   }
 }
 
-class _CategoryGridCard extends StatelessWidget {
+class _Category3DTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String itemCount;
   final bool isDark;
+  final bool isSelected;
   final VoidCallback onTap;
 
-  const _CategoryGridCard({
+  const _Category3DTile({
     required this.icon,
     required this.title,
     required this.itemCount,
     required this.isDark,
+    this.isSelected = false,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final activeBorder = Border.all(
+      color: AppColors.primary,
+      width: 1.5,
+    );
+    final regularBorder = Border.all(
+      color: isDark ? AppColors.glassBorderDark : AppColors.glassBorderLight,
+      width: 1.0,
+    );
+
+    return PressScale(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        width: 106,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
           color: isDark ? AppColors.cardDark : AppColors.cardLight,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(22),
+          border: isSelected ? activeBorder : regularBorder,
+          boxShadow: isSelected
+              ? AppShadows.glowGold
+              : (isDark
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : AppShadows.card3D),
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // 3D icon chamber with radial gold glow
             Container(
-              width: 44,
-              height: 44,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  center: Alignment.center,
+                  radius: 0.85,
+                  colors: [
+                    AppColors.primary.withValues(alpha: isDark ? 0.35 : 0.22),
+                    AppColors.primary.withValues(alpha: isDark ? 0.12 : 0.08),
+                    Colors.transparent,
+                  ],
+                  stops: const [0.0, 0.65, 1.0],
+                ),
+                border: Border.all(
+                  color: (isSelected ? AppColors.primary : AppColors.goldShine)
+                      .withValues(alpha: isDark ? 0.25 : 0.4),
+                  width: 0.8,
+                ),
               ),
-              child: Icon(icon, color: AppColors.primary, size: 22),
+              child: Center(
+                child: Icon(
+                  icon,
+                  color: isSelected
+                      ? AppColors.primary
+                      : (isDark ? Colors.white : AppColors.primary),
+                  size: 24,
+                ),
+              ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    title,
-                    style: AppTypography.label(isDark: isDark).copyWith(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    itemCount,
-                    style: AppTypography.small(isDark: isDark).copyWith(fontSize: 10.5),
-                  ),
-                ],
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: AppTypography.label(isDark: isDark).copyWith(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                color: isSelected ? AppColors.primary : null,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              itemCount,
+              style: AppTypography.small(isDark: isDark).copyWith(
+                fontSize: 10.5,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForegroundLight,
+              ),
+              maxLines: 1,
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -2496,12 +2564,16 @@ class _ComboCard extends StatelessWidget {
                       color: Color(0xFF10B981),
                     ),
                     const SizedBox(width: 3),
-                    Text(
-                      combo.freeDrink!,
-                      style: const TextStyle(
-                        color: Color(0xFF10B981),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
+                    Flexible(
+                      child: Text(
+                        combo.freeDrink!,
+                        style: const TextStyle(
+                          color: Color(0xFF10B981),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
