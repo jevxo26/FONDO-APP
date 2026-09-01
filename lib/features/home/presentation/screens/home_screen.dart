@@ -199,6 +199,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             const SizedBox(height: 18),
             _buildHeritageTrustBar(isDark),
             const SizedBox(height: 24),
+            _buildCategoriesSection(context, isDark),
+            const SizedBox(height: 28),
             _buildSignaturePassSection(context, isDark),
             const SizedBox(height: 28),
             _buildFamilyCombosSection(context, isDark),
@@ -208,8 +210,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             _buildFilterChipsRow(isDark),
             const SizedBox(height: 18),
             _buildPopularDishesSection(context, isDark),
-            const SizedBox(height: 28),
-            _buildCategoriesSection(context, isDark),
             const SizedBox(height: 110),
           ],
         ),
@@ -1150,7 +1150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         const SizedBox(height: 12),
         if (_loading)
           SizedBox(
-            height: 200,
+            height: 220,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1163,7 +1163,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           )
         else
           SizedBox(
-            height: 216,
+            height: 236,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1727,136 +1727,247 @@ class _TodaysPickCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return PressScale(
       onTap: onTap,
       child: Container(
-        width: 170,
-        padding: const EdgeInsets.all(12),
+        width: 180,
+        height: 220,
         decoration: BoxDecoration(
-          color: isDark ? AppColors.cardDark : AppColors.cardLight,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-            width: 1,
+            color: isDark ? AppColors.glassBorderDark : AppColors.glassBorderLight,
+            width: 1.0,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
+          boxShadow: isDark
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
                   ),
-                  child: const Icon(
-                    Icons.restaurant_outlined,
-                    color: AppColors.primary,
-                    size: 22,
+                ]
+              : AppShadows.card3D,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(21),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Cinematic full-card backdrop gradient
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? const [
+                            Color(0xFF2A1C10),
+                            Color(0xFF1E140C),
+                            Color(0xFF120C06),
+                          ]
+                        : const [
+                            Color(0xFF854D0E),
+                            Color(0xFFB45309),
+                            Color(0xFF78350F),
+                          ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                child: Center(
+                  child: Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.25),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.restaurant_rounded,
+                      size: 36,
+                      color: Color(0xFFF3D08B),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Bottom-to-transparent dark scrim overlay
+              Positioned.fill(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.25),
+                        Colors.black.withValues(alpha: 0.88),
+                      ],
+                      stops: const [0.35, 0.65, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Top Badges: Prep Time (Left) & Rating (Right)
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.60),
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      width: 0.7,
+                    ),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(
-                        Icons.star_rounded,
-                        size: 13,
-                        color: Color(0xFF10B981),
+                        Icons.schedule_rounded,
+                        size: 10,
+                        color: Colors.white70,
                       ),
-                      const SizedBox(width: 2),
+                      const SizedBox(width: 3),
                       Text(
-                        '${food.rating}',
+                        food.prepTime,
                         style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF10B981),
+                          color: Colors.white,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              food.name,
-              style: AppTypography.label(isDark: isDark).copyWith(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Row(
-              children: [
-                Icon(
-                  Icons.timer_outlined,
-                  size: 12,
-                  color: isDark
-                      ? AppColors.mutedForegroundDark
-                      : AppColors.mutedForegroundLight,
-                ),
-                const SizedBox(width: 3),
-                Text(
-                  '20-30 min',
-                  style: AppTypography.small(isDark: isDark).copyWith(fontSize: 11),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '৳${food.price.toStringAsFixed(0)}',
-                  style: AppTypography.price(isDark: isDark).copyWith(
-                    fontSize: 15,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w800,
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.60),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                      width: 0.7,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.star_rounded,
+                        size: 11,
+                        color: Color(0xFFF59E0B),
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${food.rating}',
+                        style: const TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: onAdd,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
+              ),
+
+              // Bottom Details: Name, Category, Price & Add Button
+              Positioned(
+                left: 12,
+                right: 12,
+                bottom: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      food.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      food.category,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '৳${food.price.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFFF3D08B),
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: onAdd,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                            decoration: BoxDecoration(
+                              gradient: AppColors.warmGoldGradient,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.4),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(
+                                  Icons.add_rounded,
+                                  size: 14,
+                                  color: AppColors.primaryForeground,
+                                ),
+                                SizedBox(width: 2),
+                                Text(
+                                  'Add',
+                                  style: TextStyle(
+                                    color: AppColors.primaryForeground,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.add_rounded,
-                      size: 16,
-                      color: AppColors.primaryForeground,
-                    ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -2176,10 +2287,11 @@ class _PicksSkeletonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 170,
+      width: 180,
+      height: 220,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
       ),
     );
   }
