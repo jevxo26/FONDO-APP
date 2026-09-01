@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/mock/mock_foods.dart';
 import '../../../../core/providers/cart_provider.dart';
+import '../../../../core/providers/user_provider.dart';
 import '../../../../core/providers/wishlist_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -21,7 +24,7 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStateMixin {
   bool _loading = true;
   String _selectedSort = 'Popular';
   bool _onlyHighRating = false;
@@ -30,6 +33,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   late final PageController _bannerController;
   int _currentBannerIndex = 0;
   Timer? _bannerTimer;
+
+  late final ScrollController _scrollController;
+  double _scrollOffset = 0.0;
+
+  late final AnimationController _orbController;
+  late final AnimationController _entranceController;
+  late final Animation<double> _letterSpacingAnim;
+  late final Animation<double> _fadeAnim;
 
   final List<_PromoBannerData> _banners = const [
     _PromoBannerData(
@@ -61,6 +72,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _bannerController = PageController();
     _startBannerTimer();
 
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      if (mounted) {
+        setState(() {
+          _scrollOffset = _scrollController.offset.clamp(0.0, 300.0);
+        });
+      }
+    });
+
+    // 8-second sinusoidal drift for ambient glow orbs
+    _orbController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    );
+    if (!WidgetsBinding.instance.runtimeType.toString().toLowerCase().contains('test')) {
+      _orbController.repeat(reverse: true);
+    }
+
+    // Staggered greeting entrance animation
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _letterSpacingAnim = Tween<double>(begin: 2.5, end: -0.5).animate(
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Cubic(0.16, 1.0, 0.3, 1.0),
+      ),
+    );
+
+    _fadeAnim = CurvedAnimation(
+      parent: _entranceController,
+      curve: Curves.easeOut,
+    );
+
+    _entranceController.forward();
+
     Future.delayed(const Duration(milliseconds: 1400), () {
       if (mounted) setState(() => _loading = false);
     });
@@ -82,7 +131,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void dispose() {
     _bannerTimer?.cancel();
     _bannerController.dispose();
+    _scrollController.dispose();
+    _orbController.dispose();
+    _entranceController.dispose();
     super.dispose();
+  }
+
+  String get _greetingMessage {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning,';
+    if (hour < 17) return 'Good Afternoon,';
+    return 'Good Evening,';
   }
 
   List<FoodItem> get _filteredFoods {
@@ -111,10 +170,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return SafeArea(
       bottom: false,
       child: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildLocationBar(context, isDark, wishlistCount),
+            _buildFullBleedParallaxHero(context, isDark, wishlistCount),
             const SizedBox(height: 14),
             _buildSearchHeader(context, isDark),
             const SizedBox(height: 14),
@@ -142,97 +202,312 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildLocationBar(BuildContext context, bool isDark, int wishlistCount) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.location_on_rounded,
-              color: AppColors.primary,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _showLocationSelector(context, isDark),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Deliver to',
-                        style: AppTypography.small(isDark: isDark).copyWith(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: isDark
-                              ? AppColors.mutedForegroundDark
-                              : AppColors.mutedForegroundLight,
+  /// Full-Bleed Parallax Hero Banner with Sinusoidal Ambient Orbs & Editorial Greeting
+  Widget _buildFullBleedParallaxHero(BuildContext context, bool isDark, int wishlistCount) {
+    final parallaxY = -_scrollOffset * 0.4; // 0.6x relative scroll speed
+    final userProfile = ref.watch(userProfileProvider);
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Layer 1: Parallax Mesh & Animated Orbs Background
+        Positioned.fill(
+          child: Transform.translate(
+            offset: Offset(0, parallaxY),
+            child: AnimatedBuilder(
+              animation: _orbController,
+              builder: (context, _) {
+                final orb1X = math.sin(_orbController.value * 2 * math.pi) * 35;
+                final orb1Y = math.cos(_orbController.value * 2 * math.pi) * 20;
+                final orb2X = -math.cos(_orbController.value * 2 * math.pi) * 30;
+                final orb2Y = -math.sin(_orbController.value * 2 * math.pi) * 25;
+
+                return Stack(
+                  children: [
+                    // Base mesh radial background
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: const Alignment(0.4, -0.6),
+                          radius: 1.4,
+                          colors: isDark
+                              ? [
+                                  const Color(0xFF2A1C08),
+                                  const Color(0xFF1E1408),
+                                  AppColors.backgroundDark,
+                                ]
+                              : [
+                                  const Color(0xFFFFF7E6),
+                                  const Color(0xFFFBF2DC),
+                                  AppColors.backgroundLight,
+                                ],
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: 14,
+                    ),
+                    // Floating Warm Gold Orb 1
+                    Positioned(
+                      top: 10 + orb1Y,
+                      right: 15 + orb1X,
+                      child: Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: (isDark ? AppColors.goldDeep : AppColors.goldShine)
+                              .withValues(alpha: isDark ? 0.18 : 0.30),
+                        ),
+                      ),
+                    ),
+                    // Floating Radiant Orb 2
+                    Positioned(
+                      top: 70 + orb2Y,
+                      left: -20 + orb2X,
+                      child: Container(
+                        width: 160,
+                        height: 160,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: (isDark ? AppColors.primary : const Color(0xFFFFE082))
+                              .withValues(alpha: isDark ? 0.12 : 0.25),
+                        ),
+                      ),
+                    ),
+                    // Backdrop blur to diffuse orbs into smooth ambient glow
+                    Positioned.fill(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 45, sigmaY: 45),
+                        child: const SizedBox.expand(),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+
+        // Layer 2: Foreground Content (Location Bar + Hero Greeting)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Row: Deliver to ▾ Banani, Dhaka + Wishlist Shortcut
+              _buildLocationHeader(context, isDark, wishlistCount),
+              const SizedBox(height: 18),
+
+              // Editorial Greeting + Staggered Animated Name
+              AnimatedBuilder(
+                animation: _entranceController,
+                builder: (context, _) {
+                  return Opacity(
+                    opacity: _fadeAnim.value,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.16),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: AppColors.primary.withValues(alpha: 0.3),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(
+                                    Icons.restaurant_rounded,
+                                    size: 11,
+                                    color: AppColors.primary,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'HERITAGE MUGHLAI PASS',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.6,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Spacer(),
+                            if (userProfile.isProMember)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  gradient: isDark ? AppColors.warmGoldGradient : null,
+                                  color: isDark ? null : AppColors.primary.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.workspace_premium_rounded,
+                                      size: 12,
+                                      color: isDark ? AppColors.primaryForeground : AppColors.primary,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      userProfile.proTier,
+                                      style: TextStyle(
+                                        color: isDark ? AppColors.primaryForeground : AppColors.primary,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _greetingMessage,
+                          style: AppTypography.displayHero(isDark: isDark).copyWith(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: _letterSpacingAnim.value,
+                            height: 1.15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text(
+                              userProfile.fullName,
+                              style: AppTypography.displayHero(isDark: isDark).copyWith(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.primary,
+                                letterSpacing: -0.5,
+                                height: 1.15,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.auto_awesome,
+                              color: AppColors.primary,
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'What authentic feast would you like freshly cooked today?',
+                          style: AppTypography.small(isDark: isDark).copyWith(
+                            fontSize: 12.5,
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForegroundLight,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocationHeader(BuildContext context, bool isDark, int wishlistCount) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(
+            Icons.location_on_rounded,
+            color: AppColors.primary,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => _showLocationSelector(context, isDark),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Deliver to',
+                      style: AppTypography.small(isDark: isDark).copyWith(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
                         color: isDark
                             ? AppColors.mutedForegroundDark
                             : AppColors.mutedForegroundLight,
                       ),
-                    ],
-                  ),
-                  Text(
-                    ref.watch(userLocationProvider),
-                    style: AppTypography.label(isDark: isDark).copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 14,
+                      color: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForegroundLight,
+                    ),
+                  ],
+                ),
+                Text(
+                  ref.watch(userLocationProvider),
+                  style: AppTypography.label(isDark: isDark).copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                   ),
-                ],
-              ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
-          IconButton(
-            onPressed: () => context.push(AppRoutes.favorites),
-            style: IconButton.styleFrom(
-              backgroundColor: isDark
-                  ? AppColors.cardDark
-                  : AppColors.cardLight,
-              side: BorderSide(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                width: 1,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          onPressed: () => context.push(AppRoutes.favorites),
+          style: IconButton.styleFrom(
+            backgroundColor: isDark ? AppColors.cardDark : AppColors.cardLight,
+            side: BorderSide(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              width: 1,
             ),
-            icon: Badge(
-              isLabelVisible: wishlistCount > 0,
-              label: Text('$wishlistCount'),
-              backgroundColor: AppColors.primary,
-              child: Icon(
-                wishlistCount > 0
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border_rounded,
-                color: wishlistCount > 0
-                    ? AppColors.primary
-                    : (isDark ? Colors.white70 : Colors.black87),
-                size: 20,
-              ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-        ],
-      ),
+          icon: Badge(
+            isLabelVisible: wishlistCount > 0,
+            label: Text('$wishlistCount'),
+            backgroundColor: AppColors.primary,
+            child: Icon(
+              wishlistCount > 0
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+              color: wishlistCount > 0
+                  ? AppColors.primary
+                  : (isDark ? Colors.white70 : Colors.black87),
+              size: 20,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -746,7 +1021,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(width: 8),
           _FilterActionChip(
-            label: '★ 4.4+ Rated',
+            label: '4.4+ Rated',
+            icon: Icons.star_rounded,
             isActive: _onlyHighRating,
             isDark: isDark,
             onTap: () => setState(() => _onlyHighRating = !_onlyHighRating),
@@ -1179,7 +1455,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 16),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Top Rated Only (★ 4.4+)'),
+                title: const Text('Top Rated Only (4.4+ Stars)'),
                 value: _onlyHighRating,
                 activeThumbColor: AppColors.primary,
                 onChanged: (val) {
@@ -2104,13 +2380,24 @@ class _ComboCard extends StatelessWidget {
                         : Colors.black.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(
-                    '👥 ${combo.serves}',
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white70 : Colors.black87,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.group_rounded,
+                        size: 12,
+                        color: isDark ? Colors.white70 : Colors.black87,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        combo.serves,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -2143,13 +2430,24 @@ class _ComboCard extends StatelessWidget {
                   color: const Color(0xFF10B981).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(
-                  '🥤 ${combo.freeDrink}',
-                  style: const TextStyle(
-                    color: Color(0xFF10B981),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.local_drink_rounded,
+                      size: 11,
+                      color: Color(0xFF10B981),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      combo.freeDrink!,
+                      style: const TextStyle(
+                        color: Color(0xFF10B981),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             const Spacer(),
