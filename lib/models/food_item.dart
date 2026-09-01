@@ -1,18 +1,48 @@
+/// Core model representing a dish, grocery item, or menu offering in FONDO.
 class FoodItem {
+  /// Unique identifier for the food item.
   final String id;
+
+  /// Display title of the dish.
   final String name;
+
+  /// Detailed description and heritage story note.
   final String description;
+
+  /// Base price in Bangladeshi Taka (৳).
   final double price;
+
+  /// Image asset or network URL path.
   final String imageUrl;
+
+  /// Primary category (e.g. Kacchi, Tehari, Kebab, Groceries).
   final String category;
+
+  /// User rating out of 5.0.
   final double rating;
+
+  /// Total customer review count.
   final int ratingCount;
+
+  /// Availability status in active inventory.
   final bool isAvailable;
+
+  /// Optional customizable add-ons with dynamic pricing.
   final List<String> addOns;
+
+  /// Estimated kitchen preparation time.
   final String prepTime;
+
+  /// Key ingredients list.
   final List<String> ingredients;
+
+  /// Dietary and heritage badges (e.g. 100% Halal, Coal Slow Oven).
   final List<String> dietaryTags;
+
+  /// Whether dish is featured as today's signature plate.
   final bool isSignature;
+
+  /// Whether dish is highlighted as a popular best-seller.
   final bool isPopular;
 
   const FoodItem({
@@ -70,9 +100,15 @@ class FoodItem {
   }
 }
 
+/// Model representing an item placed in the customer's active shopping cart.
 class CartItem {
+  /// Selected food item.
   final FoodItem food;
+
+  /// Quantity ordered.
   int quantity;
+
+  /// List of custom add-on names chosen.
   final List<String> selectedAddOns;
 
   CartItem({
@@ -81,6 +117,7 @@ class CartItem {
     this.selectedAddOns = const [],
   });
 
+  /// Computed total price including add-ons multiplied by quantity.
   double get totalPrice {
     final addOnPrice = selectedAddOns.length * 0.50;
     return (food.price + addOnPrice) * quantity;
