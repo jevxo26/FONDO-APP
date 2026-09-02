@@ -5,19 +5,28 @@ import '../storage/secure_storage_service.dart';
 import 'api_endpoints.dart';
 import 'app_exception.dart';
 
+/// Central application logger provider.
 final loggerProvider = Provider<Logger>((ref) => Logger());
 
+/// Central configured [DioClient] provider for authenticated REST operations.
 final dioClientProvider = Provider<DioClient>((ref) {
   final storage = ref.watch(secureStorageServiceProvider);
   final logger = ref.watch(loggerProvider);
   return DioClient(storage: storage, logger: logger);
 });
 
+/// Production HTTP networking client with automatic token injection and error mapping.
 class DioClient {
+  /// Encrypted storage for accessing the current JWT token.
   final SecureStorageService storage;
+
+  /// Diagnostic logging instance.
   final Logger logger;
+
+  /// Internal configured [Dio] instance.
   late final Dio dio;
 
+  /// Creates and configures a [DioClient] instance with interceptors and base options.
   DioClient({required this.storage, required this.logger}) {
     dio = Dio(
       BaseOptions(
@@ -61,6 +70,7 @@ class DioClient {
     );
   }
 
+  /// Maps raw [DioException] errors into domain-specific [AppException] instances.
   AppException _mapDioError(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.sendTimeout ||
