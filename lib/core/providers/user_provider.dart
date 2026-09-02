@@ -1,17 +1,35 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Representation of the authenticated user's profile.
+/// Representation of the authenticated user's profile and membership status.
 class UserProfile {
+  /// Unique customer profile identifier.
   final String id;
+
+  /// Full display name of the customer.
   final String fullName;
+
+  /// Primary account email address.
   final String email;
+
+  /// Contact phone number for deliveries.
   final String phone;
+
+  /// Monogram initials for the profile avatar.
   final String avatarInitials;
+
+  /// Whether the customer has an active FONDO Pro membership.
   final bool isProMember;
+
+  /// Subscription tier title (e.g. "VIP PRO", "Standard").
   final String proTier;
+
+  /// Accumulated loyalty reward points.
   final int loyaltyPoints;
+
+  /// Live available balance in the customer's wallet or refund account.
   final double walletBalance;
 
+  /// Creates a [UserProfile] instance.
   const UserProfile({
     this.id = 'usr_001',
     this.fullName = 'Abir Rahman',
@@ -24,6 +42,7 @@ class UserProfile {
     this.walletBalance = 0.0,
   });
 
+  /// Creates a modified copy of this [UserProfile].
   UserProfile copyWith({
     String? id,
     String? fullName,
@@ -49,9 +68,12 @@ class UserProfile {
   }
 }
 
+/// State notifier managing real-time updates to customer profile and wallet attributes.
 class UserProfileNotifier extends StateNotifier<UserProfile> {
+  /// Creates a [UserProfileNotifier] with default initial profile.
   UserProfileNotifier() : super(const UserProfile());
 
+  /// Updates personal customer profile contact fields.
   void updateProfile({
     String? fullName,
     String? email,
@@ -66,6 +88,7 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
     );
   }
 
+  /// Updates FONDO Pro membership subscription state and tier.
   void updateProMembership({required bool isPro, String? tier}) {
     state = state.copyWith(
       isProMember: isPro,
@@ -73,15 +96,18 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
     );
   }
 
+  /// Increments customer accumulated loyalty points.
   void addLoyaltyPoints(int points) {
     state = state.copyWith(loyaltyPoints: state.loyaltyPoints + points);
   }
 
+  /// Updates available wallet or refund balance in Bangladeshi Taka (৳).
   void updateWalletBalance(double newBalance) {
     state = state.copyWith(walletBalance: newBalance);
   }
 }
 
+/// Central Riverpod provider exposing reactive [UserProfile] state across the app.
 final userProfileProvider =
     StateNotifierProvider<UserProfileNotifier, UserProfile>((ref) {
   return UserProfileNotifier();

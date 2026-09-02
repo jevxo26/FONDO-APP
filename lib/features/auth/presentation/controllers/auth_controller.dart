@@ -20,35 +20,41 @@ const UserModel _demoUser = UserModel(
   isPhoneVerified: true,
 );
 
-/// Single identity source for the current user. In Phase A (mock-only, no live
-/// session) it falls back to the demo identity so every screen renders.
+/// Single identity source for the current user across screens.
+/// Falls back to default mock profile when unauthenticated for offline previews.
 final currentUserProvider = Provider<UserModel>((ref) {
   final user = ref.watch(authControllerProvider.select((s) => s.user));
   return user ?? _demoUser;
 });
 
+/// Riverpod provider for managing application authentication state.
 final authControllerProvider = StateNotifierProvider<AuthController, AuthState>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
   final storageService = ref.watch(secureStorageServiceProvider);
   return AuthController(authRepository, storageService);
 });
 
+/// Controller handling customer session initialization, login, registration, OTP validation, and token lifecycle.
 class AuthController extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
   final SecureStorageService _storageService;
 
+  /// Creates an [AuthController] and initiates session bootstrap.
   AuthController(this._authRepository, this._storageService) : super(const AuthState()) {
     bootstrap();
   }
 
+  /// Clears active error messages from state.
   void clearError() {
     state = state.copyWith(errorMessage: null);
   }
 
+  /// Updates authenticated user profile details in state.
   void updateUser(UserModel user) {
     state = state.copyWith(user: user);
   }
 
+  /// Restores existing session credentials from secure storage and retrieves current profile.
   Future<void> bootstrap() async {
     try {
       state = state.copyWith(status: AuthStatus.initial);
@@ -76,6 +82,7 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  /// Authenticates user with credentials, stores JWT tokens, and populates user session.
   Future<bool> login(LoginRequestDto dto) async {
     try {
       state = state.copyWith(status: AuthStatus.authenticating, errorMessage: null);
@@ -107,6 +114,7 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  /// Submits customer registration request to the backend.
   Future<bool> register(RegisterRequestDto dto) async {
     try {
       state = state.copyWith(status: AuthStatus.authenticating, errorMessage: null);
@@ -122,6 +130,7 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  /// Validates SMS OTP code, saves returned session token, and establishes authenticated state.
   Future<bool> verifyOtpAndAutoLogin(OtpVerifyDto dto) async {
     try {
       state = state.copyWith(status: AuthStatus.authenticating, errorMessage: null);
@@ -153,6 +162,7 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  /// Persists a new destination address to the customer's profile.
   Future<bool> addAddress(AddressModel address) async {
     try {
       final savedAddress = await _authRepository.addAddress(address);
@@ -165,6 +175,7 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  /// Dispatches password reset code or instructions to customer identity.
   Future<bool> forgotPassword(String identity) async {
     try {
       state = state.copyWith(status: AuthStatus.authenticating, errorMessage: null);
@@ -178,6 +189,7 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  /// Resets customer password using confirmation token.
   Future<bool> resetPassword({required String code, required String newPassword, String? identity}) async {
     try {
       state = state.copyWith(status: AuthStatus.authenticating, errorMessage: null);
@@ -191,6 +203,7 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  /// Clears stored authentication session and transitions to unauthenticated state.
   Future<void> logout() async {
     await _storageService.clearAuthSession();
     state = const AuthState(status: AuthStatus.unauthenticated);

@@ -10,16 +10,21 @@ import '../dtos/login_request_dto.dart';
 import '../dtos/otp_verify_dto.dart';
 import '../dtos/register_request_dto.dart';
 
+/// Riverpod provider exposing the configured [AuthRepository].
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final dioClient = ref.watch(dioClientProvider);
   return AuthRepository(dioClient.dio);
 });
 
+/// Remote authentication repository managing customer session calls and user endpoints.
 class AuthRepository {
+  /// Underlying HTTP client instance.
   final Dio dio;
 
+  /// Creates an [AuthRepository] with the given [Dio] client.
   AuthRepository(this.dio);
 
+  /// Authenticates a customer using credentials and returns tokens and user profile.
   Future<AuthResponseDto> login(LoginRequestDto dto) async {
     try {
       final response = await dio.post(ApiEndpoints.login, data: dto.toJson());
@@ -29,6 +34,7 @@ class AuthRepository {
     }
   }
 
+  /// Registers a new customer account and initiates session tokens.
   Future<AuthResponseDto> register(RegisterRequestDto dto) async {
     try {
       final response = await dio.post(ApiEndpoints.register, data: dto.toJson());
@@ -38,6 +44,7 @@ class AuthRepository {
     }
   }
 
+  /// Dispatches an SMS verification OTP to the specified phone number.
   Future<bool> sendOtp(String phone) async {
     try {
       final response = await dio.post(ApiEndpoints.sendOtp, data: {'phone': phone});
@@ -48,6 +55,7 @@ class AuthRepository {
     }
   }
 
+  /// Validates a phone OTP code and authenticates the customer session.
   Future<AuthResponseDto> verifyOtp(OtpVerifyDto dto) async {
     try {
       final response = await dio.post(ApiEndpoints.verifyOtp, data: dto.toJson());
@@ -57,6 +65,7 @@ class AuthRepository {
     }
   }
 
+  /// Sends a password recovery instruction to the customer email or phone.
   Future<bool> forgotPassword(String identity) async {
     try {
       final isEmail = identity.contains('@');
@@ -69,6 +78,7 @@ class AuthRepository {
     }
   }
 
+  /// Resets customer password using recovery code.
   Future<bool> resetPassword({required String code, required String newPassword, String? identity}) async {
     try {
       final payload = {
@@ -84,6 +94,7 @@ class AuthRepository {
     }
   }
 
+  /// Retrieves the current authenticated user's remote profile record.
   Future<UserModel> getCurrentUser() async {
     try {
       final response = await dio.get(ApiEndpoints.me);
@@ -95,6 +106,7 @@ class AuthRepository {
     }
   }
 
+  /// Fetches customer saved delivery destination addresses.
   Future<List<AddressModel>> getUserAddresses() async {
     try {
       final response = await dio.get(ApiEndpoints.userAddresses);
@@ -106,6 +118,7 @@ class AuthRepository {
     }
   }
 
+  /// Persists a new delivery destination address for the customer.
   Future<AddressModel> addAddress(AddressModel address) async {
     try {
       final response = await dio.post(ApiEndpoints.userAddresses, data: address.toJson());
