@@ -4,15 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/mock/mock_data.dart';
 import '../../../../core/providers/theme_provider.dart';
+import '../../../../core/providers/user_provider.dart';
 import '../../../../core/providers/wishlist_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_glow.dart';
 import '../../../../core/widgets/press_scale.dart';
 import '../../../../core/widgets/skeleton.dart';
-import '../../../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../../../models/customer_tier.dart';
-import '../../../../models/user_model.dart';
 import '../../../../router/routes.dart';
 
 const _stats = CustomerStats(totalOrders: 127, totalSpent: 45280, memberSince: 'Jan 2024');
@@ -167,13 +166,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.confirmation_number_outlined, color: AppColors.primary, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Text('Available Vouchers (3)', style: AppTypography.titleLarge(isDark: isDark)),
+              ],
+            ),
             const SizedBox(height: 16),
-            Text('Available Vouchers & Offers', style: AppTypography.titleLarge(isDark: isDark)),
-            const SizedBox(height: 14),
             _VoucherCard(
-              code: 'PRO40',
-              title: '40% OFF on Top Restaurants',
-              subtitle: 'Valid on orders over ৳399. Max discount ৳150.',
+              code: 'FONDO50',
+              title: '৳50 Off on Food Orders',
+              subtitle: 'Valid on orders above ৳250 across all restaurants.',
               expiry: 'Expires in 3 days',
               isDark: isDark,
             ),
@@ -201,7 +213,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(currentUserProvider);
+    final userProfile = ref.watch(userProfileProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tier = _stats.tier;
     final themeMode = ref.watch(themeModeProvider);
@@ -218,10 +230,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           SafeArea(
             bottom: false,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
               children: [
                 // Top Header with User Info & Settings gear
-                _ProfileHeader(user: user, tier: tier, isDark: isDark),
+                _ProfileHeader(user: userProfile, tier: tier, isDark: isDark),
                 const SizedBox(height: 12),
                 _StatsStrip(stats: _stats, isDark: isDark),
                 const SizedBox(height: 16),
@@ -245,6 +257,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 // Wallet & Refund Account Section
                 const _SectionLabel('Wallet & Payments'),
                 _WalletCard(
+                  balance: userProfile.walletBalance,
                   isDark: isDark,
                   onTap: () => context.push(AppRoutes.wallet),
                 ),
@@ -424,12 +437,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                 // App Version
                 Center(
-                  child: Text(
-                    'FONDO v1.0.0 (Build 124) • Made with ❤️ in Bangladesh',
-                    style: AppTypography.small(isDark: isDark).copyWith(
-                      color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight,
-                      fontSize: 11,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'FONDO v1.0.0 (Build 124) • Handcrafted with ',
+                        style: AppTypography.small(isDark: isDark).copyWith(
+                          color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.favorite_rounded,
+                        size: 11,
+                        color: AppColors.primary,
+                      ),
+                      Text(
+                        ' in Bangladesh',
+                        style: AppTypography.small(isDark: isDark).copyWith(
+                          color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForegroundLight,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -443,7 +473,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 }
 
 class _ProfileHeader extends StatelessWidget {
-  final UserModel user;
+  final UserProfile user;
   final CustomerTier tier;
   final bool isDark;
 
@@ -455,7 +485,9 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initials = user.name.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join();
+    final initials = user.avatarInitials.isNotEmpty
+        ? user.avatarInitials
+        : user.fullName.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join();
     return Row(
       children: [
         Container(
@@ -490,7 +522,7 @@ class _ProfileHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                user.name,
+                user.fullName,
                 style: AppTypography.titleLarge(isDark: isDark).copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -1104,9 +1136,14 @@ class _VoucherCard extends StatelessWidget {
 
 // ── Wallet Card ───────────────────────────────────────────────────────────
 class _WalletCard extends StatelessWidget {
+  final double balance;
   final bool isDark;
   final VoidCallback onTap;
-  const _WalletCard({required this.isDark, required this.onTap});
+  const _WalletCard({
+    required this.balance,
+    required this.isDark,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1177,7 +1214,7 @@ class _WalletCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '৳0',
+                      '৳${balance.toStringAsFixed(0)}',
                       style: AppTypography.price(isDark: isDark).copyWith(
                         fontSize: 24,
                         color: AppColors.success,

@@ -96,7 +96,7 @@ class _ProPerksScreenState extends State<ProPerksScreen> {
       SnackBar(
         content: Text(
           _couponApplied
-              ? '🎉 PRO30 applied: 30% extra discount on your subscription!'
+              ? 'PRO30 applied: 30% extra discount on your subscription!'
               : 'Coupon removed',
         ),
         behavior: SnackBarBehavior.floating,
@@ -191,7 +191,7 @@ class _ProPerksScreenState extends State<ProPerksScreen> {
               Navigator.of(ctx).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('✨ Welcome to FONDO Pro! Your perks are now active.'),
+                  content: Text('Welcome to FONDO Pro! Your perks are now active.'),
                   backgroundColor: Color(0xFF7B1FA2),
                   behavior: SnackBarBehavior.floating,
                 ),

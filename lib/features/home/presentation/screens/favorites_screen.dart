@@ -46,7 +46,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> with SingleTi
     ref.read(cartProvider.notifier).addItem(food);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('🛒 ${food.name} added to cart!'),
+        content: Text('${food.name} added to cart!'),
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
           label: 'View Cart',

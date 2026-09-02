@@ -448,7 +448,7 @@ class _StatusHeader extends StatelessWidget {
               children: [
                 Text(
                   isDelivered
-                      ? 'Order Delivered! 🎉'
+                      ? 'Order Delivered!'
                       : isActive
                           ? 'Your order is on the way'
                           : 'Order ${order.statusLabel.toLowerCase()}',

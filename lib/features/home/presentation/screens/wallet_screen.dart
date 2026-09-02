@@ -229,7 +229,7 @@ class _WalletScreenState extends State<WalletScreen> {
                             setState(() => _refundAccountActivated = true);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('🎉 Refund Account activated for $selectedMethod (${accountCtr.text})!'),
+                                content: Text('Refund Account activated for $selectedMethod (${accountCtr.text})!'),
                                 backgroundColor: AppColors.success,
                                 behavior: SnackBarBehavior.floating,
                               ),
