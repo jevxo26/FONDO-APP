@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/mock/mock_foods.dart';
 import '../../../../core/providers/cart_provider.dart';
+import '../../../../core/providers/wishlist_provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/press_scale.dart';
 import '../../../../models/food_item.dart';
@@ -88,6 +90,8 @@ class _FoodDetailScreenState extends ConsumerState<FoodDetailScreen> {
       );
     }
 
+    final isWishlisted = ref.watch(wishlistProvider).isWishlisted(food.id);
+
     // 16:10 = 1.6 ratio — golden ratio header height
     final heroHeight = MediaQuery.of(context).size.width / 1.6;
 
@@ -120,8 +124,16 @@ class _FoodDetailScreenState extends ConsumerState<FoodDetailScreen> {
                   Padding(
                     padding: const EdgeInsets.all(8),
                     child: _GlassIconButton(
-                      icon: Icons.favorite_border_rounded,
-                      onTap: () => HapticFeedback.lightImpact(),
+                      icon: isWishlisted
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      iconColor: isWishlisted
+                          ? const Color(0xFFEF4444)
+                          : (isDark ? Colors.white : Colors.black87),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        ref.read(wishlistProvider.notifier).toggle(food);
+                      },
                       isDark: isDark,
                     ),
                   ),
@@ -142,9 +154,9 @@ class _FoodDetailScreenState extends ConsumerState<FoodDetailScreen> {
                             end: Alignment.bottomRight,
                             colors: isDark
                                 ? [
-                                    const Color(0xFF1A1006),
-                                    const Color(0xFF2C1A0A),
-                                    const Color(0xFF1A0E05),
+                                    const Color(0xFF1F1307),
+                                    const Color(0xFF2E1B0A),
+                                    const Color(0xFF160D05),
                                   ]
                                 : [
                                     const Color(0xFFFFF8EE),
@@ -154,20 +166,20 @@ class _FoodDetailScreenState extends ConsumerState<FoodDetailScreen> {
                           ),
                         ),
                       ),
-                      // Decorative radial glow
+                      // Ambient radial glow orb
                       Positioned(
-                        top: heroHeight * 0.1,
+                        top: heroHeight * 0.08,
                         left: 0,
                         right: 0,
                         child: Center(
                           child: Container(
-                            width: heroHeight * 0.7,
-                            height: heroHeight * 0.7,
+                            width: heroHeight * 0.72,
+                            height: heroHeight * 0.72,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: RadialGradient(
                                 colors: [
-                                  AppColors.primary.withValues(alpha: 0.18),
+                                  AppColors.primary.withValues(alpha: isDark ? 0.22 : 0.16),
                                   AppColors.primary.withValues(alpha: 0.0),
                                 ],
                               ),
@@ -175,17 +187,43 @@ class _FoodDetailScreenState extends ConsumerState<FoodDetailScreen> {
                           ),
                         ),
                       ),
-                      // Center dish icon / placeholder
+                      // Center dish showcase container
                       Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.restaurant_rounded,
-                              size: heroHeight * 0.30,
-                              color: AppColors.primary.withValues(alpha: 0.45),
+                            Container(
+                              width: heroHeight * 0.44,
+                              height: heroHeight * 0.44,
+                              decoration: BoxDecoration(
+                                color: (isDark ? const Color(0xFF22160C) : Colors.white).withValues(alpha: 0.88),
+                                borderRadius: BorderRadius.circular(26),
+                                border: Border.all(
+                                  color: AppColors.primary.withValues(alpha: isDark ? 0.35 : 0.25),
+                                  width: 1.2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.10),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(alpha: 0.15),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.restaurant_rounded,
+                                  size: heroHeight * 0.22,
+                                  color: isDark ? const Color(0xFFF3D08B) : AppColors.primary,
+                                ),
+                              ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 10),
                             if (food.isSignature)
                               _SignatureBadge(isDark: isDark),
                           ],
@@ -470,11 +508,13 @@ class _GlassIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final bool isDark;
+  final Color? iconColor;
 
   const _GlassIconButton({
     required this.icon,
     required this.onTap,
     required this.isDark,
+    this.iconColor,
   });
 
   @override
@@ -500,7 +540,7 @@ class _GlassIconButton extends StatelessWidget {
             child: Icon(
               icon,
               size: 20,
-              color: isDark ? Colors.white : Colors.black87,
+              color: iconColor ?? (isDark ? Colors.white : Colors.black87),
             ),
           ),
         ),
@@ -685,34 +725,34 @@ class _AddOnRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        InkWell(
+        PressScale(
           onTap: onToggle,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(18),
-            topRight: const Radius.circular(18),
-            bottomLeft: Radius.circular(isLast ? 18 : 0),
-            bottomRight: Radius.circular(isLast ? 18 : 0),
-          ),
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primary.withValues(alpha: isDark ? 0.12 : 0.06)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(18),
+                topRight: const Radius.circular(18),
+                bottomLeft: Radius.circular(isLast ? 18 : 0),
+                bottomRight: Radius.circular(isLast ? 18 : 0),
+              ),
+            ),
             child: Row(
               children: [
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 160),
+                  duration: const Duration(milliseconds: 180),
                   width: 22,
                   height: 22,
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.primary
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(6),
+                    color: isSelected ? AppColors.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(7),
                     border: Border.all(
                       color: isSelected
                           ? AppColors.primary
-                          : (isDark
-                              ? AppColors.borderDark
-                              : AppColors.borderLight),
+                          : (isDark ? AppColors.borderDark : AppColors.borderLight),
                       width: 1.5,
                     ),
                   ),
@@ -720,27 +760,41 @@ class _AddOnRow extends StatelessWidget {
                       ? const Icon(
                           Icons.check_rounded,
                           size: 14,
-                          color: Colors.white,
+                          color: AppColors.primaryForeground,
                         )
                       : null,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Text(
                     label,
-                    style:
-                        AppTypography.bodyMedium(isDark: isDark).copyWith(
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w400,
+                    style: AppTypography.bodyMedium(isDark: isDark).copyWith(
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected
+                          ? (isDark ? Colors.white : const Color(0xFF1B1612))
+                          : null,
                     ),
                   ),
                 ),
-                Text(
-                  '+৳${price.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: isSelected ? AppColors.primary : (isDark ? Colors.white54 : Colors.black45),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.primary.withValues(alpha: 0.15)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.black.withValues(alpha: 0.04)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '+৳${price.toStringAsFixed(0)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: isSelected
+                          ? AppColors.primary
+                          : (isDark ? Colors.white60 : Colors.black54),
+                    ),
                   ),
                 ),
               ],
@@ -884,65 +938,76 @@ class _FloatingOrderBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
         child: Container(
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
           decoration: BoxDecoration(
-            color: (isDark
-                    ? const Color(0xFF0E0E0E)
-                    : Colors.white)
-                .withValues(alpha: isDark ? 0.78 : 0.82),
+            color: (isDark ? const Color(0xFF120C06) : Colors.white)
+                .withValues(alpha: isDark ? 0.85 : 0.88),
             border: Border(
               top: BorderSide(
-                color: AppColors.primary.withValues(alpha: 0.14),
+                color: isDark ? AppColors.glassBorderDark : AppColors.glassBorderLight,
                 width: 1,
               ),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.10),
-                blurRadius: 24,
-                offset: const Offset(0, -6),
-              ),
-            ],
+            boxShadow: AppShadows.floatingIsland,
           ),
           child: SafeArea(
+            bottom: true,
             top: false,
             child: Row(
               children: [
-                // Quantity stepper
+                // Portion Stepper with PressScale
                 Container(
+                  height: 52,
                   decoration: BoxDecoration(
+                    color: isDark ? AppColors.cardDark : AppColors.cardLight,
                     border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.35),
+                      color: AppColors.primary.withValues(alpha: isDark ? 0.35 : 0.25),
+                      width: 1,
                     ),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _StepperBtn(
                         icon: Icons.remove_rounded,
-                        onTap: onDecrement,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          onDecrement();
+                        },
                         enabled: quantity > 1,
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: Text(
                           '$quantity',
-                          style: AppTypography.label(isDark: isDark)
-                              .copyWith(fontSize: 16),
+                          style: AppTypography.label(isDark: isDark).copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                       _StepperBtn(
                         icon: Icons.add_rounded,
-                        onTap: onIncrement,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          onIncrement();
+                        },
                         enabled: true,
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 // Add to Cart CTA
                 Expanded(
                   child: PressScale(
@@ -950,18 +1015,12 @@ class _FloatingOrderBar extends StatelessWidget {
                     child: Container(
                       height: 52,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFFB8860B),
-                            AppColors.primary,
-                            Color(0xFFB8860B),
-                          ],
-                        ),
+                        gradient: AppColors.warmGoldGradient,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
-                            blurRadius: 14,
+                            color: AppColors.primary.withValues(alpha: 0.38),
+                            blurRadius: 16,
                             offset: const Offset(0, 4),
                           ),
                         ],
@@ -972,13 +1031,13 @@ class _FloatingOrderBar extends StatelessWidget {
                           const Icon(
                             Icons.shopping_bag_rounded,
                             size: 18,
-                            color: Colors.white,
+                            color: AppColors.primaryForeground,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'Add to Cart  —  ৳${itemTotal.toStringAsFixed(0)}',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.primaryForeground,
                               fontSize: 14.5,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.3,
@@ -1011,14 +1070,16 @@ class _StepperBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: enabled ? onTap : null,
+    return PressScale(
+      onTap: enabled ? onTap : () {},
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Icon(
           icon,
           size: 18,
-          color: enabled ? AppColors.primary : AppColors.primary.withValues(alpha: 0.3),
+          color: enabled
+              ? AppColors.primary
+              : AppColors.primary.withValues(alpha: 0.3),
         ),
       ),
     );
