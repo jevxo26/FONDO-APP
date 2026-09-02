@@ -1,16 +1,39 @@
+/// Core authenticated customer or staff identity profile in FONDO.
 class UserModel {
+  /// Unique database user identifier.
   final String id;
+
+  /// Full customer name.
   final String name;
+
+  /// Email address used for authentication and receipts.
   final String email;
+
+  /// Mobile phone number used for SMS verification and rider delivery contact.
   final String phone;
+
+  /// Remote profile photo URL or null if default avatar is used.
   final String? avatar;
+
+  /// Optional gender identity string.
   final String? gender;
+
+  /// Date of birth formatted string.
   final String? dob;
+
+  /// Role definition (e.g. "CUSTOMER", "RIDER", "ADMIN").
   final String role;
+
+  /// Whether the customer's phone number has been verified via OTP.
   final bool isPhoneVerified;
+
+  /// Customer-selected food preferences (e.g., "100% Halal", "Low Spice").
   final List<String> dietaryPreferences;
+
+  /// Health and lifestyle goals (e.g., "Weight Management", "High Protein").
   final List<String> healthGoals;
 
+  /// Creates a [UserModel] instance.
   const UserModel({
     required this.id,
     required this.name,
@@ -25,6 +48,7 @@ class UserModel {
     this.healthGoals = const [],
   });
 
+  /// Constructs a [UserModel] from a backend JSON map.
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
@@ -45,6 +69,7 @@ class UserModel {
     );
   }
 
+  /// Serializes this [UserModel] to a JSON-compatible map.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -61,6 +86,7 @@ class UserModel {
     };
   }
 
+  /// Creates a modified copy of this [UserModel].
   UserModel copyWith({
     String? name,
     String? email,
